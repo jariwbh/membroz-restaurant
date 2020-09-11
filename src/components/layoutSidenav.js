@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 function layoutSidenav() {
     return (
@@ -8,7 +9,7 @@ function layoutSidenav() {
                     <div className="pos-sidenav-menu">
                         <ul className="nav flex-column">
                             <li className="nav-item">
-                                <a className="nav-link active" href="#"><span className="sidenav-icon tables-icon"></span> Tables</a>
+                                <Link className="nav-link active" to="/TableBook"><span className="sidenav-icon tables-icon"></span> Tables</Link>
                             </li>
                             <li className="nav-item">
                                 <a className="nav-link" href="#"><span className="sidenav-icon kitchen-icon"></span> Kitchen</a>
