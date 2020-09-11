@@ -2,7 +2,7 @@ import axios from '../Helpers/axiosInst'
 
 function getCategory(id) {
     const body = {
-        "search" : [{
+        "search": [{
             "searchfield": "formid",
             "searchvalue": "5e058897b0c5fb2b6c15cc69",
             "criteria": "eq",
@@ -28,17 +28,10 @@ function getItems(id) {
                 { "searchfield": "status", "searchvalue": "active", "criteria": "eq" }
             ]
         }
-        
-    }
 
-    // body = {
-    //     "searchref": [
-    //         { "searchfield": id != null ? "itemid.offertype" : "status", "searchvalue": id != null ? id : "active", "criteria": "eq" }
-    //     ]
-    // }
-console.log('Body', body)
+    }
+    console.log('Body', body)
     return axios.post('membershipoffers/filter', body)
-   
 }
 
 function getTables(body) {
