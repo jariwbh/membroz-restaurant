@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import * as Api from '../Api/HomeServices'
-
 import Table from '../components/Table'
 import CategoryTemplate from '../Templates/CategoryTemplate'
 import ItemTemplate from '../Templates/ItemTemplate'
@@ -10,14 +9,17 @@ import CartTemplate from '../Templates/CartTemplate'
 class Home extends Component {
     constructor(props) {
         super(props);
+        document.title = this.props.title
+        window.scrollTo(0, 0);
+
         this.state = {
             itemCategories: [],
             items: [],
             tables: [],
             customers: [],
-            orders:[],
+            orders: [],
             currentCartItems: [],
-            currentOrder:{items:[]}
+            currentOrder: { items: [] }
         }
         // itemname:"", quantity:5, rate:""
         this.getItems = this.getItems.bind(this);
@@ -31,19 +33,18 @@ class Home extends Component {
     }
 
     addToCart = (item) => {
-       //this.setState({currentOrder.cartItems: []})
-       var currentOrder = {...this.state.currentOrder}
-       currentOrder.items.push(item);
-       this.setState({currentOrder})
+        //this.setState({currentOrder.cartItems: []})
+        var currentOrder = { ...this.state.currentOrder }
+        currentOrder.items.push(item);
+        this.setState({ currentOrder })
 
-       console.log('AddToCart', this.setState.currentOrder)
+        console.log('AddToCart', this.setState.currentOrder)
     }
 
     componentDidMount() {
         Api.getCategory().then((response) => {
             this.setState({ itemCategories: response.data })
         })
-
         this.getItems();
     }
 
@@ -53,11 +54,11 @@ class Home extends Component {
         return (
             <React.Fragment >
                 <div id="layoutSidenav_content">
-                {/* <main> */}
+                    {/* <main> */}
                     <div className="container-fluid">
                         <Table />
                         <div className="row table-item-gutters">
-                            <CartTemplate currentOrder={currentOrder}/>
+                            <CartTemplate currentOrder={currentOrder} />
                             <div className="col-xl-8 col-lg-8 col-md-7">
                                 <ul className="nav nav-pills mb-2 categories-pills" id="pills-tab" role="tablist">
                                     <CategoryTemplate
@@ -86,7 +87,7 @@ class Home extends Component {
                                             {items.map(item =>
                                                 <ItemTemplate key={item._id}
                                                     item={item}
-                                                    // clickHandler={() => this.addToCart(item)}
+                                                // clickHandler={() => this.addToCart(item)}
                                                 />
                                             )}
 

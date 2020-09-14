@@ -5,6 +5,9 @@ import { tableimage } from '../components/Image';
 class TableBook extends Component {
     constructor(props) {
         super(props);
+        document.title = this.props.title
+        window.scrollTo(0, 0);
+
         this.state = {
             tableList: [],
         }

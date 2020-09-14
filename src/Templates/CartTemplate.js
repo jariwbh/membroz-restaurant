@@ -1,9 +1,8 @@
 import React from 'react'
+import ModelPopup from '../components/ModelPopup'
 
 function CartTemplate(props) {
-
     return (
-
         <div className="col-xl-4 col-lg-4 col-md-5">
             <div className="white-box mb-3">
                 <div className="d-flex person-table-p">
@@ -80,9 +79,10 @@ function CartTemplate(props) {
                     </table>
                 </div>
                 <div className="row customer-name-p">
-                    <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block">Confirm</button>
+                    <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#exampleModalCenter" data-keyboard="false" data-backdrop="static">Confirm</button>
                     </div>
                     <div className="col-6"><button type="button" className="btn btn-success btn-lg btn-block">Checkout</button>
+                        <ModelPopup />
                     </div>
                 </div>
                 <div className="row token-status-p mt-3">
