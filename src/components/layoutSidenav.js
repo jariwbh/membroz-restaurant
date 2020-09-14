@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
 function layoutSidenav() {
     return (
@@ -9,19 +9,19 @@ function layoutSidenav() {
                     <div className="pos-sidenav-menu">
                         <ul className="nav flex-column">
                             <li className="nav-item">
-                                <Link className="nav-link active" to="/TableBook"><span className="sidenav-icon tables-icon"></span> Tables</Link>
+                                <NavLink className="nav-link" to="/TableBook" activeclassname="active"><span className="sidenav-icon tables-icon"></span> Tables</NavLink>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#"><span className="sidenav-icon kitchen-icon"></span> Kitchen</a>
+                                <NavLink className="nav-link" to="/Kitchen" activeclassname="active"><span className="sidenav-icon kitchen-icon"></span> Kitchen</NavLink>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#"><span className="sidenav-icon orders-icon"></span> Orders</a>
+                                <a className="nav-link" href="#" activeclassname="active"><span className="sidenav-icon orders-icon"></span> Orders</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#"><span className="sidenav-icon bills-icon"></span> Bills</a>
+                                <a className="nav-link" href="#" activeclassname="active"><span className="sidenav-icon bills-icon"></span> Bills</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#"><span className="sidenav-icon setting-icon"></span> Setting</a>
+                                <a className="nav-link" href="#" activeclassname="active"><span className="sidenav-icon setting-icon"></span> Setting</a>
                             </li>
                         </ul>
                     </div>

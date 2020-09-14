@@ -26,13 +26,7 @@ class Login extends Component {
                 method: 'isEmpty',
                 validWhen: false,
                 message: 'Enter password.'
-            },
-            // {
-            //     field: 'password',
-            //     method: 'isEmpty',
-            //     validWhen: true,
-            //     message: 'Enter valid password.'
-            // },
+            }
         ]);
 
         this.state = {
@@ -44,16 +38,20 @@ class Login extends Component {
             loading: false,
             errorMessage: ''
         }
-
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
     }
 
     handleInputChange(event) {
-        const target = event.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
-        const name = target.name;
-        this.setState({ [name]: value });
+        // const target = event.target;
+        // const value = target.type === 'checkbox' ? target.checked : target.value;
+        // const name = target.name;
+        // this.setState({ [name]: value });
+        //event.preventDefault();
+        this.setState({
+            [event.target.name]: event.target.value,
+            rememberme: event.target.checked
+        });
     }
 
     handleFormSubmit = async event => {
@@ -88,8 +86,7 @@ class Login extends Component {
     }
 
     componentDidMount() {
-        document.title = "Login";
-        //this.props.title;
+        document.title = this.props.title
         window.scrollTo(0, 0);
 
         const user = getRememberUser();
@@ -121,7 +118,7 @@ class Login extends Component {
                                         <span className="help-block">{validation.password.message}</span>
                                     </div>
                                     <div className="form-group form-check">
-                                        <input type="checkbox" className="form-check-input" id="rememberMe" Checked={rememberme} onChange={this.handleInputChange} />
+                                        <input type="checkbox" className="form-check-input" id="rememberMe" checked={rememberme} onChange={this.handleInputChange} />
                                         <label className="form-check-label" htmlFor="rememberMe"> Remember me</label>
                                         <Link className="float-right" to="/ForgetPassword">Forgot Password?</Link>
                                     </div>
