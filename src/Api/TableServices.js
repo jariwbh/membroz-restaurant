@@ -13,4 +13,16 @@ function getTableList() {
     return axios.post('formdatas/filter', body);
 }
 
-export { getTableList }
+function getBookingTableList() {
+    const body = {
+        "search": [
+            { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
+            { "searchfield": "tableid", "searchvalue": "true", "criteria": "exists", "datatype": "boolean" },
+            { "searchfield": "property.tablestatus", "searchvalue": "Checkout", "criteria": "ne" }
+        ]
+    }
+
+    return axios.post('billings/filter', body);
+}
+
+export { getTableList, getBookingTableList }

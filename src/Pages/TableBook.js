@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom';
 import * as Api from '../Api/TableServices'
 import { tableimage } from '../components/Image';
 
@@ -40,7 +41,7 @@ class TableBook extends Component {
                                 <div className="tab-pane fade show active" id="pills-item-1" role="tabpanel" aria-labelledby="pills-item-1-tab">
                                     <div className="row card-item-gutters">
                                         {tableList.map(tables =>
-                                            <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 d-flex" key={tables._id}>
+                                            <Link to={"/home/tableid=" + tables._id} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 d-flex" key={tables._id}>
                                                 <div className="card white-box mb-10 border-0" >
                                                     <div className="card-body p-2 text-center">
                                                         <div className="card-item-price">{tables.property.capacity}</div>
@@ -48,7 +49,7 @@ class TableBook extends Component {
                                                         <div className="card-item-price mb-1">{tables.property.tablename}</div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         )}
                                     </div>
                                 </div>
