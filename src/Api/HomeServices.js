@@ -33,8 +33,8 @@ function getItems(id) {
         }
 
     }
-    console.log('Body', body)
-    return axios.post('membershipoffers/filter', body)
+   
+    return axios.post('membershipoffers/filter', body) 
 }
 
 function getTables(body) {
@@ -49,4 +49,12 @@ function getCartItems(body) {
     return 1;//axios.post('membershipoffers/filter', body);
 }
 
-export { getCategory, getItems, getTables, getCustomers, getCartItems }
+function saveCart(body) {
+    if (body.id){
+        return axios.put('billings/' + body._id, body);
+    }else{
+        return axios.post('billings', body);
+    }
+}
+
+export { getCategory, getItems, getTables, getCustomers, getCartItems, saveCart }
