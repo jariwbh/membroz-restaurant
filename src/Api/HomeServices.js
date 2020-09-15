@@ -45,8 +45,16 @@ function getCustomers(body) {
     return 1;//axios.post('membershipoffers/filter', body);
 }
 
-function getCartItems(body) {
-    return 1;//axios.post('membershipoffers/filter', body);
+function getBillByRunningTableID(tableid) {
+    const body = { 
+        "search": [
+            { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
+            { "searchfield": "tableid", "searchvalue": {tableid}, "criteria": "eq", "datatype": "ObjectId" },
+            { "searchfield": "property.tablestatus", "searchvalue": "checkout", "criteria": "ne" }
+        ]
+    }
+
+    return axios.post('billings/filter', body);
 }
 
 function saveCart(body) {
@@ -57,4 +65,4 @@ function saveCart(body) {
     }
 }
 
-export { getCategory, getItems, getTables, getCustomers, getCartItems, saveCart }
+export { getCategory, getItems, getTables, getCustomers, getBillByRunningTableID, saveCart }
