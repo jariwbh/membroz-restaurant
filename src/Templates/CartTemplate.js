@@ -24,40 +24,24 @@ function CartTemplate(props) {
                             </tr>
                         </thead>
                         <tbody>
-                            {props.currentOrder.items.map(item =>
-                                <tr>
-                                    <td>{props.item.itemid.itemname}</td>
-                                    <td className="text-center">{1}</td>
-                                    <td className="text-right">₹{props.item.itemid.rate}</td>
-                                    <td></td>
-                                </tr>
-                            )}
 
-                            <tr>
-                                <td>Paneer Tikka Masala</td>
-                                <td className="text-center">1</td>
-                                <td className="text-right">₹220</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>Paneer Tikka Masala</td>
-                                <td className="text-center">1</td>
-                                <td className="text-right">₹220</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>Paneer Tikka Masala</td>
-                                <td className="text-center">1</td>
-                                <td className="text-right">₹220</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>Paneer Tikka Masala</td>
-                                <td className="text-center">1</td>
-                                <td className="text-right">₹220</td>
-                                <td></td>
-                            </tr>
-                            <tr className="pos-item-hover">
+                            {props.currentCart.items.length > 0 &&
+                                props.currentCart.items.map(item =>
+                                    <tr key={item.id}>
+                                        <td>{item.itemname}</td>
+                                        <td className="text-center">{item.quantity}</td>
+                                        <td className="text-right">₹{item.rate}</td>
+                                        <td></td>
+                                    </tr>
+                                )
+                            }
+                            {props.currentCart.items.length === 0 &&
+                                <tr>
+                                    <td colSpan="4" className="text-center text-nowrap">Empty Cart</td>
+                                </tr>
+                            }
+
+                            {/* <tr className="pos-item-hover">
                                 <td>Paneer Tikka Masala</td>
                                 <td className="text-center text-nowrap">
                                     <img src="images/minus-icon.svg" alt="" className="mr-2" /> 1
@@ -65,24 +49,24 @@ function CartTemplate(props) {
                                 </td>
                                 <td className="text-right">₹220</td>
                                 <td width="20"><img src="images/delete-icon.svg" alt="" /></td>
-                            </tr>
+                            </tr> */}
                             <tr>
                                 <td colSpan="4">&nbsp;</td>
                             </tr>
                             <tr>
                                 <td className="font-weight-bold border-bottom">Total</td>
-                                <td className="text-center font-weight-bold border-bottom">4</td>
-                                <td className="text-right font-weight-bold border-bottom">₹880</td>
+                                <td className="text-center font-weight-bold border-bottom">{props.currentCart.totalquantity}</td>
+                                <td className="text-right font-weight-bold border-bottom">₹{props.currentCart.totalamount}</td>
                                 <td className="border-bottom"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div className="row customer-name-p">
-                    <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#exampleModalCenter" data-keyboard="false" data-backdrop="static">Confirm</button>
+                    <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#confirmationitems" data-keyboard="false" data-backdrop="static">Confirm</button>
+                        <ModelPopup currentKotToken={props.currentKotToken} sendKOTHandler ={props.sendKOTHandler()}/>
                     </div>
                     <div className="col-6"><button type="button" className="btn btn-success btn-lg btn-block">Checkout</button>
-                        <ModelPopup />
                     </div>
                 </div>
                 <div className="row token-status-p mt-3">

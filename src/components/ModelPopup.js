@@ -1,8 +1,8 @@
 import React from 'react'
 
-function ModelPopup() {
+function ModelPopup(props) {
     return (
-        <div className="modal fade" id="exampleModalCenter" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div className="modal fade" id="confirmationitems" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered" role="document">
                 <div className="modal-content">
                     <div className="modal-header">
@@ -23,44 +23,20 @@ function ModelPopup() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {/* {props.currentOrder.items.map(item =>
-                                        <tr>
-                                            <td>{props.item.itemid.itemname}</td>
-                                            <td className="text-center">{1}</td>
-                                            <td className="text-right">₹{props.item.itemid.rate}</td>
+                                    {props.currentKotToken.items.map(item =>
+                                        <tr key={item.id}>
+                                            <td>{item.itemname}</td>
+                                            <td className="text-center">{item.quantity}</td>
+                                            <td className="text-right">₹{item.amount}</td>
                                             <td></td>
                                         </tr>
-                                    )} */}
-                                    <tr>
-                                        <td>Paneer Tikka Masala</td>
-                                        <td className="text-center">1</td>
-                                        <td className="text-right">₹220</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Paneer Tikka Masala</td>
-                                        <td className="text-center">1</td>
-                                        <td className="text-right">₹220</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Paneer Tikka Masala</td>
-                                        <td className="text-center">1</td>
-                                        <td className="text-right">₹220</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Paneer Tikka Masala</td>
-                                        <td className="text-center">1</td>
-                                        <td className="text-right">₹220</td>
-                                        <td></td>
-                                    </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-primary mr-auto" le='true' data-dismiss="modal">Save changes</button>
+                        <button type="button" className="btn btn-primary mr-auto" le='true' data-dismiss="modal" onClick={props.sendKOTHandler} >Send KOT</button>
                     </div>
                 </div>
             </div>

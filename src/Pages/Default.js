@@ -13,7 +13,7 @@ export default function Default() {
     return (
         <React.Fragment>
             <Switch>
-                <Route strict exact path="/Login"
+                <Route strict exact path="/login"
                     render={props => (
                         <Login {...props} component={Login} title="Restaurant - Login" />
                     )}
@@ -24,10 +24,11 @@ export default function Default() {
                 )} />
 
                 <ProtectedRoute exact path="/" title="Restaurant" component={Home} />
-                <ProtectedRoute exact path="/Menu" title="Restaurant - Menu" component={Menu} />
+                <ProtectedRoute exact path="/home/:tableid" title="Restaurant" component={Home} />
+                <Route exact path="/menu" title="Restaurant - Menu" component={Menu} />
                 <ProtectedRoute path="/logout" component={Logout} />
-                <ProtectedRoute path="/TableBook" title="Restaurant - Table" component={TableBook} />
-                <ProtectedRoute path="/Kitchen" title="Restaurant - Kitchen" component={Kitchen} />
+                <ProtectedRoute path="/tableBook" title="Restaurant - Table" component={TableBook} />
+                <ProtectedRoute path="/kitchen" title="Restaurant - Kitchen" component={Kitchen} />
             </Switch>
         </React.Fragment>
     )

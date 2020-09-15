@@ -46,14 +46,14 @@ class Menu extends Component {
                                         id="A11"
                                         titile="All"
                                         selected={true}
-                                        handlerClick={() => this.getItems("A11")}
+                                        clickHandler={() => this.getItems()}
                                     />
                                     {itemCategories.map(category =>
                                         <CategoryTemplate
                                             key={category._id}
                                             id={category._id}
                                             titile={category.property.title}
-                                            handlerClick={() => this.getItems(category._id)}
+                                            clickHandler={() => this.getItems(category._id)}
                                         />
                                     )}
                                 </ul>
