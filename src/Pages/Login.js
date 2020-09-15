@@ -97,8 +97,8 @@ class Login extends Component {
 
     render() {
         const validation = this.state.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { username, password, rememberme, submitted, loading, error } = this.state;
-        console.log(rememberme);
+        const { username, password, rememberme, loading } = this.state;
+
         return (
             <React.Fragment>
                 <main className="flex-shrink-0 col-md-3 mt-3">

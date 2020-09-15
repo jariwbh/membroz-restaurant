@@ -15,13 +15,13 @@ function layoutSidenav() {
                                 <NavLink className="nav-link" to="/Kitchen" activeclassname="active"><span className="sidenav-icon kitchen-icon"></span> Kitchen</NavLink>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#" activeclassname="active"><span className="sidenav-icon orders-icon"></span> Orders</a>
+                                <NavLink className="nav-link" to="/orders" activeclassname="active"><span className="sidenav-icon orders-icon"></span> Orders</NavLink>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#" activeclassname="active"><span className="sidenav-icon bills-icon"></span> Bills</a>
+                                <NavLink className="nav-link" to="/bills" activeclassname="active"><span className="sidenav-icon bills-icon"></span> Bills</NavLink>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#" activeclassname="active"><span className="sidenav-icon setting-icon"></span> Setting</a>
+                                <NavLink className="nav-link" to="/setting" activeclassname="active"><span className="sidenav-icon setting-icon"></span> Setting</NavLink>
                             </li>
                         </ul>
                     </div>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom';
+//import { Link } from 'react-router-dom';
 import FormValidator from '../components/FormValidator';
 
 export class ForgotPassword extends Component {
@@ -59,7 +59,7 @@ export class ForgotPassword extends Component {
 
     render() {
         const validation = this.state.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { username, loading, error } = this.state;
+        const { username, loading } = this.state;
         return (
             <main className="flex-shrink-0 col-md-3 mt-3">
                 <section className="common-block">

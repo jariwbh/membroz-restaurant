@@ -28,7 +28,7 @@ class Table extends Component {
                                     <ul className="nav nav-pills">
                                         {this.state.tables.map(table =>
                                             <li className="nav-item" key={table._id} id={table._id}>
-                                                <a className="nav-link active" href="#">
+                                                <a className="nav-link" href="/#">
                                                     <div className="pos-table-bar-cap">Table</div>
                                                     <div className="pos-table-bar-num">{table.tableid.property.tablename}</div>
                                                 </a>
@@ -44,7 +44,7 @@ class Table extends Component {
                         </div>
                     </div>
                 </div>
-            </React.Fragment >
+            </React.Fragment>
         )
     }
 }

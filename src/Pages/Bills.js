@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Kitchen(props) {
+export default function Bills(props) {
     document.title = props.title
     window.scrollTo(0, 0);
     return (
@@ -8,10 +8,11 @@ export default function Kitchen(props) {
             <div id="layoutSidenav_content">
                 <div className="container-fluid">
                     <div className="row table-item-gutters">
-                        <h1>Kichen Page</h1>
+                        <h1>Bills Page</h1>
                     </div>
                 </div>
             </div>
         </React.Fragment>
     )
 }
+

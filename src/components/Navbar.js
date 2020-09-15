@@ -21,15 +21,15 @@ export default function Nav() {
                                 <input className="form-control" type="search" placeholder="Search" aria-label="Search" />
                             </form>
                         </li>
-                        <li className="nav-item dropdown"> <a className="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Terrace Restaurant</a>
+                        <li className="nav-item dropdown"> <a className="nav-link dropdown-toggle" href="/#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Terrace Restaurant</a>
                             <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                <a className="dropdown-item" href="#">Ground Restaurant</a>
-                                <a className="dropdown-item" href="#">Nest Restaurant</a>
+                                <a className="dropdown-item" href="/#">Ground Restaurant</a>
+                                <a className="dropdown-item" href="/#">Nest Restaurant</a>
                             </div>
                         </li>
-                        <li className="nav-item dropdown"> <a className="nav-link dropdown-toggle py-md-0" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src={image.userimage} className="user-img rounded-circle" alt="" /></a>
+                        <li className="nav-item dropdown"> <a className="nav-link dropdown-toggle py-md-0" href="/#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src={image.userimage} className="user-img rounded-circle" alt="" /></a>
                             <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                <a className="dropdown-item" href="#">My Profile</a>
+                                <Link className="dropdown-item" to="/myprofile">My Profile</Link>
                                 <Link className="dropdown-item" to="/logout">Logout</Link>
                             </div>
                         </li>
