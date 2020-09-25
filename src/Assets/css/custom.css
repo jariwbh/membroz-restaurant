@@ -685,3 +685,11 @@ button:focus {
 }
 
 /* kot */
+
+/* validation block start */
+
+.help-block {
+  color: #cc0000;
+  margin-bottom: 12px;
+}
+/* validation block end */

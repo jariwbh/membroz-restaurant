@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom';
 import * as Api from '../Api/TableServices'
 import { personicon } from '../components/Image';
-import ModelPopupForReservationTable from '../components/ModelPopupForReservationTable'
+import Tables from '../components/Tables'
 
 class TableBook extends Component {
     constructor(props) {
@@ -30,7 +30,7 @@ class TableBook extends Component {
                 <main>
                     <div className="container-fluid">
                         <div className="row table-item-gutters my-3">
-                            <ModelPopupForReservationTable />
+                            <Tables />
 
                             <div className="col-xl-8 col-lg-8 col-md-7">
                                 <ul className="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
