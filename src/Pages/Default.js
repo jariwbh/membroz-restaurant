@@ -6,7 +6,7 @@ import Menu from '../Pages/Menu'
 import Login from '../Pages/Login'
 import Logout from '../Pages/Logout'
 import TableBook from '../Pages/TableBook';
-import Kitchen from './Kitchen'
+import KitchenTokenOrder from '../Pages/KitchenTokenOrder'
 import ForgetPassword from './ForgotPassword'
 import Orders from './Orders'
 import Bills from './Bills'
@@ -32,7 +32,7 @@ export default function Default() {
                 <Route exact path="/menu" title="Restaurant - Menu" component={Menu} />
                 <ProtectedRoute path="/logout" component={Logout} />
                 <ProtectedRoute path="/tableBook" title="Restaurant - Table" component={TableBook} />
-                <ProtectedRoute path="/kitchen" title="Restaurant - Kitchen" component={Kitchen} />
+                <ProtectedRoute path="/KitchenTokenOrder" title="Restaurant - Kitchen" component={KitchenTokenOrder} />
 
                 <ProtectedRoute path="/orders" title="Restaurant - Orders" component={Orders} />
                 <ProtectedRoute path="/bills" title="Restaurant - Bills" component={Bills} />

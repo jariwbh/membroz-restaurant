@@ -15,18 +15,11 @@ class SignalRController {
 
     registerReceiveEvent = (callback) => {
         this.rConnection.on("ReceiveMessage", function (message) {
-            console.log(message);
+            //console.log(message);
             callback(message);
         });
     }
-
-    registerReceiveMQEvent = (callback) => {
-        this.rConnection.on("ReceiveMQMessage", function (message) {
-            console.log(message);
-            callback(message);
-        });
-    }
-
+ 
     sendMessage = (message) => {
         return this.rConnection.invoke("SendMessage", message)
             .catch(function (data) {
