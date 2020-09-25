@@ -1,16 +1,18 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom';
 import * as Api from '../Api/TableServices'
-import { tableimage } from '../components/Image';
+import { personicon } from '../components/Image';
+import ModelPopupForReservationTable from '../components/ModelPopupForReservationTable'
 
 class TableBook extends Component {
     constructor(props) {
         super(props);
+
         document.title = this.props.title
         window.scrollTo(0, 0);
 
         this.state = {
-            tableList: [],
+            tableList: []
         }
     }
 
@@ -19,139 +21,76 @@ class TableBook extends Component {
             this.setState({ tableList: response.data })
         })
     }
+
     render() {
         const { tableList } = this.state
+
         return (
             <div id="layoutSidenav_content" >
-                <div className="container-fluid">
-                    <div className="row table-item-gutters">
-                        <div className="col-xl-8 col-lg-8 col-md-7">
-                            <ul className="nav nav-pills mb-2 categories-pills" id="pills-tab" role="tablist">
-                                <li className="nav-item " role="presentation">
-                                    <a className="nav-link active" id="pills-item-1-tab" data-toggle="pill" href="#pills-item-1" role="tab" aria-controls="pills-item-1" aria-selected="true">Dinning</a>
-                                </li>
-                                <li className="nav-item " role="presentation">
-                                    <a className="nav-link" id="pills-item-2-tab" data-toggle="pill" href="#pills-item-2" role="tab" aria-controls="pills-item-2" aria-selected="false">Take Away</a>
-                                </li>
-                                <li className="nav-item " role="presentation">
-                                    <a className="nav-link" id="pills-item-3-tab" data-toggle="pill" href="#pills-item-3" role="tab" aria-controls="pills-item-3" aria-selected="false">Delivery</a>
-                                </li>
-                            </ul>
-                            <div className="tab-content categories-tab-content" id="pills-tabContent">
-                                <div className="tab-pane fade show active" id="pills-item-1" role="tabpanel" aria-labelledby="pills-item-1-tab">
-                                    <div className="row card-item-gutters">
-                                        {tableList.map(tables =>
-                                            <Link to={"/home/tableid=" + tables._id} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 d-flex" key={tables._id}>
-                                                <div className="card white-box mb-10 border-0" >
-                                                    <div className="card-body p-2 text-center">
-                                                        <div className="card-item-price">{tables.property.capacity}</div>
-                                                        <img src={tableimage} height="100" width="130" alt="" />
-                                                        <div className="card-item-price mb-1">{tables.property.tablename}</div>
+                <main>
+                    <div className="container-fluid">
+                        <div className="row table-item-gutters my-3">
+                            <ModelPopupForReservationTable />
+
+                            <div className="col-xl-8 col-lg-8 col-md-7">
+                                <ul className="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
+                                    <li className="nav-item" role="presentation">
+                                        <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true">All</a>
+                                    </li>
+                                    <li className="nav-item" role="presentation">
+                                        <a className="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="false">Occupied <span className="table-status-tab occupied-bg"></span> </a>
+                                    </li>
+                                    <li className="nav-item" role="presentation">
+                                        <a className="nav-link " id="pills-table-3-tab" data-toggle="pill" href="#pills-table-3" role="tab" aria-controls="pills-table-3" aria-selected="false">Reserved <span className="table-status-tab reserved-bg"></span></a>
+                                    </li>
+                                    <li className="nav-item" role="presentation">
+                                        <a className="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="false">Blank <span className="table-status-tab blank-bg"></span></a>
+                                    </li>
+                                    <li className="nav-item" role="presentation">
+                                        <a className="nav-link " id="pills-table-5-tab" data-toggle="pill" href="#pills-table-5" role="tab" aria-controls="pills-table-5" aria-selected="false">Cleaning <span className="table-status-tab cleaning-bg"></span></a>
+                                    </li>
+                                    <li className="nav-item" role="presentation">
+                                        <a className="nav-link " id="pills-table-6-tab" data-toggle="pill" href="#pills-table-6" role="tab" aria-controls="pills-table-6" aria-selected="false">No Service <span className="table-status-tab no-service-bg"></span></a>
+                                    </li>
+                                </ul>
+                                <div className="tab-content categories-tab-content" id="pills-tabContent">
+                                    <div className="tab-pane fade show active" id="pills-table-1" role="tabpanel" aria-labelledby="pills-table-1-tab">
+                                        <div className="row card-item-gutters">
+                                            {tableList.map(tables =>
+                                                <Link to={"/home/tableid=" + tables._id} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={tables._id}>
+                                                    <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{tables.property.capacity}</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-restaurant-title">{tables.property.tablename}</div>
+                                                                <div className="table-number">01</div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </Link>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="tab-pane fade" id="pills-item-2" role="tabpanel" aria-labelledby="pills-item-2-tab">
-                                    <div className="row card-item-gutters">
-                                        <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 d-flex">
-                                            <div className="card white-box mb-10 border-0" >
-                                                <img src="images/card-img.jpg" className="card-img-top" alt="" />
-                                                <div className="card-body p-2">
-                                                    <div className="card-item-title mb-1">Paneer Butter Masala</div>
-                                                    <div className="card-item-price">₹230</div>
-                                                </div>
-                                            </div>
+                                                </Link>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
-                                <div className="tab-pane fade " id="pills-item-3" role="tabpanel" aria-labelledby="pills-item-3-tab">
-                                    <div className="row card-item-gutters">
-                                        <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 d-flex">
-                                            <div className="card white-box mb-10 border-0" >
-                                                <img src="images/card-img.jpg" className="card-img-top" alt="" />
-                                                <div className="card-body p-2">
-                                                    <div className="card-item-title mb-1">Paneer Handi</div>
-                                                    <div className="card-item-price">₹250</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-xl-4 col-lg-4 col-md-5" >
-                            <div className="white-box mb-3">
-                                <div className="d-flex person-table-p">
-                                    <div className="flex-grow-1 person-title"> Reservetd List</div>
-                                </div>
-                                <div className="table-responsive">
-                                    <table className="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Table</th>
-                                                <th >Customer Name</th>
-                                                <th >Mobile</th>
-                                                <th>Time</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Table 1</td>
-                                                <td >Ravi Patel</td>
-                                                <td >+91 1245789632</td>
-                                                <td>10:20 AM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Table 1</td>
-                                                <td >Ravi Patel</td>
-                                                <td >+91 1245789632</td>
-                                                <td>10:20 AM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Table 1</td>
-                                                <td >Ravi Patel</td>
-                                                <td >+91 1245789632</td>
-                                                <td>10:20 AM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Table 1</td>
-                                                <td >Ravi Patel</td>
-                                                <td >+91 1245789632</td>
-                                                <td>10:20 AM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Table 1</td>
-                                                <td >Ravi Patel</td>
-                                                <td >+91 1245789632</td>
-                                                <td>10:20 AM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Table 1</td>
-                                                <td >Ravi Patel</td>
-                                                <td >+91 1245789632</td>
-                                                <td>10:20 AM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Table 1</td>
-                                                <td >Ravi Patel</td>
-                                                <td >+91 1245789632</td>
-                                                <td>10:20 AM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Table 1</td>
-                                                <td >Ravi Patel</td>
-                                                <td >+91 1245789632</td>
-                                                <td>10:20 AM</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    <div className="tab-pane fade" id="pills-table-2" role="tabpanel" aria-labelledby="pills-table-2-tab">
+                                        2
+                                  </div>
+                                    <div className="tab-pane fade" id="pills-table-3" role="tabpanel" aria-labelledby="pills-table-3-tab">
+                                        3
+                                  </div>
+                                    <div className="tab-pane fade" id="pills-table-4" role="tabpanel" aria-labelledby="pills-table-4-tab">
+                                        4
+                                  </div>
+                                    <div className="tab-pane fade" id="pills-table-5" role="tabpanel" aria-labelledby="pills-table-5-tab">
+                                        5
+                                  </div>
+                                    <div className="tab-pane fade" id="pills-table-6" role="tabpanel" aria-labelledby="pills-table-6-tab">
+                                        6
+                                  </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </main>
             </div>
         )
     }
