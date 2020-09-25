@@ -10,7 +10,6 @@ import ItemTemplate from '../Templates/ItemTemplate'
 import CartTemplate from '../Templates/CartTemplate'
 
 import TableBook from '../Pages/TableBook'
-import { tableimage } from '../components/Image';
 
 import SignalRService from '../Helpers/signalRService';
 import OrderTypeSelectionUI from '../Templates/OrderTypeSelectionUI'
@@ -286,7 +285,7 @@ class Home extends Component {
                 <div className="card white-box mb-10 border-0" >
                     <div className="card-body p-2 text-center">
                         <div className="card-item-price">{table.property.capacity}</div>
-                        <img src={tableimage} height="100" width="130" alt="" />
+                        {/* <img src={tableimage} height="100" width="130" alt="" /> */}
                         <div className="card-item-price mb-1">{table.property.tablename}</div>
                     </div>
                 </div>
