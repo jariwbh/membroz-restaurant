@@ -1,6 +1,6 @@
 import axios from '../Helpers/axiosInst'
 
-function getTableList() {
+async function  getTableList() {
     const body = {
         "search": [{
             "searchfield": "formid",
@@ -10,10 +10,10 @@ function getTableList() {
         }]
     }
 
-    return axios.post('formdatas/filter', body);
+    return await axios.post('formdatas/filter', body);
 }
 
-function getBookingTableList() {
+function getRunningTables() {
     const body = {
         "search": [
             { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
@@ -25,4 +25,4 @@ function getBookingTableList() {
     return axios.post('billings/filter', body);
 }
 
-export { getTableList, getBookingTableList }
+export { getTableList, getRunningTables }
