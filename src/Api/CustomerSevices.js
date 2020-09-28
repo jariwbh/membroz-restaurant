@@ -8,6 +8,7 @@ function getCustomerList() {
     return axios.post('common/searchcontacts', body);
 }
 
+
 function addProspectsTableRecord(body) {
     return (
         axios.post('prospects/', body)
@@ -15,3 +16,4 @@ function addProspectsTableRecord(body) {
 }
 
 export { getCustomerList, addProspectsTableRecord }
+

@@ -1,16 +1,16 @@
 import axios from '../Helpers/axiosInst'
 
-function allocateTable(body) {
+function allocateReservationTable(body) {
     return (
         axios.post('formdatas/', body)
     )
 }
 
-function updateAllocateTable(body) {
+function updateAllocateReservationTable(body) {
     const id = body._id
     return (
         axios.put('formdatas/' + id, body)
     )
 }
 
-export { allocateTable, updateAllocateTable }
+export { allocateReservationTable, updateAllocateReservationTable }

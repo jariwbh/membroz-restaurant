@@ -12,6 +12,7 @@ import Orders from './Orders'
 import Bills from './Bills'
 import Setting from './Setting'
 import MyProfile from './MyProfile'
+import Test from './test'
 
 export default function Default() {
     return (
@@ -38,6 +39,7 @@ export default function Default() {
                 <ProtectedRoute path="/bills" title="Restaurant - Bills" component={Bills} />
                 <ProtectedRoute path="/setting" title="Restaurant - Setting" component={Setting} />
                 <ProtectedRoute path="/myprofile" title="Restaurant - MyProfile" component={MyProfile} />
+                <ProtectedRoute path="/test" title="Restaurant - MyProfile" component={Test} />
             </Switch>
         </React.Fragment>
     )
