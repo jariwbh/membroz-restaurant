@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import uuid from 'react-uuid'
+import { Link } from 'react-router-dom';
 
 import * as Api from '../Api/HomeServices'
+import * as BillApi from '../Api/BillServices'
 import * as ApiTable from '../Api/TableServices'
 import * as ApiToken from '../Api/TokenServices'
 import RunningTable from '../components/RunningTable'
@@ -13,6 +15,18 @@ import TableBook from '../Pages/TableBook'
 
 import SignalRService from '../Helpers/signalRService';
 import OrderTypeSelectionUI from '../Templates/OrderTypeSelectionUI'
+import { personicon } from '../components/Image';
+
+const PAGES = {
+    MAINPOS: 'mainpos',
+    TABLEBOOK: 'tablebook'
+}
+
+const ORDERTYPES = {
+    DINEIN: 'dinein',
+    TAKEAWAY: 'takeaway',
+    DELIVERY: 'Delivery'
+}
 
 class Home extends Component {
     constructor(props) {
@@ -20,16 +34,22 @@ class Home extends Component {
         document.title = this.props.title
         window.scrollTo(0, 0);
 
+        if (this.props.location.state )
+        {
+            const { activePage } = this.props.location.state
+            console.log('this.props.activePage :', activePage)
+        }
+
         this.senderID = uuid();
         this.state = {
-            activePage: "tablebook",
+            activePage: this.props.activePage,
             itemCategories: [],
             items: [],
             tables: [],
             customers: [],
             runningTables: [],
             currentCart: undefined,
-            tokenList:[]
+            tokenList: []
         }
 
         this.getItems = this.getItems.bind(this);
@@ -43,22 +63,23 @@ class Home extends Component {
         });
     }
 
+    
     receiveMessage = (msg) => {
         let tokenList = this.state.tokenList
         const recivedToken = JSON.parse(msg)
         const foundToken = tokenList.find(x => x._id === recivedToken._id)
 
-        if (foundToken){
+        if (foundToken) {
             foundToken = recivedToken
-        }else{
+        } else {
             this.setState(previousState => ({
                 tokenList: [...previousState.tokenList, recivedToken]
             }));
         }
 
-       this.setState({ tokenList });
+        this.setState({ tokenList });
 
-       console.log('this.state.tokenList : ', this.state.tokenList)
+        console.log('this.state.tokenList : ', this.state.tokenList)
     }
 
     getCategories = () => {
@@ -119,7 +140,7 @@ class Home extends Component {
     }
 
     newOrderHandler = () => {
-        this.setState({ activePage: "tablebook" });
+        this.setState({ activePage: PAGES.TABLEBOOK });
     }
 
     setCurrentCartHandler = async (table) => {
@@ -128,7 +149,7 @@ class Home extends Component {
             let currentCart = this.state.runningTables.find(x => x.tableid._id === tableid)
 
             if ((currentCart) && (currentCart._id) && (currentCart._id !== "")) {
-                let response = await Api.getBillByRunningTableID(tableid)
+                let response = await BillApi.getBillByRunningTableID(tableid)
                 currentCart = response.data[0]
                 currentCart.token = this.getTokenModel(table);
 
@@ -150,7 +171,7 @@ class Home extends Component {
                 });
             }
 
-            this.setActivePage("home")
+            this.setActivePage(PAGES.MAINPOS)
         } else {
             if ((this.state.runningTables) && (this.state.runningTables.length > 0)) {
                 let currentCart = this.state.runningTables[this.state.runningTables.length - 1]
@@ -158,10 +179,10 @@ class Home extends Component {
 
                 this.setState({
                     currentCart: currentCart,
-                    activePage: "home"
+                    activePage: PAGES.MAINPOS
                 });
             } else {
-                this.setActivePage("tablebook")
+                this.setActivePage(PAGES.TABLEBOOK)
             }
         }
     }
@@ -173,11 +194,11 @@ class Home extends Component {
     sendToken = async () => {
         let currentCart = this.state.currentCart
         if ((currentCart.token.property.items) && (currentCart.token.property.items.length > 0)) {
-            const response = await Api.saveCart(currentCart)
+            const response = await BillApi.save(currentCart)
             currentCart._id = response.data.id
             // console.log('Send BILL Response:', currentCart)
             currentCart.token.contexid = currentCart._id
-            const responseToken = await ApiToken.saveToken(currentCart.token)
+            const responseToken = await ApiToken.save(currentCart.token)
             const token = responseToken.data;
             token.senderID = this.senderID;
             // console.log('Send KOT Token Response AAAAAAAAAAAAA:', JSON.stringify(token))
@@ -191,7 +212,7 @@ class Home extends Component {
             // let currentCart = this.state.currentCart
             // let token = currentCart.token
             // console.log('Send BILL Request:', JSON.stringify(currentCart))
-            // const response = await Api.saveCart(currentCart)
+            // const response = await BillApi.save(currentCart)
             // if (response.status === 200){
             //     currentCart = response.data
             //     console.log('Send BILL Response:', currentCart)
@@ -208,14 +229,14 @@ class Home extends Component {
             //     console.log('sendToken ERROR', response.errors)
             //     alert(response.errors.toString())
             // }
-            
+
         } else {
             alert("Empty Current KOT")
         }
     }
 
     saveCart = () => {
-        Api.saveCart(this.state.currentCart)
+        BillApi.save(this.state.currentCart)
             .then((response) => {
                 //this.setState({ items: response.data })
             })
@@ -280,17 +301,6 @@ class Home extends Component {
 
     render() {
         const { activePage, tables, itemCategories, items, currentCart, runningTables } = this.state
-        const tableList = tables.map((table) =>
-            <li onClick={() => this.setCurrentCartHandler(table)} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 d-flex" key={table._id}>
-                <div className="card white-box mb-10 border-0" >
-                    <div className="card-body p-2 text-center">
-                        <div className="card-item-price">{table.property.capacity}</div>
-                        {/* <img src={tableimage} height="100" width="130" alt="" /> */}
-                        <div className="card-item-price mb-1">{table.property.tablename}</div>
-                    </div>
-                </div>
-            </li>
-        );
 
         let runningBillTableList
 
@@ -304,10 +314,26 @@ class Home extends Component {
                 </li>
             );
         }
-        if (activePage === "tablebook") {
-            // return {tableList}
-            return <TableBook tables={tables} tableList={tableList} />
+
+        if (activePage === PAGES.TABLEBOOK) {
+
+            const renderTableList = tables.map(table =>
+                <Link onClick={() => this.setCurrentCartHandler(table)} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id}>
+                    <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+                        <div className="card-body p-2 ">
+                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{table.property.capacity}</span> </div>
+                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                <div className="table-restaurant-title">{table.property.tablename}</div>
+                                <div className="table-number">01</div>
+                            </div>
+                        </div>
+                    </div>
+                </Link>
+            );
+
+            return <TableBook tables={tables} tableList={renderTableList} />
         }
+
         return (
             <React.Fragment >
                 <div id="layoutSidenav_content">

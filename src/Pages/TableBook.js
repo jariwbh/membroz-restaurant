@@ -4,26 +4,7 @@ import * as Api from '../Api/TableServices'
 import { personicon } from '../components/Image';
 import Tables from '../components/Tables'
 
-class TableBook extends Component {
-    constructor(props) {
-        super(props);
-
-        document.title = this.props.title
-        window.scrollTo(0, 0);
-
-        this.state = {
-            tableList: []
-        }
-    }
-
-    componentDidMount() {
-        Api.getTableList().then((response) => {
-            this.setState({ tableList: response.data })
-        })
-    }
-
-    render() {
-        const { tableList } = this.state
+function TableBook(props) {
 
         return (
             <div id="layoutSidenav_content" >
@@ -56,7 +37,8 @@ class TableBook extends Component {
                                 <div className="tab-content categories-tab-content" id="pills-tabContent">
                                     <div className="tab-pane fade show active" id="pills-table-1" role="tabpanel" aria-labelledby="pills-table-1-tab">
                                         <div className="row card-item-gutters">
-                                            {tableList.map(tables =>
+                                            {props.tableList}
+                                            {/* {tableList.map(tables =>
                                                 <Link to={"/home/tableid=" + tables._id} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={tables._id}>
                                                     <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
                                                         <div className="card-body p-2 ">
@@ -68,7 +50,7 @@ class TableBook extends Component {
                                                         </div>
                                                     </div>
                                                 </Link>
-                                            )}
+                                            )} */}
                                         </div>
                                     </div>
                                     <div className="tab-pane fade" id="pills-table-2" role="tabpanel" aria-labelledby="pills-table-2-tab">
@@ -94,6 +76,5 @@ class TableBook extends Component {
             </div>
         )
     }
-}
 
 export default TableBook

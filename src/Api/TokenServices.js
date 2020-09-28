@@ -1,6 +1,6 @@
 import axios from '../Helpers/axiosInst'
 
-function getTokenList() {
+function getList() {
     const body = { 
         "search": [
             { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
@@ -11,7 +11,7 @@ function getTokenList() {
     return axios.get('tokens', body);
 }
 
-function saveToken(body) {
+function save(body) {
     if (body._id){
         return axios.put('tokens/' + body._id, body);
     }else{
@@ -19,4 +19,4 @@ function saveToken(body) {
     }
 }
 
-export { getTokenList, saveToken }
+export { getList, save }

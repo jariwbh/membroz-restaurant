@@ -12,7 +12,7 @@ function layoutSidenav() {
                                 <NavLink className="nav-link" to="/TableBook" activeclassname="active"><span className="sidenav-icon tables-icon"></span> Tables</NavLink>
                             </li>
                             <li className="nav-item">
-                                <NavLink className="nav-link" to="/Kitchen" activeclassname="active"><span className="sidenav-icon kitchen-icon"></span> Kitchen</NavLink>
+                                <NavLink className="nav-link" to="/KitchenTokenOrder" activeclassname="active"><span className="sidenav-icon kitchen-icon"></span> Kitchen</NavLink>
                             </li>
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/orders" activeclassname="active"><span className="sidenav-icon orders-icon"></span> Orders</NavLink>

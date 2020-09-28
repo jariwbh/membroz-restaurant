@@ -50,7 +50,7 @@ export default class KitchenTokenOrder extends Component {
         if (foundToken) {
             foundToken.status = status
 
-            const responseToken = await Api.saveToken(foundToken)
+            const responseToken = await Api.save(foundToken)
             foundToken = responseToken.data;
             foundToken.senderID = this.senderID;
             // console.log('Send KOT Token Response AAAAAAAAAAAAA:', JSON.stringify(kotToken))
@@ -63,7 +63,7 @@ export default class KitchenTokenOrder extends Component {
     }
 
     getTokenList = () => {
-        Api.getTokenList().then((response) => {
+        Api.getList().then((response) => {
             this.setState({ tokenList: response.data })
         })
     }
