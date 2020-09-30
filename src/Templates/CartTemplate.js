@@ -1,5 +1,6 @@
 import React from 'react'
 import ConfirmItemsModalPopup from '../components/ConfirmItemsModalPopup'
+import KOTView from './KOTView'
 
 function CartTemplate(props) {
 
@@ -19,7 +20,7 @@ function CartTemplate(props) {
                     <div className="table-num-title"> <a href="#"><img src="images/add-icon.svg" alt="" /> </a> </div>
                 </div>
                 <div className="table-responsive">
-                    <table className="table">
+                    <table className="table table-hover">
                         <thead>
                             <tr>
                                 <th>Order</th>
@@ -74,50 +75,7 @@ function CartTemplate(props) {
                     <div className="col-6"><button type="button" className="btn btn-success btn-lg btn-block">Checkout</button>
                     </div>
                 </div>
-                <div className="row token-status-p mt-3">
-                    <div className="col-12 table-num-title">KOT View</div>
-                </div>
-                <div className="kot-view-block">
-                    <div className="d-flex">
-                        <div className="flex-grow-1 font-weight-bold">Token 10</div>
-                        <div> <span className="badge badge-pill badge-warning token-status token-inprogress">In Progress</span>
-                        </div>
-                    </div>
-                    <div className="table-responsive">
-                        <table className="table-token">
-                            <tbody>
-                                <tr>
-                                    <td>Paneer Tikka Masala</td>
-                                    <td className="text-right">1</td>
-                                </tr>
-                                <tr>
-                                    <td>Roti</td>
-                                    <td className="text-right">40</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div className="kot-view-block">
-                    <div className="d-flex">
-                        <div className="flex-grow-1 font-weight-bold">Token 4</div>
-                        <div> <span className="badge badge-pill badge-success token-status">Completed</span></div>
-                    </div>
-                    <div className="table-responsive">
-                        <table className="table-token">
-                            <tbody>
-                                <tr>
-                                    <td>Paneer Butter Masala</td>
-                                    <td className="text-right">1</td>
-                                </tr>
-                                <tr>
-                                    <td>Roti</td>
-                                    <td className="text-right">40</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <KOTView tokenList={props.tokenList}/>
             </div>
         </div>
     )

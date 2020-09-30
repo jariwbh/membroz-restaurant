@@ -1,7 +1,4 @@
-import React, { Component } from 'react'
-import { Link } from 'react-router-dom';
-import * as Api from '../Api/TableServices'
-import { personicon } from '../components/Image';
+import React from 'react'
 import Tables from '../components/Tables'
 
 function TableBook(props) {

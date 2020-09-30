@@ -1,22 +1,26 @@
 import axios from '../Helpers/axiosInst'
 
-function getBillByRunningTableID(tableid) {
+// function getBillByRunningTableID(tableid) {
     
-    const body = { 
-        "search": [
-            { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
-            { "searchfield": "tableid", "searchvalue": "true", "criteria": "exists", "datatype": "boolean" },
-            { "searchfield": "tableid", "searchvalue":  tableid , "criteria": "eq", "datatype": "ObjectId" },
-            { "searchfield": "property.tablestatus", "searchvalue": "Checkout", "criteria": "ne" }
-        ],
-        "select":[
-            { "fieldname": "items.quantity", "value": 1 },
-            { "fieldname": "amount", "value": 1 },
-            { "fieldname": "totalamount", "value": 1 }
-        ]
-    }
+//     const body = { 
+//         "search": [
+//             { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
+//             { "searchfield": "tableid", "searchvalue": "true", "criteria": "exists", "datatype": "boolean" },
+//             { "searchfield": "tableid", "searchvalue":  tableid , "criteria": "eq", "datatype": "ObjectId" },
+//             { "searchfield": "property.tablestatus", "searchvalue": "Checkout", "criteria": "ne" }
+//         ],
+//         "select":[
+//             { "fieldname": "items.quantity", "value": 1 },
+//             { "fieldname": "amount", "value": 1 },
+//             { "fieldname": "totalamount", "value": 1 }
+//         ]
+//     }
 
-    return axios.post('billings/filter', body);
+//     return axios.post('billings/filter', body);
+// }
+
+function getByID(id) {
+    return axios.get('billings/' + id);
 }
 
 function save(body) {
@@ -27,4 +31,4 @@ function save(body) {
     }
 }
 
-export { getBillByRunningTableID, save}
+export { getByID, save}

@@ -18,7 +18,7 @@ function getRunningTables() {
         "search": [
             { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
             { "searchfield": "tableid", "searchvalue": "true", "criteria": "exists", "datatype": "boolean" },
-            { "searchfield": "property.tablestatus", "searchvalue": "Checkout", "criteria": "ne" }
+            { "searchfield": "property.tablestatus", "searchvalue": "running", "criteria": "eq" }
         ],
         "select":[
             { "fieldname": "items.quantity", "value": 1 },
