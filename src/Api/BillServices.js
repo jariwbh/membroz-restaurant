@@ -29,7 +29,8 @@ function getRunningTables() {
         "select":[
             { "fieldname": "items.quantity", "value": 1 },
             { "fieldname": "amount", "value": 1 },
-            { "fieldname": "totalamount", "value": 1 }
+            { "fieldname": "totalamount", "value": 1 },
+            { "fieldname": "property", "value": 1 },
         ]
     }
 

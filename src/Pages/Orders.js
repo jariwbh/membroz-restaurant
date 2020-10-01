@@ -203,13 +203,14 @@ class Orders extends Component {
             if ((currentCart.customerid) && (currentCart.customerid._id)) {
                 currentCart.customerid = currentCart.customerid._id
             }
-
+            
             const response = await BillApi.save(currentCart)
             if (response.status === 200) {
-                currentCart = response.data
+                if (response.data._id){
+                    currentCart = response.data
+                }
 
                 currentToken.contextid = currentCart._id
-                console.log('responseToken :', currentToken)
                 const responseToken = await ApiToken.save(currentToken)
                 if (responseToken.status === 200) {
                     const token = responseToken.data;
@@ -223,7 +224,6 @@ class Orders extends Component {
                 const responseGetByID = await BillApi.getByID(currentCart._id)
                 currentCart = responseGetByID.data
                 currentCart.token = this.getTokenModel(currentCart.tableid)
-                console.log('sendToken Current Car', currentCart)
                 this.setState({ currentCart: currentCart })
             } else {
                 console.log('sendToken Save Bill ERROR', response.errors)
