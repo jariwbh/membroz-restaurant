@@ -1,6 +1,6 @@
 import axios from '../Helpers/axiosInst'
 
-async function  getTableList() {
+async function getTableList() {
     const body = {
         "search": [{
             "searchfield": "formid",
@@ -20,7 +20,7 @@ function getRunningTables() {
             { "searchfield": "tableid", "searchvalue": "true", "criteria": "exists", "datatype": "boolean" },
             { "searchfield": "property.tablestatus", "searchvalue": "running", "criteria": "eq" }
         ],
-        "select":[
+        "select": [
             { "fieldname": "items.quantity", "value": 1 },
             { "fieldname": "amount", "value": 1 },
             { "fieldname": "totalamount", "value": 1 }
