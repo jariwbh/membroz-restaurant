@@ -7,6 +7,8 @@ import FormValidator from '../components/FormValidator';
 import { deleteicon, addicon } from '../components/Image';
 import moment from 'moment'
 import $ from 'jquery'
+import SelectSearch from 'react-select-search';
+import '../Assets/css/DropDownstyles.css'
 
 export default class ReservedTable extends Component {
     constructor(props) {
@@ -14,7 +16,7 @@ export default class ReservedTable extends Component {
 
         this.validator = new FormValidator([
             {
-                field: 'customer',
+                field: 'customername',
                 method: 'isEmpty',
                 validWhen: false,
                 message: 'Enter Customer Name.'
@@ -45,7 +47,7 @@ export default class ReservedTable extends Component {
                 message: 'Enter Date.'
             },
             {
-                field: 'table',
+                field: 'tablename',
                 method: 'isEmpty',
                 validWhen: false,
                 message: 'select table.'
@@ -59,12 +61,12 @@ export default class ReservedTable extends Component {
         ]);
 
         this.state = {
-            customer: '',
+            customername: '',
             mobile_number: '',
             noofperson: '',
             time: moment().format('LT'),
             date: moment().format('L'),
-            table: '',
+            tablename: '',
             validation: this.validator.valid(),
             tableAvailableList: [],
             searchData: [],
@@ -74,6 +76,7 @@ export default class ReservedTable extends Component {
             tableid: '',
             customerid: '',
             getcustomerid: '',
+            disableCustomer: false
         }
         this.submitted = false;
         this.getReservationTableList = this.getReservationTableList.bind(this);
@@ -99,33 +102,32 @@ export default class ReservedTable extends Component {
     handleInputChange = event => {
         // console.log(event);
         if (this.state.checkedvalue === 'existcustomer') {
-            if (event.target.name === 'customer') {
-                const customer = this.state.searchData.find(x => x._id === event.target.value)
-                this.setState({
-                    mobile_number: customer.property.mobile_number,
-                    customer: customer.property.fullname,
-                    customerid: customer._id,
-                });
-            } else if (event.target.name === 'table') {
+            if (event.target.name === 'tablename') {
                 const tabledata = this.state.tableAvailableList.find(x => x._id === event.target.value)
                 this.setState({
                     tableid: tabledata._id,
-                    table: tabledata.property.tablename
+                    tablename: tabledata.property.tablename
                 });
             } else {
                 this.setState({
                     [event.target.name]: event.target.value
                 });
             }
-        } else if (event.target.name === 'table') {
-            const tabledata = this.state.tableAvailableList.find(x => x._id === event.target.value)
-            this.setState({
-                tableid: tabledata._id,
-                table: tabledata.property.tablename
-            });
-        } else {
+        }
+        else {
             this.setState({
                 [event.target.name]: event.target.value
+            });
+        }
+    }
+
+    handleChangeCustomerDropdown = event => {
+        if (this.state.checkedvalue === 'existcustomer') {
+            const customerFind = this.state.searchData.find(x => x._id === event)
+            this.setState({
+                mobile_number: customerFind.property.mobile_number,
+                customername: customerFind.property.fullname,
+                customerid: customerFind._id,
             });
         }
     }
@@ -135,23 +137,24 @@ export default class ReservedTable extends Component {
             var ReservationTableModel = document.getElementById("ReservationTableModel")
             ReservationTableModel.click();
         });
-        const customerdata = this.state.reservationTableList.find(x => x._id === id)
+        const customerobjById = this.state.reservationTableList.find(x => x._id === id)
         console.log(id);
         this.setState({
-            getcustomerid: customerdata._id,
-            customerid: customerdata.property.customerid,
-            customer: customerdata.property.customer,
-            mobile_number: customerdata.property.mobile_number,
-            noofperson: customerdata.property.noofperson,
-            time: customerdata.property.time,
-            date: moment(customerdata.property.date).format('L'),
-            table: customerdata.property.table,
-            tableid: customerdata.property.tableid
+            getcustomerid: customerobjById._id,
+            customerid: customerobjById.property.customerid,
+            customername: customerobjById.property.customer,
+            mobile_number: customerobjById.property.mobile_number,
+            noofperson: customerobjById.property.noofperson,
+            time: customerobjById.property.time,
+            date: moment(customerobjById.property.date).format('L'),
+            tablename: customerobjById.property.table,
+            tableid: customerobjById.property.tableid,
+            disableCustomer: true
         });
         document.getElementById('existcustomer').checked = true;
         document.getElementById('mobile_number').setAttribute('readonly', true);
         //document.getElementById('customer').setAttribute('readonly', true);
-        document.getElementById("customer").disabled = true;
+        //document.getElementById("customer").disabled = true;
         document.getElementById("existcustomer").setAttribute('disabled', true);
         document.getElementById("newcustomer").setAttribute('disabled', true);
     }
@@ -160,13 +163,13 @@ export default class ReservedTable extends Component {
         document.getElementById('reservationForm').reset();
         document.getElementById('existcustomer').checked = true;
         document.getElementById('mobile_number').removeAttribute('readonly');
-        document.getElementById("customer").disabled = false;
+        //document.getElementById("customer").disabled = false;
         //document.getElementById('customer').removeAttribute('readonly');
         document.getElementById("existcustomer").removeAttribute('disabled');
         document.getElementById("newcustomer").removeAttribute('disabled');
 
         const validator = {
-            customer: {
+            customername: {
                 isInvalid: false,
                 message: ""
             },
@@ -183,7 +186,7 @@ export default class ReservedTable extends Component {
                 isInvalid: false,
                 message: ""
             },
-            table: {
+            tablename: {
                 isInvalid: false,
                 message: ""
             },
@@ -203,15 +206,22 @@ export default class ReservedTable extends Component {
             getcustomerid: '',
             tableid: '',
             customerid: '',
+            submitted: false,
+            disableCustomer: false
         });
+    }
+
+    modelPopupClose() {
+        var modelpopupClose = document.getElementById("modelpopupclose")
+        modelpopupClose.click();
     }
 
     handleFormSubmit = (event) => {
         const btnclickname = event.target.name;
-        const { customer, mobile_number, noofperson, time, date, table, tableid, customerid, getcustomerid } = this.state;
+        const { customername, mobile_number, noofperson, time, date, tablename, tableid, customerid, getcustomerid } = this.state;
         const customerObj = {
             property: {
-                fullname: customer,
+                fullname: customername,
                 mobile_number: mobile_number
             }
         }
@@ -223,34 +233,34 @@ export default class ReservedTable extends Component {
             status = ReservedTableApi.allocatedstatus
         }
 
-        let reservationobj = {
+        let reservationObj = {
             _id: getcustomerid,
             status: ReservedTableApi.activestatus,
             property: {
                 status: status,
-                customer: customer,
+                customer: customername,
                 customerid: customerid,
                 mobile_number: mobile_number,
                 noofperson: noofperson,
                 time: time,
                 date: date,
-                table: table,
+                table: tablename,
                 tableid: tableid,
             },
             formid: ReservedTableApi.tableformid
         }
 
-        let allocatedobj = {
+        let allocatedObj = {
             _id: getcustomerid,
             formid: ReservedTableApi.tableformid,
             property: {
                 status: status,
-                customer: customer,
+                customer: customername,
                 customerid: customerid,
                 mobile_number: mobile_number,
                 noofperson: noofperson,
                 date: date,
-                table: table,
+                table: tablename,
                 tableid: tableid,
                 time: time
             }
@@ -266,52 +276,52 @@ export default class ReservedTable extends Component {
                         this.setState({ customerid: response.data._id })
                         if (response.data._id) {
                             console.log(response.data._id);
-                            reservationobj.property.customerid = response.data._id
-                            ReservedTableApi.addReservationTableRecord(reservationobj).then(() => {
+                            reservationObj.property.customerid = response.data._id
+                            ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
                                 this.getCustomerList();
                                 this.getReservationTableList();
-                                this.resetForm();
+                                this.modelPopupClose();
                                 console.log('save');
                             })
                         }
                     })
                 } else if (getcustomerid === '') {
                     console.log('save exit records');
-                    ReservedTableApi.addReservationTableRecord(reservationobj).then(() => {
+                    ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
                         this.getReservationTableList();
-                        this.resetForm();
+                        this.modelPopupClose();
                     })
                 } else {
                     console.log('customerid', customerid);
                     console.log('update');
-                    ReservedTableApi.updateReservationTableRecord(reservationobj).then(() => {
+                    ReservedTableApi.updateReservationTableRecord(reservationObj).then(() => {
                         this.getReservationTableList();
-                        this.resetForm();
+                        this.modelPopupClose();
                     })
                 }
 
             } else if (btnclickname === "allocate") {
-                this.allocateTable(customerObj, allocatedobj, reservationobj);
+                this.allocateTable(customerObj, allocatedObj, reservationObj);
             }
         }
     }
 
-    allocateTable(customerObj, allocatedobj, reservationobj) {
+    allocateTable(customerObj, allocatedObj, reservationObj) {
         if (this.state.checkedvalue === 'existcustomer') {
             if (this.state.getcustomerid !== '') {
-                console.log('update allocated', allocatedobj);
+                console.log('update allocated', allocatedObj);
                 this.setState({ submitted: true });
-                allocatedTableApi.updateAllocateReservationTable(allocatedobj).then(() => {
+                allocatedTableApi.updateAllocateReservationTable(allocatedObj).then(() => {
                     this.getReservationTableList();
-                    this.resetForm();
-                    console.log('update allocated', allocatedobj);
+                    this.modelPopupClose();
+                    console.log('update allocated', allocatedObj);
                 })
             } else {
                 console.log('save exit records');
-                ReservedTableApi.addReservationTableRecord(reservationobj).then(() => {
+                ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
                     this.getReservationTableList();
-                    this.resetForm();
-                    console.log('update allocated', reservationobj);
+                    this.modelPopupClose();
+                    console.log('update allocated', reservationObj);
                 })
             }
         } else {
@@ -320,12 +330,12 @@ export default class ReservedTable extends Component {
                 console.log('id', response.data._id);
                 if (response.data._id) {
                     console.log(response.data._id);
-                    allocatedobj.property.customerid = response.data._id
-                    allocatedTableApi.allocateReservationTable(allocatedobj).then(() => {
+                    allocatedObj.property.customerid = response.data._id
+                    allocatedTableApi.allocateReservationTable(allocatedObj).then(() => {
                         this.getCustomerList();
                         this.getReservationTableList();
-                        this.resetForm();
-                        console.log('allocatedobj', allocatedobj)
+                        this.modelPopupClose();
+                        console.log('allocatedobj', allocatedObj)
                         console.log('allocated');
                     })
                 }
@@ -356,7 +366,7 @@ export default class ReservedTable extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { error, tableAvailableList, searchData, checkedvalue, mobile_number, reservationTableList, noofperson } = this.state;
+        const { error, tableAvailableList, searchData, checkedvalue, mobile_number, reservationTableList, noofperson, submitted } = this.state;
         const getReservationTableList = reservationTableList.filter((obj) => {
             if (this.state.search == null) { return (obj) }
             else if (obj.property.customer.toLowerCase().includes(this.state.search.toLowerCase()) ||
@@ -378,6 +388,13 @@ export default class ReservedTable extends Component {
                 checkedvalue: event.target.value
             });
         }
+
+        const customerdropdown = searchData.map(clientObj => (
+            {
+                name: clientObj.property.fullname,
+                value: clientObj._id
+            }
+        ))
 
         return (
             <React.Fragment>
@@ -424,7 +441,7 @@ export default class ReservedTable extends Component {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title" id="exampleModalLongTitle">Book Reserved  Order</h5>
-                                <button type="button" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.resetForm()}>
+                                <button type="button" id="modelpopupclose" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.resetForm()}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
@@ -442,24 +459,24 @@ export default class ReservedTable extends Component {
                                         <div className="col-sm-8">
                                             {checkedvalue === 'existcustomer'
                                                 ?
-                                                <select className="js-example-basic-single form-control" name='customer' id="customer" value={this.state.customerid}
-                                                    onChange={this.handleInputChange} style={{ width: '100%' }}>
-                                                    {searchData.map(clientObj => (
-                                                        <option key={clientObj._id} value={clientObj._id}>
-                                                            {clientObj.property.fullname}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                <SelectSearch
+                                                    options={customerdropdown}
+                                                    value={this.state.customerid}
+                                                    search
+                                                    disabled={this.state.disableCustomer}
+                                                    name="customer"
+                                                    placeholder="Select Customer"
+                                                    onChange={this.handleChangeCustomerDropdown} />
                                                 :
-                                                <input className="form-control" type="text" placeholder="Customer" name='customer' id="customer" onChange={this.handleInputChange} />
+                                                <input className="form-control" type="text" placeholder="Enter Customer Name" name='customername' id="customer" onChange={this.handleInputChange} />
                                             }
-                                            <span className="help-block">{validation.customer.message}</span>
+                                            <span className="help-block">{validation.customername.message}</span>
                                         </div>
                                     </div>
                                     <div className="form-group row">
                                         <label htmlFor="noofperson" className="col-sm-4 col-form-label">No of Person <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="number" name='noofperson' placeholder="Enter No of Person" className="form-control" id="noofperson" value={noofperson} onChange={this.handleInputChange} />
+                                            <input type="number" name='noofperson' placeholder="Enter No of Person" min="1" className="form-control" id="noofperson" value={noofperson} onChange={this.handleInputChange} />
                                             <span className="help-block">{validation.noofperson.message}</span>
                                         </div>
                                     </div>
@@ -489,25 +506,25 @@ export default class ReservedTable extends Component {
                                                     {checkedvalue === 'existcustomer' ? <span style={{ color: 'red' }}>*</span> : ''}
                                         </label>
                                         <div className="col-sm-8">
-                                            <select className="js-example-basic-single form-control" name='table' id="tableid" value={this.state.tableid}
+                                            <select className="js-example-basic-single form-control" name='tablename' id="tableid" value={this.state.tableid}
                                                 onChange={this.handleInputChange} style={{ width: '100%' }}>
                                                 {tableAvailableList.map(availableTable => (
                                                     <option key={availableTable._id} value={availableTable._id}>
                                                         {`${availableTable.property.tablename}` + ' ' + `(${availableTable.property.capacity})`}
                                                     </option>
                                                 ))} </select>
-                                            <span className="help-block">{validation.table.message}</span>
+                                            <span className="help-block">{validation.tablename.message}</span>
                                         </div>
                                     </div>
                                 </form>
                             </div>
                             <div className="modal-footer">
-                                {this.state.submitted === true ?
+                                {submitted === true ?
                                     <button type="button" className="btn btn-primary mr-auto" le='true' data-dismiss="modal" name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
                                     :
                                     <button type="button" className="btn btn-primary mr-auto" name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
                                 }
-                                {this.state.submitted === true ?
+                                {submitted === true ?
                                     <button type="button" className="btn btn-primary" le='true' data-dismiss="modal" name="save" onClick={this.handleFormSubmit} >Save</button>
                                     :
                                     <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button>

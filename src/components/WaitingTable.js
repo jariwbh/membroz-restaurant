@@ -5,6 +5,8 @@ import * as CustomerApi from '../Api/CustomerSevices';
 import FormValidator from '../components/FormValidator';
 import moment from 'moment'
 import $ from 'jquery'
+import SelectSearch from 'react-select-search';
+import '../Assets/css/DropDownstyles.css'
 
 export default class WaitingTable extends Component {
     constructor(props) {
@@ -12,7 +14,7 @@ export default class WaitingTable extends Component {
 
         this.validator = new FormValidator([
             {
-                field: 'customer',
+                field: 'customername',
                 method: 'isEmpty',
                 validWhen: false,
                 message: 'Enter Customer Name.'
@@ -51,7 +53,7 @@ export default class WaitingTable extends Component {
         ]);
 
         this.state = {
-            customer: '',
+            customername: '',
             mobile_number: '',
             noofperson: '',
             time: moment().format('LT'),
@@ -63,6 +65,7 @@ export default class WaitingTable extends Component {
             search: null,
             customerid: '',
             getcustomerid: '',
+            disableCustomer: false
         }
         this.submitted = false;
         this.getWaitingTableList = this.getWaitingTableList.bind(this);
@@ -84,11 +87,11 @@ export default class WaitingTable extends Component {
         document.getElementById('existcustomertable').checked = true;
         document.getElementById('mobile_numberid').removeAttribute('readonly');
         //document.getElementById('customerid').removeAttribute('readonly');
-        document.getElementById("customerid").disabled = false;
+        //document.getElementById("customerid").disabled = false;
         document.getElementById("existcustomertable").removeAttribute('disabled');
         document.getElementById("newcustomertable").removeAttribute('disabled');
         const validator = {
-            customer: {
+            customername: {
                 isInvalid: false,
                 message: ""
             },
@@ -120,6 +123,9 @@ export default class WaitingTable extends Component {
             validation: validator,
             getcustomerid: '',
             customerid: '',
+            customername: '',
+            submitted: false,
+            disableCustomer: false
         });
     }
 
@@ -132,37 +138,26 @@ export default class WaitingTable extends Component {
         this.setState({
             getcustomerid: customerdata._id,
             customerid: customerdata.property.customerid,
-            customer: customerdata.property.customer,
+            customername: customerdata.property.customer,
             mobile_number: customerdata.property.mobile_number,
             noofperson: customerdata.property.noofperson,
             time: customerdata.property.time,
             date: moment(customerdata.property.date).format('L'),
+            disableCustomer: true
         });
         document.getElementById('existcustomertable').checked = true;
         document.getElementById('mobile_numberid').setAttribute('readonly', true);
-        document.getElementById("customerid").disabled = true;
+        //document.getElementById("customerid").disabled = true;
         // document.getElementById('customerid').setAttribute('readonly', true);
         document.getElementById("existcustomertable").setAttribute('disabled', true);
         document.getElementById("newcustomertable").setAttribute('disabled', true);
     }
 
     handleInputChange = event => {
-        //console.log(event);
-        console.log(event.target.name);
-        console.log(event.target.value);
         if (this.state.tablecheckedvalue === 'existcustomertable') {
-            if (event.target.name === 'customer') {
-                const customer = this.state.searchData.find(x => x._id === event.target.value)
-                this.setState({
-                    mobile_number: customer.property.mobile_number,
-                    customer: customer.property.fullname,
-                    customerid: customer._id,
-                });
-            } else {
-                this.setState({
-                    [event.target.name]: event.target.value
-                });
-            }
+            this.setState({
+                [event.target.name]: event.target.value
+            });
         } else {
             this.setState({
                 [event.target.name]: event.target.value
@@ -170,12 +165,28 @@ export default class WaitingTable extends Component {
         }
     }
 
+    CustomerDropdownHandleChange = event => {
+        if (this.state.tablecheckedvalue === 'existcustomertable') {
+            const customerFind = this.state.searchData.find(x => x._id === event)
+            this.setState({
+                mobile_number: customerFind.property.mobile_number,
+                customername: customerFind.property.fullname,
+                customerid: customerFind._id,
+            });
+        }
+    }
+
+    modelPopupClose() {
+        var modelclose = document.getElementById("modelclose")
+        modelclose.click();
+    }
+
     handleFormSubmit = (event) => {
         const btnclickname = event.target.name;
-        const { customer, mobile_number, noofperson, time, date, customerid, getcustomerid } = this.state;
+        const { customername, mobile_number, noofperson, time, date, customerid, getcustomerid } = this.state;
         const customerObj = {
             property: {
-                fullname: customer,
+                fullname: customername,
                 mobile_number: mobile_number
             }
         }
@@ -185,7 +196,7 @@ export default class WaitingTable extends Component {
             status: WaitingTableApi.activestatus,
             property: {
                 status: WaitingTableApi.activestatus,
-                customer: customer,
+                customer: customername,
                 customerid: customerid,
                 mobile_number: mobile_number,
                 noofperson: noofperson,
@@ -209,7 +220,7 @@ export default class WaitingTable extends Component {
                             WaitingTableApi.addWaitingTableRecord(waitingTableObj).then(() => {
                                 this.getCustomerList();
                                 this.getWaitingTableList();
-                                this.resetForm();
+                                this.modelPopupClose();
                                 console.log('save');
                             })
                         }
@@ -217,13 +228,13 @@ export default class WaitingTable extends Component {
                 } else if (getcustomerid === '') {
                     WaitingTableApi.addWaitingTableRecord(waitingTableObj).then(() => {
                         this.getWaitingTableList();
-                        this.resetForm();
+                        this.modelPopupClose();
                         console.log('save exit records');
                     })
                 } else {
                     WaitingTableApi.updateWaitingTableRecord(waitingTableObj).then(() => {
                         this.getWaitingTableList();
-                        this.resetForm();
+                        this.modelPopupClose();
                         console.log('update');
                     })
                 }
@@ -280,6 +291,13 @@ export default class WaitingTable extends Component {
             });
         }
 
+        const customerDropdownObj = searchData.map(clientObj => (
+            {
+                name: clientObj.property.fullname,
+                value: clientObj._id
+            }
+        ))
+
         return (
             <React.Fragment>
                 <div className="tab-pane fade show active" id="pills-waiting-1" role="tabpanel" aria-labelledby="pills-waiting-1-tab">
@@ -324,7 +342,7 @@ export default class WaitingTable extends Component {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title" id="WaitingTableLongTitle">Book Waiting Table</h5>
-                                <button type="button" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.resetForm()}>
+                                <button type="button" id="modelclose" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.resetForm()}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
@@ -341,24 +359,24 @@ export default class WaitingTable extends Component {
                                         <div className="col-sm-8">
                                             {tablecheckedvalue === 'existcustomertable'
                                                 ?
-                                                <select className="js-example-basic-single form-control" data-live-search="true" name='customer' id="customerid" value={this.state.customerid} data-live-search="true"
-                                                    onChange={this.handleInputChange} style={{ width: '100%' }}>
-                                                    {searchData.map(clientObj => (
-                                                        <option key={clientObj._id} value={clientObj._id}>
-                                                            {clientObj.property.fullname}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                <SelectSearch
+                                                    options={customerDropdownObj}
+                                                    value={this.state.customerid}
+                                                    search
+                                                    disabled={this.state.disableCustomer}
+                                                    name="customername"
+                                                    placeholder="Select Customer"
+                                                    onChange={this.CustomerDropdownHandleChange} />
                                                 :
-                                                <input className="form-control" type="text" placeholder="Customer" name='customer' id="customerid" onChange={this.handleInputChange} />
+                                                <input className="form-control" type="text" placeholder="Enter Customer" name='customername' id="customerid" onChange={this.handleInputChange} />
                                             }
-                                            <span className="help-block">{validation.customer.message}</span>
+                                            <span className="help-block">{validation.customername.message}</span>
                                         </div>
                                     </div>
                                     <div className="form-group row">
                                         <label htmlFor="noofperson" className="col-sm-4 col-form-label">No of Person <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="number" name='noofperson' placeholder="Enter No of Person" className="form-control" id="noofpersonid" value={noofperson} onChange={this.handleInputChange} />
+                                            <input type="number" name='noofperson' placeholder="Enter No of Person" min="1" className="form-control" id="noofpersonid" value={noofperson} onChange={this.handleInputChange} />
                                             <span className="help-block">{validation.noofperson.message}</span>
                                         </div>
                                     </div>

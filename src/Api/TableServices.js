@@ -1,6 +1,6 @@
 import axios from '../Helpers/axiosInst'
 
-async function  getTableList() {
+async function getTableList() {
     const body = {
         "search": [{
             "searchfield": "formid",
