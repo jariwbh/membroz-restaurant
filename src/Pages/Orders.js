@@ -99,17 +99,17 @@ class Orders extends Component {
     }
 
     getRunningTables = async () => {
-        let response = await ApiTable.getRunningTables()
+        let response = await BillApi.getRunningTables()
         this.setState({ runningTables: response.data })
-        console.log('response : ', response)
         this.setCurrentCartHandler();
     }
 
     getCurrentCartModel = (table) => {
         let currentCart = {
             tableid: table,
-            property: { tablestatus: "running" }, //checkout
-            customerid: "5ef2f0558d5725464bef4d5d",
+            postype: this.state.activeOrderType,
+            property: { posstatus: "running" }, //checkout
+            customerid: {_id: "5ef2f0558d5725464bef4d5d", property:{fullname:"AAAA"}},
             onModel: "Member",
             amount: 0,
             totalamount: 0,
@@ -129,6 +129,7 @@ class Orders extends Component {
             tokennumber: undefined,
             status: "waiting",
             contextid: "",
+            onModel:"Billing",
             property: {
                 table: { _id: table._id, tablename: table.property.tablename },
                 items: []
@@ -181,7 +182,10 @@ class Orders extends Component {
                     activePage: PAGES.ORDERS
                 });
             } else {
-                this.setActivePage(PAGES.TABLEBOOK)
+                this.setState({
+                    currentCart: undefined,
+                    activePage: PAGES.ORDERS
+                });
             }
         }
     }
@@ -195,9 +199,9 @@ class Orders extends Component {
         let currentToken = this.state.currentCart.token
 
         if ((currentToken.property.items) && (currentToken.property.items.length > 0)) {
-           
-            if ((currentCart.customerid) && (currentCart.customerid._id)){
-                currentCart.customerid =  currentCart.customerid._id
+
+            if ((currentCart.customerid) && (currentCart.customerid._id)) {
+                currentCart.customerid = currentCart.customerid._id
             }
 
             const response = await BillApi.save(currentCart)
@@ -205,16 +209,17 @@ class Orders extends Component {
                 currentCart = response.data
 
                 currentToken.contextid = currentCart._id
+                console.log('responseToken :', currentToken)
                 const responseToken = await ApiToken.save(currentToken)
                 if (responseToken.status === 200) {
                     const token = responseToken.data;
                     token.senderID = this.senderID;
                     SignalRService.sendMessage(JSON.stringify(token));
-                }else{
+                } else {
                     console.log('sendToken Save Token ERROR', response.errors)
                     alert("sendToken Save Token ERROR : " + response.errors.toString())
                 }
-                
+
                 const responseGetByID = await BillApi.getByID(currentCart._id)
                 currentCart = responseGetByID.data
                 currentCart.token = this.getTokenModel(currentCart.tableid)
@@ -319,7 +324,7 @@ class Orders extends Component {
                             <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{table.property.capacity}</span> </div>
                             <div className="d-flex justify-content-center align-items-center flex-column">
                                 <div className="table-restaurant-title">{table.property.tablename}</div>
-                                <div className="table-number">01</div>
+                                {/* <div className="table-number">01</div> */}
                             </div>
                         </div>
                     </div>
@@ -338,46 +343,47 @@ class Orders extends Component {
                             <OrderTypeSelectionUI activeOrderType={activeOrderType}></OrderTypeSelectionUI>
                             <RunningTable runningBillTableList={runningBillTableList} newOrderHandler={() => this.newOrderHandler} />
                         </div>
-                        <div className="row table-item-gutters">
-                            {(currentCart) &&
+                        {(currentCart) &&
+                            <div className="row table-item-gutters">
                                 <CartTemplate currentCart={currentCart} tokenList={tokenList} sendTokenHandler={() => this.sendToken} />
-                            }
-                            <div className="col-xl-8 col-lg-8 col-md-7">
-                                <ul className="nav nav-pills mb-2 categories-pills" id="pills-tab" role="tablist">
-                                    <CategoryTemplate
-                                        key="A11"
-                                        id="A11"
-                                        titile="All"
-                                        selected={true}
-                                        clickHandler={() => this.getItems()}
-                                    />
 
-                                    {itemCategories.map(category =>
+                                <div className="col-xl-8 col-lg-8 col-md-7">
+                                    <ul className="nav nav-pills mb-2 categories-pills" id="pills-tab" role="tablist">
                                         <CategoryTemplate
-                                            key={category._id}
-                                            id={category._id}
-                                            titile={category.property.title}
-                                            clickHandler={() => this.getItems(category._id)}
+                                            key="A11"
+                                            id="A11"
+                                            titile="All"
+                                            selected={true}
+                                            clickHandler={() => this.getItems()}
                                         />
-                                    )}
-                                </ul>
 
-                                <div className="tab-content categories-tab-content" id="pills-tabContent">
-                                    <div className="tab-pane fade show active" id="pills-item-1" role="tabpanel" aria-labelledby="pills-item-1-tab">
-                                        <div className="row card-item-gutters">
+                                        {itemCategories.map(category =>
+                                            <CategoryTemplate
+                                                key={category._id}
+                                                id={category._id}
+                                                titile={category.property.title}
+                                                clickHandler={() => this.getItems(category._id)}
+                                            />
+                                        )}
+                                    </ul>
 
-                                            {items.map(item =>
-                                                <ItemTemplate key={item._id}
-                                                    item={item}
-                                                    clickHandler={() => this.addToCart(item)}
-                                                />
-                                            )}
+                                    <div className="tab-content categories-tab-content" id="pills-tabContent">
+                                        <div className="tab-pane fade show active" id="pills-item-1" role="tabpanel" aria-labelledby="pills-item-1-tab">
+                                            <div className="row card-item-gutters">
 
+                                                {items.map(item =>
+                                                    <ItemTemplate key={item._id}
+                                                        item={item}
+                                                        clickHandler={() => this.addToCart(item)}
+                                                    />
+                                                )}
+
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        }
                     </div>
                     {/* </main> */}
                 </div>

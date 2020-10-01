@@ -3,7 +3,7 @@ import { ColumnDirective, ColumnsDirective, GridComponent } from '@syncfusion/ej
 import { Inject, Sort, Page, Resize, Reorder } from '@syncfusion/ej2-react-grids';
 
 import '../Bills.css'
-import * as Api from '../Api/TableServices'
+import * as Api from '../Api/BillServices'
 
 class Bills extends Component {
     constructor(props) {
