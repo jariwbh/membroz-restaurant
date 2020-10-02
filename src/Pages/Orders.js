@@ -64,20 +64,33 @@ class Orders extends Component {
     }
 
 
-    receiveMessage = (msg) => {
-        let tokenList = this.state.tokenList
-        const recivedToken = JSON.parse(msg)
-        const foundToken = tokenList.find(x => x._id === recivedToken._id)
+    receiveMessage = async (msg) => {
+      //console.log('Signal received by component: ' + msg);
+        //console.log('Signal received by component: ', JSON.parse(msg));
+        const token = JSON.parse(msg)
+        // this.setState(previousState => ({
+        //     tokenList: [...previousState.tokenList, token]
+        // }));
+        if ((token.senderID) && (token.senderID !== this.senderID)) {
+            // let tokenList = this.state.tokenList
+            // let foundToken = tokenList.find(x => x._id === token._id)
+            // if (foundToken) {
+            //     foundToken = token
+            // } else {
+            //     tokenList.push(token)
+            // }
 
-        if (foundToken) {
-            foundToken = recivedToken
-        } else {
-            this.setState(previousState => ({
-                tokenList: [...previousState.tokenList, recivedToken]
-            }));
+            // this.setState({ tokenList })
+            // console.log('this.state.tokenList AAA: ', this.state.tokenList)
+
+            // let currentCart = this.state.currentCart;
+            // if ((currentCart) && (currentCart._id)) {
+
+            //     let tokenList = await this.getTokenList(currentCart._id)
+            //     this.setState({ tokenList: tokenList })
+            // }
         }
 
-        this.setState({ tokenList });
     }
 
     getCategories = () => {
@@ -104,12 +117,18 @@ class Orders extends Component {
         this.setCurrentCartHandler();
     }
 
+    getTokenList = async (contextid) => {
+        let response = await ApiToken.getListByContextId(contextid)
+        //this.setState({ tokenList: response.data })
+        return response.data;
+    }
+
     getCurrentCartModel = (table) => {
         let currentCart = {
             tableid: table,
             postype: this.state.activeOrderType,
             property: { posstatus: "running" }, //checkout
-            customerid: {_id: "5ef2f0558d5725464bef4d5d", property:{fullname:"AAAA"}},
+            customerid: { _id: "5ef2f0558d5725464bef4d5d", property: { fullname: "AAAA" } },
             onModel: "Member",
             amount: 0,
             totalamount: 0,
@@ -129,7 +148,7 @@ class Orders extends Component {
             tokennumber: undefined,
             status: "waiting",
             contextid: "",
-            onModel:"Billing",
+            onModel: "Billing",
             property: {
                 table: { _id: table._id, tablename: table.property.tablename },
                 items: []
@@ -152,12 +171,13 @@ class Orders extends Component {
                 let response = await BillApi.getByID(currentCart._id)
                 currentCart = response.data
                 currentCart.token = this.getTokenModel(table);
+                let tokenList = await this.getTokenList(currentCart._id)
 
-                this.setState({ currentCart: currentCart })
+                this.setState({ currentCart: currentCart, tokenList: tokenList })
             }
 
             if ((currentCart) && (!currentCart._id)) {
-                this.setState({ currentCart: currentCart })
+                this.setState({ currentCart: currentCart, tokenList: [] })
             }
 
             if (!currentCart) {
@@ -167,7 +187,8 @@ class Orders extends Component {
 
                 this.setState({
                     runningTables: runningTables,
-                    currentCart: currentCart
+                    currentCart: currentCart, 
+                    tokenList: [] 
                 });
             }
 
@@ -176,9 +197,11 @@ class Orders extends Component {
             if ((this.state.runningTables) && (this.state.runningTables.length > 0)) {
                 let currentCart = this.state.runningTables[this.state.runningTables.length - 1]
                 currentCart.token = this.getTokenModel(currentCart.tableid);
+                let tokenList = await this.getTokenList(currentCart._id)
 
                 this.setState({
                     currentCart: currentCart,
+                    tokenList: tokenList,
                     activePage: PAGES.ORDERS
                 });
             } else {
@@ -198,17 +221,19 @@ class Orders extends Component {
         let currentCart = this.state.currentCart
         let currentToken = this.state.currentCart.token
 
+        if (!this.validateMe(currentCart)){
+            return;
+        }
+
         if ((currentToken.property.items) && (currentToken.property.items.length > 0)) {
 
             if ((currentCart.customerid) && (currentCart.customerid._id)) {
                 currentCart.customerid = currentCart.customerid._id
             }
-            
+
             const response = await BillApi.save(currentCart)
             if (response.status === 200) {
-                if (response.data._id){
-                    currentCart = response.data
-                }
+                currentCart = response.data
 
                 currentToken.contextid = currentCart._id
                 const responseToken = await ApiToken.save(currentToken)
@@ -224,7 +249,9 @@ class Orders extends Component {
                 const responseGetByID = await BillApi.getByID(currentCart._id)
                 currentCart = responseGetByID.data
                 currentCart.token = this.getTokenModel(currentCart.tableid)
-                this.setState({ currentCart: currentCart })
+
+                let tokenList = await this.getTokenList(currentCart._id)
+                this.setState({ currentCart: currentCart, tokenList: tokenList })
             } else {
                 console.log('sendToken Save Bill ERROR', response.errors)
                 alert("sendToken Save Bill ERROR : " + response.errors.toString())
@@ -240,6 +267,18 @@ class Orders extends Component {
             .then((response) => {
                 //this.setState({ items: response.data })
             })
+    }
+
+    validateMe = (currentCart) => {
+        if (currentCart === undefined) {
+            alert("Current Cart is undefined")
+            return false;
+        }
+        if (currentCart.property === undefined) {
+            alert("currentCart.property is undefined")
+            return false;
+        }
+        return true;
     }
 
     addToCart = (item) => {
@@ -263,7 +302,8 @@ class Orders extends Component {
                 cost: item.itemid.sale.rate,
                 totalcost: item.itemid.sale.rate,
                 discount: 0,
-                itemname: item.itemid.itemname
+                itemname: item.itemid.itemname,
+                tax: []
             }
             currentCart.items.push(cartItem);
         }
@@ -304,7 +344,7 @@ class Orders extends Component {
 
         let runningBillTableList
 
-        if ((currentCart) && (currentCart.tableid._id != "")) {
+        if ((currentCart) && (currentCart.tableid._id !== "")) {
             runningBillTableList = runningTables.map(bill =>
                 <li onClick={() => this.setCurrentCartHandler(bill.tableid)} className="nav-item" key={bill.tableid._id} id={bill.tableid._id}>
                     <a className={`nav-link ${currentCart.tableid._id === bill.tableid._id ? "active" : ""}`} href="#">
