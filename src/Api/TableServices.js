@@ -13,21 +13,4 @@ async function getTableList() {
     return await axios.post('formdatas/filter', body);
 }
 
-function getRunningTables() {
-    const body = {
-        "search": [
-            { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
-            { "searchfield": "tableid", "searchvalue": "true", "criteria": "exists", "datatype": "boolean" },
-            { "searchfield": "property.tablestatus", "searchvalue": "running", "criteria": "eq" }
-        ],
-        "select": [
-            { "fieldname": "items.quantity", "value": 1 },
-            { "fieldname": "amount", "value": 1 },
-            { "fieldname": "totalamount", "value": 1 }
-        ]
-    }
-
-    return axios.post('billings/filter', body);
-}
-
-export { getTableList, getRunningTables }
+export { getTableList }

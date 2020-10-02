@@ -1,8 +1,16 @@
 import React, { Component } from 'react'
+<<<<<<< HEAD
 import '../Assets/css/Bills.css'
 import * as Api from '../Api/TableServices'
 import Pagination from "react-js-pagination";
 import $ from 'jquery'
+=======
+import { ColumnDirective, ColumnsDirective, GridComponent } from '@syncfusion/ej2-react-grids';
+import { Inject, Sort, Page, Resize, Reorder } from '@syncfusion/ej2-react-grids';
+
+import '../Bills.css'
+import * as Api from '../Api/BillServices'
+>>>>>>> 45b76307a14bbcc1e32509b9a5ad8d1bf2d75c69
 
 class Bills extends Component {
     constructor(props) {
