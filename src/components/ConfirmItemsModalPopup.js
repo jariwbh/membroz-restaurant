@@ -1,6 +1,8 @@
 import React from 'react'
 
 function ConfirmItemsModalPopup(props) {
+    let token = props.token;
+
     return (
         <div className="modal fade" id="confirmitemsmodalpopup" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div className="modal-dialog modal-dialog-scrollable">
@@ -12,7 +14,7 @@ function ConfirmItemsModalPopup(props) {
                         </button>
                     </div>
                     <div className="modal-body">
-                        {(props.token.property.items) && (props.token.property.items.length > 0) &&
+                        {(token && token.property.items) && (token.property.items.length > 0) &&
                             <div className="table-responsive">
                                 <table className="table">
                                     <thead>
@@ -24,7 +26,7 @@ function ConfirmItemsModalPopup(props) {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {props.token.property.items.map(item =>
+                                        {token.property.items.map(item =>
                                             <tr key={item._id}>
                                                 <td>{item.itemname}</td>
                                                 <td className="text-center">{item.quantity}</td>
@@ -46,7 +48,7 @@ function ConfirmItemsModalPopup(props) {
                                 </table>
                             </div>
                         }
-                        {(!props.token.property.items) || (props.token.property.items.length === 0) &&
+                        {(!token || !token.property.items || token.property.items.length === 0) &&
                             <div>Empty Current KOT</div>
                         }
                     </div>

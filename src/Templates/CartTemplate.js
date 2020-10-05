@@ -75,7 +75,7 @@ function CartTemplate(props) {
                     <div className="col-6"><button type="button" className="btn btn-success btn-lg btn-block">Checkout</button>
                     </div>
                 </div>
-                <KOTView tokenList={props.tokenList}/>
+                <KOTView tokenList={props.tokenList} />
             </div>
         </div>
     )
