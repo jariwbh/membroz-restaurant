@@ -1,5 +1,6 @@
 import axios from '../Helpers/axiosInst'
 
+const branchid = "5ece552879b40e583fa63925"
 // function getBillByRunningTableID(tableid) {
 
 //     const body = { 
@@ -31,6 +32,8 @@ function getRunningTables() {
             { "fieldname": "amount", "value": 1 },
             { "fieldname": "totalamount", "value": 1 },
             { "fieldname": "property", "value": 1 },
+            { "fieldname": "billprefix", "value": 1 },
+            { "fieldname": "billnumber", "value": 1 }
         ]
     }
 
@@ -75,4 +78,16 @@ function removeLocalBill(currentCart) {
     }
 }
 
-export { getRunningTables, getByID, save, getLocalBills, saveLocalBill, removeLocalBill }
+function getBillFormate() {
+    const body = {
+        "search": [{
+            "searchfield": "status",
+            "searchvalue": "active",
+            "criteria": "eq",
+            "datattype": "text"
+        }]
+    }
+    return axios.get('branches/' + branchid);
+}
+
+export { getRunningTables, getByID, save, getLocalBills, saveLocalBill, removeLocalBill, getBillFormate }
