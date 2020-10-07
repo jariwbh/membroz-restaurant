@@ -40,8 +40,8 @@ function ConfirmItemsModalPopup(props) {
                                         </tr>
                                         <tr>
                                             <td className="font-weight-bold border-bottom">Total</td>
-                                            <td className="text-center font-weight-bold border-bottom">4</td>
-                                            <td className="text-right font-weight-bold border-bottom">₹880</td>
+                                            <td className="text-center font-weight-bold border-bottom">{token.totalquantity}</td>
+                                            <td className="text-right font-weight-bold border-bottom">₹{token.totalamount}</td>
                                             <td className="border-bottom"></td>
                                         </tr>
                                     </tbody>

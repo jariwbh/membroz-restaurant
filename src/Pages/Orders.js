@@ -339,6 +339,10 @@ class Orders extends Component {
             this.currentCart.items.push(cartItem);
         }
 
+        this.currentCart.totalquantity = this.currentCart.items.map(item => item.quantity).reduce((prev, next) => prev + next);
+        this.currentCart.amount = this.currentCart.items.map(item => item.amount).reduce((prev, next) => prev + next);
+        this.currentCart.totalamount = this.currentCart.items.map(item => item.totalcost).reduce((prev, next) => prev + next);
+
         return this.currentCart;
     }
 
@@ -364,6 +368,9 @@ class Orders extends Component {
             }
             token.property.items.push(tokenItem);
         }
+
+        token.totalquantity = token.property.items.map(item => item.quantity).reduce((prev, next) => prev + next);
+        token.totalamount = token.property.items.map(item => item.totalcost).reduce((prev, next) => prev + next);
 
         ApiToken.saveLocalToken(this.currentCart, token)
 
@@ -404,21 +411,23 @@ class Orders extends Component {
 
         if (activePage === PAGES.TABLEBOOK) {
 
-            const renderTableList = tables.map(table =>
-                <li onClick={() => this.setCurrentCartHandler(table)} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id}>
-                    <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-                        <div className="card-body p-2 ">
-                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{table.property.capacity}</span> </div>
-                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                <div className="table-restaurant-title">{table.property.tablename}</div>
-                                {/* <div className="table-number">01</div> */}
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            );
+            // const renderTableList = tables.map(table =>
+            //     <li onClick={() => this.setCurrentCartHandler(table)} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id}>
+            //         <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+            //             <div className="card-body p-2 ">
+            //                 <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{table.property.capacity}</span> </div>
+            //                 <div className="d-flex justify-content-center align-items-center flex-column">
+            //                     <div className="table-restaurant-title">{table.property.tablename}</div>
+            //                     {/* <div className="table-number">01</div> */}
+            //                 </div>
+            //             </div>
+            //         </div>
+            //     </li>
+            // );
 
-            return <TableBook tables={tables} tableList={renderTableList} />
+            // return <TableBook tables={tables} tableList={renderTableList} />
+
+            return <TableBook tableList={tables} setCurrentCartHandler={this.setCurrentCartHandler} />
         }
 
         return (
