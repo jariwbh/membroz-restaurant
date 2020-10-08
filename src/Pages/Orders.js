@@ -60,41 +60,36 @@ class Orders extends Component {
         this.setCurrentCartHandler = this.setCurrentCartHandler.bind(this);
         this.sendToken = this.sendToken.bind(this);
 
-        SignalRService.registerReceiveEvent((msg) => {
-            this.receiveMessage(msg);
-        });
+
     }
 
 
     receiveMessage = async (msg) => {
-        console.log('Signal received by component: ' + msg);
-        //console.log('Signal received by component: ', JSON.parse(msg));
+        // console.log('Signal received by component: ', JSON.parse(msg));
         // this.setState(previousState => ({
         //     tokenList: [...previousState.tokenList, token]
         // }));
+        const token = JSON.parse(msg)
+        if (token.senderID && token.senderID !== this.senderID) {
+            // let tokenList = this.state.tokenList
+            // let foundToken = tokenList.find(x => x._id === token._id)
+            // if (foundToken) {
+            //     foundToken = token
+            // } else {
+            //     tokenList.push(token)
+            // }
 
-        // const token =  JSON.parse(msg)
-        // if (token.senderID && token.senderID !== this.senderID) {
-        //     // let tokenList = this.state.tokenList
-        //     // let foundToken = tokenList.find(x => x._id === token._id)
-        //     // if (foundToken) {
-        //     //     foundToken = token
-        //     // } else {
-        //     //     tokenList.push(token)
-        //     // }
+            // let tokenList = await this.getTokenList(this.currentCart._id)
+            // this.setState({ tokenList: tokenList })
+            // console.log('this.state.tokenList SENDER ID: ', token.senderID)
+            //console.log('this.state.tokenList SENDER CLIENT ID: ', this.senderID)
 
-        //     // let tokenList = await this.getTokenList(this.currentCart._id)
-        //     // this.setState({ tokenList: tokenList })
-        //     console.log('this.state.tokenList SENDER ID: ', token.senderID)
-        //     console.log('this.state.tokenList SENDER CLIENT ID: ', this.senderID)
-
-        //     // let currentCart = this.state.currentCart;
-        //     // if ((currentCart) && (currentCart._id)) {
-
-        //     //     let tokenList = await this.getTokenList(currentCart._id)
-        //     //     this.setState({ tokenList: tokenList })
-        //     // }
-        // }
+            let currentCart = this.state.currentCart;
+            if (currentCart && currentCart._id) {
+                let tokenList = await this.getTokenList(currentCart._id)
+                this.setState({ tokenList: tokenList })
+            }
+        }
 
     }
 
@@ -224,7 +219,6 @@ class Orders extends Component {
                 this.currentCart = this.state.runningTables[this.state.runningTables.length - 1]
                 let tokenList = await this.getTokenList(this.currentCart._id)
                 this.loadUnsavedCartItems();
-
                 this.setState({
                     currentCart: this.currentCart,
                     tokenList: tokenList,
@@ -259,11 +253,11 @@ class Orders extends Component {
 
             const response = await BillApi.save(currentCart)
             if (response.status === 200) {
-                currentCart = response.data
-                currentToken.contextid = currentCart._id
-
                 BillApi.removeLocalBill(currentCart);
                 ApiToken.removeLocalToken(currentCart)
+
+                currentCart = response.data
+                currentToken.contextid = currentCart._id
 
                 const responseToken = await ApiToken.save(currentToken)
                 if (responseToken.status === 200) {
@@ -280,6 +274,7 @@ class Orders extends Component {
                 currentCart.token = this.getTokenModel(currentCart.tableid)
 
                 let tokenList = await this.getTokenList(currentCart._id)
+                this.currentCart = currentCart
                 this.setState({ currentCart: currentCart, tokenList: tokenList })
             } else {
                 console.log('sendToken Save Bill ERROR', response.errors)
@@ -391,6 +386,10 @@ class Orders extends Component {
         await this.getCategories();
         await this.getItems();
         await this.getRunningTables();
+
+        SignalRService.registerReceiveEvent((msg) => {
+            this.receiveMessage(msg);
+        });
     }
 
     render() {

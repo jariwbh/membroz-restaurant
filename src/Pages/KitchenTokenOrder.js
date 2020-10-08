@@ -3,6 +3,8 @@ import * as moment from 'moment';
 import uuid from 'react-uuid'
 import SignalRService from '../Helpers/signalRService';
 import * as Api from '../Api/TokenServices'
+import * as Sounds from '../components/sounds.js'
+import $ from 'jquery'
 
 export default class KitchenTokenOrder extends Component {
     constructor(props) {
@@ -17,9 +19,6 @@ export default class KitchenTokenOrder extends Component {
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
-        SignalRService.registerReceiveEvent((msg) => {
-            this.receiveMessage(msg);
-        });
     }
 
     receiveMessage = (msg) => {
@@ -39,27 +38,30 @@ export default class KitchenTokenOrder extends Component {
             }
 
             this.setState({ tokenList })
-            console.log('this.state.tokenList AAA: ', this.state.tokenList)
+            this.playAudio();
         }
 
     }
 
+    playAudio = () => {
+        var audio = new Audio(Sounds.notification); audio.play(); audio.loop = false;
+    }
+
     changeTokenStatus = async (token, status) => {
-        // let tokenList = this.state.tokenList
-        // let foundToken = tokenList.find(x => x._id === token._id)
-        // if (foundToken) {
-        //     foundToken.status = status
+        let tokenList = this.state.tokenList
+        let foundToken = tokenList.find(x => x._id === token._id)
+        if (foundToken) {
+            foundToken.status = status
 
-        //     const responseToken = await Api.save(foundToken)
-        //     foundToken = responseToken.data;
-        //     foundToken.senderID = this.senderID;
-        //     // console.log('Send KOT Token Response AAAAAAAAAAAAA:', JSON.stringify(kotToken))
-        //     SignalRService.sendMessage(JSON.stringify(foundToken));
+            const responseToken = await Api.save(foundToken)
+            foundToken = responseToken.data;
+            foundToken.senderID = this.senderID;
+            // console.log('Send KOT Token Response AAAAAAAAAAAAA:', JSON.stringify(kotToken))
+            SignalRService.sendMessage(JSON.stringify(foundToken));
 
-        //     this.setState({ tokenList })
-
-        //     //console.log('this.state.tokenList : ', this.state.tokenList)
-        // }
+            this.setState({ tokenList })
+            //console.log('this.state.tokenList : ', this.state.tokenList)
+        }
     }
 
     getTokenList = () => {
@@ -70,6 +72,10 @@ export default class KitchenTokenOrder extends Component {
 
     async componentDidMount() {
         await this.getTokenList();
+
+        SignalRService.registerReceiveEvent((msg) => {
+            this.receiveMessage(msg);
+        });
     }
 
     handleInputChange(event) {

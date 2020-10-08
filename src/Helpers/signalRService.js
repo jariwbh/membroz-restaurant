@@ -1,9 +1,16 @@
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import axios from '../Helpers/axiosInst'
 
+// .withUrl("https://localhost:44329/messageHub")
+//.withUrl("http://localhost:51820/message")
 class SignalRController {
+
     constructor(props) {
+        // this.URL = 'http://local.signalrtalk.membroz.com/';
+        this.URL = 'http://demo.membroz.com/';
+
         this.rConnection = new HubConnectionBuilder()
-            .withUrl("https://localhost:44329/messageHub")
+            .withUrl(this.URL + "message")
             .configureLogging(LogLevel.Information)
             .build();
 
@@ -19,12 +26,18 @@ class SignalRController {
             callback(message);
         });
     }
- 
+
     sendMessage = (message) => {
-        return this.rConnection.invoke("SendMessage", message)
-            .catch(function (data) {
-                alert('cannot connect to the server');
-            });
+        //console.log('URL', this.URL)
+        const body = JSON.stringify({
+            message: message
+        })
+        return axios.post(this.URL + "api/message", body);
+
+        // return this.rConnection.invoke("SendMessage", message)
+        //     .catch(function (data) {
+        //         alert('cannot connect to the server');
+        //     });
     }
 }
 
