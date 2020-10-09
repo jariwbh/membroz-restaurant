@@ -9,7 +9,7 @@ function RunningTable(props) {
         <React.Fragment>
             <div className="col-xl-8 col-lg-8 col-md-7">
                 <div className="white-box my-3">
-                    <div className="d-flex">
+                    <div className="d-flex align-items-center min-height-63">
                         <div className="flex-grow-1">
                             <ul className="nav nav-pills">
                                 {props.runningBillTableList}

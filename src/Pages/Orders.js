@@ -15,7 +15,7 @@ import TableBook from '../Pages/TableBook'
 
 import SignalRService from '../Helpers/signalRService';
 import OrderTypeSelectionUI from '../Templates/OrderTypeSelectionUI'
-import { personicon } from '../components/Image';
+import * as Sounds from '../components/Sounds.js'
 
 const PAGES = {
     ORDERS: 'orders',
@@ -59,8 +59,7 @@ class Orders extends Component {
         this.newOrderHandler = this.newOrderHandler.bind(this);
         this.setCurrentCartHandler = this.setCurrentCartHandler.bind(this);
         this.sendToken = this.sendToken.bind(this);
-
-
+        this.changeTokenStatusHandler = this.changeTokenStatusHandler.bind(this);
     }
 
 
@@ -88,9 +87,14 @@ class Orders extends Component {
             if (currentCart && currentCart._id) {
                 let tokenList = await this.getTokenList(currentCart._id)
                 this.setState({ tokenList: tokenList })
+
+                this.playAudio();
             }
         }
+    }
 
+    playAudio = () => {
+        var audio = new Audio(Sounds.notification); audio.play(); audio.loop = false;
     }
 
     getCategories = async () => {
@@ -342,7 +346,7 @@ class Orders extends Component {
     }
 
     addItemToToken = (itemid) => {
-        const item = this.state.items.find(x => x._id === itemid);
+        let item = this.state.items.find(x => x._id === itemid);
         let token = ApiToken.getLocalToken(this.currentCart);
 
         if (!token) {
@@ -354,7 +358,7 @@ class Orders extends Component {
             tokenItem.quantity = Number(tokenItem.quantity) + Number(1);
             tokenItem.totalcost = Number(tokenItem.cost) * Number(tokenItem.quantity);
         } else {
-            let tokenItem = {
+            tokenItem = {
                 _id: itemid,
                 quantity: Number(1),
                 itemname: item.itemid.itemname,
@@ -363,6 +367,8 @@ class Orders extends Component {
             }
             token.property.items.push(tokenItem);
         }
+
+        item.tokenquantity = tokenItem.quantity
 
         token.totalquantity = token.property.items.map(item => item.quantity).reduce((prev, next) => prev + next);
         token.totalamount = token.property.items.map(item => item.totalcost).reduce((prev, next) => prev + next);
@@ -390,6 +396,38 @@ class Orders extends Component {
         SignalRService.registerReceiveEvent((msg) => {
             this.receiveMessage(msg);
         });
+    }
+
+    changeTokenStatusHandler = async (token) => {
+        console.log('changeTokenStatusHandler :', token)
+        let tokenList = this.state.tokenList
+        let foundToken = tokenList.find(x => x._id === token._id)
+        if (foundToken) {
+            switch (token.status) {
+                case "waiting":
+                    foundToken.status = 'inprogress';
+                    break;
+                case "inprogress":
+                    foundToken.status = 'prepared';
+                    break;
+                case "prepared":
+                    foundToken.status = 'served';
+                    break;
+                case "served":
+                // foundToken.status = 'inprogress';
+                // break;
+            }
+
+            console.log('foundToken :', foundToken)
+            const responseToken = await ApiToken.save(foundToken)
+            foundToken = responseToken.data;
+            foundToken.senderID = this.senderID;
+            // console.log('Send KOT Token Response AAAAAAAAAAAAA:', JSON.stringify(kotToken))
+            //SignalRService.sendMessage(JSON.stringify(foundToken));
+
+            this.setState({ tokenList: tokenList })
+            //console.log('this.state.tokenList : ', this.state.tokenList)
+        }
     }
 
     render() {
@@ -440,7 +478,7 @@ class Orders extends Component {
                         </div>
                         {(currentCart) &&
                             <div className="row table-item-gutters">
-                                <CartTemplate currentCart={currentCart} tokenList={tokenList} sendTokenHandler={() => this.sendToken} />
+                                <CartTemplate currentCart={currentCart} tokenList={tokenList} sendTokenHandler={() => this.sendToken} changeTokenStatusHandler={() => this.changeTokenStatusHandler} />
 
                                 <div className="col-xl-8 col-lg-8 col-md-7">
                                     <ul className="nav nav-pills mb-2 categories-pills" id="pills-tab" role="tablist">
