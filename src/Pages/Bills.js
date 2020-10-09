@@ -37,7 +37,7 @@ class Bills extends Component {
 
     receivedData() {
         Api.getRunningTables().then((response) => {
-            console.log('response.data', response.data);
+            //console.log('response.data', response.data);
             this.setState({ totalPages: response.data.length, getBilList: response.data });
             const slice = response.data.slice((this.state.activePage - 1) * this.state.perPage, this.state.activePage * this.state.perPage)
             const billList = slice.map(bill => ({
