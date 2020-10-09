@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import FormValidator from '../components/FormValidator';
 import axios from '../Helpers/axiosInst'
 import { authenticateUser, getRememberUser, setRememberUser } from '../Helpers/Auth'
+import { membrozlogowhite } from '../components/Image';
 
 class Login extends Component {
     constructor(props) {
@@ -73,8 +74,6 @@ class Login extends Component {
                 this.setState({ submitted: true });
                 this.setState({ loading: false })
                 this.props.history.push('/')
-                // const { from } = location.state || { from: { pathname: "/" } };
-                // history.push(from);
             }
             catch (error) {
                 this.setState({ loading: false, error: 'User name or password is wrong!' })
@@ -101,36 +100,75 @@ class Login extends Component {
 
         return (
             <React.Fragment>
-                <main className="flex-shrink-0 col-md-3 mt-3">
-                    <section className="common-block">
-                        <div className="container">
-                            <div className="login-main">
-                                <h2 className="mb-3"> Sign In</h2>
-                                <div className="white-box-no-animate p-20">
-                                    <div className="form-group">
-                                        <label htmlFor="email" className="user-select-all">Username <span style={{ color: 'red' }}>*</span> </label>
-                                        <input type="email" name='username' placeholder="Enter Username" className="form-control" id="username" aria-describedby="emailHelp" value={username} onChange={this.handleInputChange} />
-                                        <span className="help-block">{validation.username.message}</span>
+                <div class="login-full-page landing-main">
+                    <div class="top-right-square"></div>
+                    <nav class="navbar navbar-expand-md navbar-light p-0">
+                        <div class="container">
+                            <a class="navbar-brand ml-md-0" href="/#"><img src={membrozlogowhite} alt="" /></a>
+                            <button class="navbar-toggler navbar-toggler-login" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"> <span class="navbar-toggler-icon"></span> </button>
+                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                {/* <ul class="navbar-nav ml-auto">
+                                    <li class="nav-item"> <a class="nav-link white-link" href="#">Admin Login</a> </li>
+                                </ul> */}
+                            </div>
+                        </div>
+                    </nav>
+                    <div class="container login-container">
+                        <div class="row" >
+                            <div class="col-xl-6 col-md-6 d-flex align-items-center">
+                                <div class="text-center text-md-left" >
+                                    <div class="top-left-dots"></div>
+                                    <h1 class="h2 landing-head"> Powerful POS Solutions for your business</h1>
+                                    <div class="landing-intro">
+                                        <p >A Complete SaaS Solution Tailored to Your Business Need</p>
                                     </div>
-                                    <div className="form-group">
-                                        <label htmlFor="exampleInputPassword1">Password <span style={{ color: 'red' }}>*</span></label>
-                                        <input type="Password" name='password' placeholder="Enter Password" className="form-control" id="password" value={password} onChange={this.handleInputChange} />
-                                        <span className="help-block">{validation.password.message}</span>
+                                </div>
+                            </div>
+                            <div class="col-xl-5 col-md-6">
+                                <div class="landing-box p-4 membroz-form align-items-center" >
+                                    <div class="ie-dblock">
+                                        <h4 class="mb-3 font-weight-bold">Staff Login</h4>
+                                        <div class="form-group">
+                                            <input type="text" name='username' class="form-control" placeholder="User Name" id="username" aria-describedby="emailHelp" value={username} onChange={this.handleInputChange} />
+                                            <span className="help-block">{validation.username.message}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" name='password' class="form-control" placeholder="Password" id="password" value={password} onChange={this.handleInputChange} />
+                                            <span className="help-block">{validation.password.message}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <button onClick={this.handleFormSubmit} type="button" class="btn btn-primary btn-lg btn-block" disabled={loading}>
+                                                {loading && <span className="spinner-border spinner-border-sm mr-1"></span>}Login</button>
+                                        </div>
+                                        {/* <div class="form-group">
+                                            <div class="row mt-4">
+                                                <div class="col-6"><a href="#" target="_blank">Reset Password?</a></div>
+                                                <div class="col-6 text-right"><a href="#" target="_blank">Reset Wallet PIN?</a></div>
+                                            </div>
+                                        </div> */}
+                                        <div class="form-group text-center">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <select name="lang" class="form-control"><option selected>English</option></select>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="form-group form-check">
-                                        <input type="checkbox" className="form-check-input" id="rememberMe" checked={rememberme} onChange={this.handleInputChange} />
-                                        <label className="form-check-label" htmlFor="rememberMe"> Remember me</label>
-                                        <Link className="float-right" to="/ForgetPassword">Forgot Password?</Link>
-                                    </div>
-                                    <button onClick={this.handleFormSubmit} className="btn btn-primary" disabled={loading} >
-                                        {loading && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                                        Login
-                                    </button>
                                 </div>
                             </div>
                         </div>
-                    </section>
-                </main>
+                    </div>
+                    <div class="bottom-right-round-square"></div>
+                    <div class="bottom-left-round-square-1"></div>
+                    <div class="bottom-left-round-square-2"></div>
+                    <footer class="login-footer mt-auto py-3">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col text-center"> © Copyright Membroz. Power by <a class="white-link" href="http://www.krtya.com/" target="_blank">Krtya Technologies Pvt. Ltd.</a> </div>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
             </React.Fragment>
         )
     }
