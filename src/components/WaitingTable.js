@@ -300,7 +300,7 @@ export default class WaitingTable extends Component {
 
         return (
             <React.Fragment>
-                <div className="tab-pane fade show active" id="pills-waiting-1" role="tabpanel" aria-labelledby="pills-waiting-1-tab">
+                <div className="tab-pane fade" id="pills-waiting-1" role="tabpanel" aria-labelledby="pills-waiting-1-tab">
                     <div className="person-table-p">
                         <div className="table-num-title"> Waiting List</div>
                     </div>
