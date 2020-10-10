@@ -2,7 +2,7 @@ import React from "react"
 import PropTypes from "prop-types"
 import Navbar from '../components/Navbar'
 import { isAuthenticated } from '../Helpers/Auth'
-import LayoutSidenav from '../components/layoutSidenav'
+import LayoutSideNav from '../components/LayoutSideNav'
 import { Redirect } from "react-router-dom"
 
 const Layout = ({ children }) => {
@@ -12,7 +12,7 @@ const Layout = ({ children }) => {
         <main className="pos-nav-fixed">
           <Navbar />
           <div id="layoutSidenav">
-            <LayoutSidenav />
+            <LayoutSideNav />
             < >{children}</>
           </div>
         </main>

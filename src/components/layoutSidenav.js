@@ -11,18 +11,18 @@ function layoutSidenav() {
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/" activeclassname="active"><span className="sidenav-icon orders-icon"></span> Orders</NavLink>
                             </li>
-                            <li className="nav-item">
+                            {/* <li className="nav-item">
                                 <NavLink className="nav-link" to="/TableBook" activeclassname="active"><span className="sidenav-icon tables-icon"></span> Tables</NavLink>
-                            </li>
+                            </li> */}
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/KitchenTokenOrder" activeclassname="active"><span className="sidenav-icon kitchen-icon"></span> Kitchen</NavLink>
                             </li>
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/bills" activeclassname="active"><span className="sidenav-icon bills-icon"></span> Bills</NavLink>
                             </li>
-                            <li className="nav-item">
+                            {/* <li className="nav-item">
                                 <NavLink className="nav-link" to="/setting" activeclassname="active"><span className="sidenav-icon setting-icon"></span> Setting</NavLink>
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
                 </nav>

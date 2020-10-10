@@ -6,11 +6,12 @@ import axios from '../Helpers/axiosInst'
 class SignalRController {
 
     constructor(props) {
+        this.URL = 'http://signalrtalk.membroz.com/';
         // this.URL = 'http://local.signalrtalk.membroz.com/';
-        this.URL = 'http://demo.membroz.com/';
+        //this.URL = 'http://localhost:60471/';
 
         this.rConnection = new HubConnectionBuilder()
-            .withUrl(this.URL + "message")
+            .withUrl(this.URL + "messageHub")
             .configureLogging(LogLevel.Information)
             .build();
 
@@ -29,15 +30,15 @@ class SignalRController {
 
     sendMessage = (message) => {
         //console.log('URL', this.URL)
-        const body = JSON.stringify({
-            message: message
-        })
-        return axios.post(this.URL + "api/message", body);
+        // const body = JSON.stringify({
+        //     message: message
+        // })
+        // return axios.post(this.URL + "api/message", body);
 
-        // return this.rConnection.invoke("SendMessage", message)
-        //     .catch(function (data) {
-        //         alert('cannot connect to the server');
-        //     });
+        return this.rConnection.invoke("SendMessage", message)
+            .catch(function (data) {
+                alert('cannot connect to the server');
+            });
     }
 }
 

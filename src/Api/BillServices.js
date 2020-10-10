@@ -46,10 +46,8 @@ function getByID(id) {
 
 function save(body) {
     if (body._id) {
-        console.log('Bill UPDATE:', body)
         return axios.put('billings/' + body._id, body);
     } else {
-        console.log('Bill ADD:', body)
         return axios.post('billings', body);
     }
 }

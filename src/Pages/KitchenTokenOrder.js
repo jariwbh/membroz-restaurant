@@ -3,8 +3,7 @@ import * as moment from 'moment';
 import uuid from 'react-uuid'
 import SignalRService from '../Helpers/signalRService';
 import * as Api from '../Api/TokenServices'
-import * as Sounds from '../components/sounds.js'
-import $ from 'jquery'
+import * as Sounds from '../components/Sounds.js'
 
 export default class KitchenTokenOrder extends Component {
     constructor(props) {
@@ -40,18 +39,31 @@ export default class KitchenTokenOrder extends Component {
             this.setState({ tokenList })
             this.playAudio();
         }
-
     }
 
     playAudio = () => {
         var audio = new Audio(Sounds.notification); audio.play(); audio.loop = false;
     }
 
-    changeTokenStatus = async (token, status) => {
+    changeTokenStatus = async (token) => {
         let tokenList = this.state.tokenList
         let foundToken = tokenList.find(x => x._id === token._id)
         if (foundToken) {
-            foundToken.status = status
+            switch (token.status) {
+                case "waiting":
+                    foundToken.status = 'inprogress';
+                    break;
+                case "inprogress":
+                    foundToken.status = 'prepared';
+                    break;
+                case "prepared":
+                    foundToken.status = 'served';
+                    break;
+                case "served":
+                    foundToken.status = 'inprogress';
+                    break;
+            }
+
 
             const responseToken = await Api.save(foundToken)
             foundToken = responseToken.data;
@@ -59,7 +71,7 @@ export default class KitchenTokenOrder extends Component {
             // console.log('Send KOT Token Response AAAAAAAAAAAAA:', JSON.stringify(kotToken))
             SignalRService.sendMessage(JSON.stringify(foundToken));
 
-            this.setState({ tokenList })
+            this.setState({ tokenList: tokenList })
             //console.log('this.state.tokenList : ', this.state.tokenList)
         }
     }
@@ -133,10 +145,10 @@ export default class KitchenTokenOrder extends Component {
                     {/* <button type="button" className="btn btn-primary btn-block">Accept</button> */}
 
                     {(token.status === "waiting") &&
-                        <button type="button" className="btn btn-primary btn-block" onClick={() => this.changeTokenStatus(token, "inprogress")}>Accept</button>
+                        <button type="button" className="btn btn-primary btn-block" onClick={() => this.changeTokenStatus(token)}>Accept</button>
                     }
                     {(token.status === "inprogress") &&
-                        <button type="button" className="btn btn-primary btn-block" onClick={() => this.changeTokenStatus(token, "prepared")}>Prepared</button>
+                        <button type="button" className="btn btn-primary btn-block" onClick={() => this.changeTokenStatus(token)}>Prepared</button>
                     }
 
                 </div>
