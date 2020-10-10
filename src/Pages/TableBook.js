@@ -237,8 +237,8 @@ export default class TableBook extends Component {
     }
 
     modelPopupClose() {
-        var modelpopupClose = document.getElementById("modelpopupclose");
-        modelpopupClose.click();
+        var modelpopupClose1 = document.getElementById("modelpopupclose");
+        modelpopupClose1.click();
     }
 
     handleFormSubmit = (event) => {
@@ -334,6 +334,7 @@ export default class TableBook extends Component {
 
     allocateTable(customerObj, allocatedObj, reservationObj) {
         const { noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
+
         let orderObj = {
             _id: 'unsaved_' + uuid(),
             tableid: {
@@ -359,22 +360,23 @@ export default class TableBook extends Component {
             items: [],
             deliveryaddress: ''
         }
+
         if (this.state.checkedvalue === 'existcustomer') {
             if (this.state.getcustomerid !== '') {
                 console.log('update allocated', allocatedObj);
                 this.setState({ submitted: true });
                 allocatedTableApi.updateAllocateReservationTable(allocatedObj).then(() => {
-                    this.props.setCurrentCartHandler(orderObj)
-                    this.getReservedTableList();
                     this.modelPopupClose();
+                    this.getReservedTableList();
+                    this.props.setCurrentCartHandler(orderObj)
                     console.log('update allocated', allocatedObj);
                 })
             } else {
                 console.log('save exit records');
                 ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
-                    this.props.setCurrentCartHandler(orderObj)
-                    this.getReservedTableList();
                     this.modelPopupClose();
+                    this.getReservedTableList();
+                    this.props.setCurrentCartHandler(orderObj)
                     console.log('update allocated', reservationObj);
                 })
             }
@@ -386,18 +388,15 @@ export default class TableBook extends Component {
                     console.log(response.data._id);
                     allocatedObj.property.customerid = response.data._id
                     allocatedTableApi.allocateReservationTable(allocatedObj).then(() => {
-                        this.props.setCurrentCartHandler(orderObj)
-                        this.getCustomerList();
-                        this.getReservedTableList();
                         this.modelPopupClose();
+                        this.getCustomerList();
+                        this.props.setCurrentCartHandler(orderObj)
+                        this.getReservedTableList();
                         console.log('allocatedobj', allocatedObj)
                         console.log('allocated');
                     })
                 }
-            }).catch(error => {
-                console.error('There was an error!', error);
-            });
-
+            })
         }
     }
 
