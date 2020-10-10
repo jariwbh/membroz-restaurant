@@ -11,6 +11,7 @@ import moment from 'moment'
 import SelectSearch from 'react-select-search';
 import '../Assets/css/DropDownstyles.css'
 import '../Assets/css/ErrorMessage.css'
+import uuid from 'react-uuid'
 
 export default class TableBook extends Component {
     constructor(props) {
@@ -79,7 +80,9 @@ export default class TableBook extends Component {
             tableid: '',
             customerid: '',
             getcustomerid: '',
-            disableCustomer: false
+            disableCustomer: false,
+            customerobjnew: [],
+            tableobj: []
         }
         this.submitted = false;
     }
@@ -108,7 +111,8 @@ export default class TableBook extends Component {
                 const tabledata = this.state.availabletableList.find(x => x._id === event.target.value)
                 this.setState({
                     tableid: tabledata._id,
-                    tablename: tabledata.property.tablename
+                    tablename: tabledata.property.tablename,
+                    tableobj: tabledata
                 });
             } else {
                 this.setState({
@@ -130,6 +134,7 @@ export default class TableBook extends Component {
                 mobile_number: customerFind.property.mobile_number,
                 customername: customerFind.property.fullname,
                 customerid: customerFind._id,
+                customerobjnew: customerFind
             });
         }
     }
@@ -207,7 +212,8 @@ export default class TableBook extends Component {
             tableid: '',
             customerid: '',
             submitted: false,
-            disableCustomer: false
+            disableCustomer: false,
+            customerobjnew: []
         });
     }
 
@@ -327,12 +333,38 @@ export default class TableBook extends Component {
     }
 
     allocateTable(customerObj, allocatedObj, reservationObj) {
+        const { noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
+        let orderObj = {
+            _id: 'unsaved_' + uuid(),
+            tableid: {
+                _id: tableid,
+                tablen: tablename
+            },
+            postype: '',
+            property: { orderstatus: "running", token: '' },
+            customerid: {
+                _id: customerid,
+                property: {
+                    fullname: customername,
+                    mobile_number: mobile_number,
+                    noofperson: noofperson
+                }
+            },
+            onModel: "Member",
+            amount: 0,
+            totalamount: 0,
+            discount: 0,
+            taxamount: 0,
+            totalquantity: 0,
+            items: [],
+            deliveryaddress: ''
+        }
         if (this.state.checkedvalue === 'existcustomer') {
             if (this.state.getcustomerid !== '') {
                 console.log('update allocated', allocatedObj);
                 this.setState({ submitted: true });
                 allocatedTableApi.updateAllocateReservationTable(allocatedObj).then(() => {
-                    this.props.setCurrentCartHandler(allocatedObj)
+                    this.props.setCurrentCartHandler(orderObj)
                     this.getReservedTableList();
                     this.modelPopupClose();
                     console.log('update allocated', allocatedObj);
@@ -340,7 +372,7 @@ export default class TableBook extends Component {
             } else {
                 console.log('save exit records');
                 ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
-                    this.props.setCurrentCartHandler(allocatedObj)
+                    this.props.setCurrentCartHandler(orderObj)
                     this.getReservedTableList();
                     this.modelPopupClose();
                     console.log('update allocated', reservationObj);
@@ -354,7 +386,7 @@ export default class TableBook extends Component {
                     console.log(response.data._id);
                     allocatedObj.property.customerid = response.data._id
                     allocatedTableApi.allocateReservationTable(allocatedObj).then(() => {
-                        this.props.setCurrentCartHandler(allocatedObj)
+                        this.props.setCurrentCartHandler(orderObj)
                         this.getCustomerList();
                         this.getReservedTableList();
                         this.modelPopupClose();
