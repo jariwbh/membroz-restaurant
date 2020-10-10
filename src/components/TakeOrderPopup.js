@@ -3,6 +3,8 @@ import FormValidator from '../components/FormValidator';
 import SelectSearch from 'react-select-search';
 import * as CustomerApi from '../Api/CustomerSevices';
 import * as UserApi from '../Api/UserServices'
+import * as TableServicesApi from '../Api/TableServices';
+import uuid from 'react-uuid'
 
 export default class TakeOrderPopup extends Component {
     constructor(props) {
@@ -46,6 +48,12 @@ export default class TakeOrderPopup extends Component {
                 validWhen: false,
                 message: 'Enter no of person.'
             },
+            {
+                field: 'tablename',
+                method: 'isEmpty',
+                validWhen: false,
+                message: 'select table.'
+            }
         ]);
 
         this.state = {
@@ -62,9 +70,12 @@ export default class TakeOrderPopup extends Component {
             tableobj: [],
             customerobj: [],
             getcustomerid: '',
-            noonoofperson: ''
+            noofperson: '',
+            tablename: '',
+            availabletableList: [],
+            tableid: '',
         }
-
+        this.submitted = false;
     }
 
     handleInputChange = event => {
@@ -74,6 +85,13 @@ export default class TakeOrderPopup extends Component {
                 this.setState({
                     deliveryboyid: deliveryboynameobj._id,
                     deliveryboyname: deliveryboynameobj.property.fullname
+                });
+            } else if (event.target.name === 'tablename') {
+                const tabledata = this.state.availabletableList.find(x => x._id === event.target.value)
+                this.setState({
+                    tableid: tabledata._id,
+                    tablename: tabledata.property.tablename,
+                    tableobj: tabledata
                 });
             } else {
                 this.setState({
@@ -86,6 +104,13 @@ export default class TakeOrderPopup extends Component {
                 this.setState({
                     deliveryboyid: deliveryboynameobj._id,
                     deliveryboyname: deliveryboynameobj.property.fullname
+                });
+            } else if (event.target.name === 'tablename') {
+                const tabledata = this.state.availabletableList.find(x => x._id === event.target.value)
+                this.setState({
+                    tableid: tabledata._id,
+                    tablename: tabledata.property.tablename,
+                    tableobj: tabledata
                 });
             } else {
                 this.setState({
@@ -121,6 +146,12 @@ export default class TakeOrderPopup extends Component {
             deliveryboyname: {
                 isInvalid: false,
                 message: ""
+            }, tablename: {
+                isInvalid: false,
+                message: ""
+            }, noofperson: {
+                isInvalid: false,
+                message: ""
             }
         }
 
@@ -133,16 +164,24 @@ export default class TakeOrderPopup extends Component {
             deliveryboyname: '',
             validation: validator,
             checkedvalue: 'existcustomer',
-            deliveryboyList: [],
-            customerList: [],
+            // deliveryboyList: [],
+            // customerList: [],
             tableobj: [],
-            customerobj: []
+            customerobj: [],
+            noofperson: '',
+            tablename: ''
         });
+    }
+
+    getAvailableTableList() {
+        TableServicesApi.getTableList().then((response) => {
+            this.setState({ availabletableList: response.data })
+        })
     }
 
     handleFormSubmit = (event) => {
         const btnclickname = event.target.name;
-        const { customername, mobile_number, customerid, address, customerobj, getcustomerid } = this.state;
+        const { customername, mobile_number, customerid, address, customerobj, getcustomerid, tableid, tablename, noofperson } = this.state;
         const newCustomerObj = {
             property: {
                 fullname: customername,
@@ -151,11 +190,21 @@ export default class TakeOrderPopup extends Component {
         }
 
         let takeOrderObj = {
-            _id: 'unsaved_' + 'uuid',
-            tableid: '',
-            postype: 'this.state.activeOrderType',
-            property: { orderstatus: "running" },
-            customerid: customerobj,
+            _id: 'unsaved_' + uuid(),
+            tableid: {
+                _id: tableid,
+                table: tablename
+            },
+            postype: '',
+            property: { orderstatus: "running", token: '' },
+            customerid: {
+                _id: customerid,
+                property: {
+                    fullname: customername,
+                    mobile_number: mobile_number,
+                    noofperson: noofperson
+                }
+            },
             onModel: "Member",
             amount: 0,
             totalamount: 0,
@@ -163,8 +212,7 @@ export default class TakeOrderPopup extends Component {
             taxamount: 0,
             totalquantity: 0,
             items: [],
-            deliveryaddress: address,
-            token: 'this.getTokenModel(table)'
+            deliveryaddress: address
         }
 
         const validation = this.validator.validate(this.state);
@@ -177,18 +225,20 @@ export default class TakeOrderPopup extends Component {
                         if (response.data._id) {
                             console.log(response.data._id);
                             takeOrderObj.property.customerid = response.data._id
-                            //WaitingTableApi.addWaitingTableRecord(waitingTableObj).then(() => {
+                            console.log(takeOrderObj);
                             this.getCustomerList();
                             this.modelPopupClose();
-                            console.log('save');
-                            //})
+                            console.log('save takeOrder');
                         }
                     })
                 } else if (getcustomerid === '') {
-                    //WaitingTableApi.addWaitingTableRecord(waitingTableObj).then(() => {
+                    console.log(takeOrderObj);
                     this.modelPopupClose();
                     console.log('save exit records');
-                    //})
+                } else {
+                    console.log(takeOrderObj);
+                    this.modelPopupClose();
+                    console.log('save exit records');
                 }
             }
         }
@@ -197,6 +247,7 @@ export default class TakeOrderPopup extends Component {
     async componentDidMount() {
         await this.getCustomerList();
         await this.getdeliveryboyList()
+        await this.getAvailableTableList()
     }
 
     async getCustomerList() {
@@ -234,7 +285,7 @@ export default class TakeOrderPopup extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { customerid, deliveryboyid, checkedvalue, mobile_number, deliveryboy, deliveryboyList, address, customerList } = this.state;
+        const { availabletableList, customerid, deliveryboyid, checkedvalue, mobile_number, noofperson, deliveryboy, deliveryboyList, address, customerList } = this.state;
 
         const handleradioOnChange = event => {
             this.setState({
@@ -287,6 +338,13 @@ export default class TakeOrderPopup extends Component {
                                         </div>
                                     </div>
                                     <div className="form-group row">
+                                        <label htmlFor="noofperson" className="col-sm-4 col-form-label">No of Person <span style={{ color: 'red' }}>*</span></label>
+                                        <div className="col-sm-8">
+                                            <input type="number" name='noofperson' placeholder="Enter No of Person" min="1" className="form-control" id="noofperson" value={noofperson} onChange={this.handleInputChange} />
+                                            <span className="help-block">{validation.noofperson.message}</span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
                                         <label htmlFor="mobilenumber" className="col-sm-4 col-form-label">Mobile Number <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
                                             <input type="text" name='mobile_number' placeholder="Enter Mobile Number" className="form-control" id="mobile_numberid" value={mobile_number} onChange={this.handleInputChange} />
@@ -298,6 +356,20 @@ export default class TakeOrderPopup extends Component {
                                         <div className="col-sm-8">
                                             <textarea type="textarea" className="form-control" name='address' id="address" placeholder="Enter Delivery Address" value={address} onChange={this.handleInputChange} />
                                             <span className="help-block">{validation.address.message}</span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
+                                        <label htmlFor="table" className="col-sm-4 col-form-label">Table<span style={{ color: 'red' }}>*</span>
+                                        </label>
+                                        <div className="col-sm-8">
+                                            <select className="form-control" name='tablename' id="tableid" value={this.state.tableid}
+                                                onChange={this.handleInputChange} style={{ width: '100%' }}>
+                                                {availabletableList.map(availableTable => (
+                                                    <option key={availableTable._id} value={availableTable._id}>
+                                                        {`${availableTable.property.tablename}` + ' ' + `(${availableTable.property.capacity})`}
+                                                    </option>
+                                                ))} </select>
+                                            <span className="help-block">{validation.tablename.message}</span>
                                         </div>
                                     </div>
                                     <div className="form-group row">
