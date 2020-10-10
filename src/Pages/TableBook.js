@@ -338,10 +338,9 @@ export default class TableBook extends Component {
         let orderObj = {
             _id: 'unsaved_' + uuid(),
             tableid: {
-                _id: tableid,
-                tablen: tablename
+                _id: tableid, property: { tablename: tablename }
             },
-            postype: '',
+            postype: 'dinein',
             property: { orderstatus: "running", token: '' },
             customerid: {
                 _id: customerid,

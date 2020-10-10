@@ -6,7 +6,7 @@ import * as Api from '../Api/HomeServices'
 import * as BillApi from '../Api/BillServices'
 import * as ApiTable from '../Api/TableServices'
 import * as ApiToken from '../Api/TokenServices'
-import RunningTable from '../components/RunningTable'
+import RunningOrders from '../components/RunningOrders'
 import CategoryTemplate from '../Templates/CategoryTemplate'
 import ItemTemplate from '../Templates/ItemTemplate'
 import CartTemplate from '../Templates/CartTemplate'
@@ -15,18 +15,9 @@ import TableBook from '../Pages/TableBook'
 
 import SignalRService from '../Helpers/signalRService';
 import OrderTypeSelectionUI from '../Templates/OrderTypeSelectionUI'
-import * as Sounds from '../components/Sounds.js'
-
-const PAGES = {
-    ORDERS: 'orders',
-    TABLEBOOK: 'tablebook'
-}
-
-const ORDERTYPES = {
-    DINEIN: 'dinein',
-    TAKEAWAY: 'takeaway',
-    DELIVERY: 'Delivery'
-}
+import * as Sounds from '../components/Sounds'
+import TakeOrderPopup from '../components/TakeOrderPopup'
+import { PAGES, ORDERTYPES } from '../Pages/OrderEnums'
 
 class Orders extends Component {
     constructor(props) {
@@ -34,22 +25,17 @@ class Orders extends Component {
         document.title = this.props.title
         window.scrollTo(0, 0);
 
-        if (this.props.location.state) {
-            const { activePage } = this.props.location.state
-            console.log('this.props.activePage :', activePage)
-        }
-
         this.senderID = uuid();
         this.currentCart = undefined;
 
         this.state = {
-            activePage: this.props.activePage,
+            activePage: PAGES.ORDERS,
             activeOrderType: ORDERTYPES.DINEIN,
             itemCategories: [],
             items: [],
             tables: [],
             customers: [],
-            runningTables: [],
+            runningOrders: [],
             currentCart: undefined,
             tokenList: []
         }
@@ -88,8 +74,21 @@ class Orders extends Component {
                 let tokenList = await this.getTokenList(currentCart._id)
                 this.setState({ tokenList: tokenList })
 
-                this.playAudio();
+                if (token.status === 'prepared') {
+                    this.playAudio();
+                }
             }
+        }
+    }
+
+    setActivePage = (activePageName) => {
+        this.setState({ activePage: activePageName });
+    }
+
+    changeOrderType = (orderTypeName) => {
+        if (this.state.activeOrderType !== orderTypeName) {
+            this.setCurrentCartHandler(undefined, orderTypeName)
+            //this.setState({ activeOrderType: orderTypeName });
         }
     }
 
@@ -115,44 +114,28 @@ class Orders extends Component {
         this.setState({ tables: response.data })
     }
 
-    getRunningTables = async () => {
-        const response = await BillApi.getRunningTables();
-        let runningTables = response.data;
+    getRunningOrders = async () => {
+        const response = await BillApi.getRunningOrders();
+        let runningOrders = response.data;
         const localRunningTable = BillApi.getLocalBills();
 
-        let runningTableMerged = runningTables
+        let runningTableMerged = runningOrders
         if (localRunningTable) {
-            runningTableMerged = runningTables.concat(localRunningTable)
+            runningTableMerged = runningOrders.concat(localRunningTable)
         }
 
-        this.setState({ runningTables: runningTableMerged });
+        this.setState({ runningOrders: runningTableMerged });
         this.setCurrentCartHandler();
     }
 
     getTokenList = async (contextid) => {
+        if (contextid.startsWith('unsaved_')) {
+            return []
+        }
+
         let response = await ApiToken.getListByContextId(contextid)
         //this.setState({ tokenList: response.data })
         return response.data;
-    }
-
-    getCurrentCartModel = (table) => {
-        let currentCart = {
-            unsavedid: uuid(),
-            tableid: table,
-            postype: this.state.activeOrderType,
-            property: { posstatus: "running" }, //checkout
-            customerid: { _id: "5ef2f0558d5725464bef4d5d", property: { fullname: "AAAA" } },
-            onModel: "Member",
-            amount: 0,
-            totalamount: 0,
-            discount: 0,
-            taxamount: 0,
-            totalquantity: 0,
-            items: [],
-            token: this.getTokenModel(table)
-        }
-
-        return currentCart;
     }
 
     getTokenModel = (table) => {
@@ -172,6 +155,7 @@ class Orders extends Component {
     }
 
     newOrderHandler = () => {
+        console.log('newOrderHandler:::')
         this.setState({ activePage: PAGES.TABLEBOOK });
     }
 
@@ -184,34 +168,39 @@ class Orders extends Component {
         }
     }
 
-    setCurrentCartHandler = async (table) => {
-        if (table) {
-            const tableid = table._id
-            this.currentCart = this.state.runningTables.find(x => x.tableid._id === tableid)
+    setCurrentCartHandler = async (order, orderType) => {
+        //let orderType = this.state.orderTypeName
+        if (!orderType) {
+            orderType = this.state.activeOrderType
+        }
 
-            if (this.currentCart && this.currentCart._id && this.currentCart._id !== "") {
-                let response = await BillApi.getByID(this.currentCart._id)
-                this.currentCart = response.data
-                let tokenList = await this.getTokenList(this.currentCart._id)
+        if (order) {
+            this.currentCart = this.state.runningOrders.find(x => x._id === order._id)
 
-                this.loadUnsavedCartItems();
+            if (this.currentCart) {
+                if (this.currentCart._id === 'unsaved') {
+                    this.loadUnsavedCartItems();
+                    this.setState({ currentCart: this.currentCart, tokenList: [] })
+                } else {
+                    if (!this.currentCart._id.startsWith('unsaved_')) {
+                        let response = await BillApi.getByID(this.currentCart._id)
+                        this.currentCart = response.data
+                    }
+                    let tokenList = await this.getTokenList(this.currentCart._id)
 
-                this.setState({ currentCart: this.currentCart, tokenList: tokenList })
-            }
-
-            if (this.currentCart && !this.currentCart._id) {
-                this.loadUnsavedCartItems();
-                this.setState({ currentCart: this.currentCart, tokenList: [] })
+                    this.loadUnsavedCartItems();
+                    this.setState({ currentCart: this.currentCart, tokenList: tokenList })
+                }
             }
 
             if (!this.currentCart) {
-                let runningTables = this.state.runningTables;
-                this.currentCart = this.getCurrentCartModel(table);
-                runningTables.push(this.currentCart);
+                let runningOrders = this.state.runningOrders;
+                this.currentCart = order;
+                runningOrders.push(this.currentCart);
                 BillApi.saveLocalBill(this.currentCart);
 
                 this.setState({
-                    runningTables: runningTables,
+                    runningOrders: runningOrders,
                     currentCart: this.currentCart,
                     tokenList: []
                 });
@@ -219,26 +208,25 @@ class Orders extends Component {
 
             this.setActivePage(PAGES.ORDERS)
         } else {
-            if (this.state.runningTables && this.state.runningTables.length > 0) {
-                this.currentCart = this.state.runningTables[this.state.runningTables.length - 1]
+            const filterRunningOrders = this.state.runningOrders.filter(x => x.postype === orderType)
+
+            if (filterRunningOrders && filterRunningOrders.length > 0) {
+                this.currentCart = filterRunningOrders[filterRunningOrders.length - 1]
                 let tokenList = await this.getTokenList(this.currentCart._id)
                 this.loadUnsavedCartItems();
                 this.setState({
                     currentCart: this.currentCart,
                     tokenList: tokenList,
-                    activePage: PAGES.ORDERS
+                    activeOrderType: orderType
                 });
             } else {
                 this.setState({
                     currentCart: undefined,
-                    activePage: PAGES.ORDERS
+                    activePage: PAGES.ORDERS,
+                    activeOrderType: orderType
                 });
             }
         }
-    }
-
-    setActivePage = (activePageName) => {
-        this.setState({ activePage: activePageName });
     }
 
     sendToken = async () => {
@@ -251,7 +239,7 @@ class Orders extends Component {
 
         if ((currentToken.property.items) && (currentToken.property.items.length > 0)) {
 
-            if ((currentCart.customerid) && (currentCart.customerid._id)) {
+            if (currentCart.customerid && currentCart.customerid._id) {
                 currentCart.customerid = currentCart.customerid._id
             }
 
@@ -379,19 +367,11 @@ class Orders extends Component {
         return token;
     }
 
-    getTableId = (tableid) => {
-        if (tableid._id) {
-            return tableid._id;
-        } else {
-            return tableid;
-        }
-    }
-
     async componentDidMount() {
         await this.getTables();
         await this.getCategories();
         await this.getItems();
-        await this.getRunningTables();
+        await this.getRunningOrders();
 
         SignalRService.registerReceiveEvent((msg) => {
             this.receiveMessage(msg);
@@ -399,7 +379,6 @@ class Orders extends Component {
     }
 
     changeTokenStatusHandler = async (token) => {
-        console.log('changeTokenStatusHandler :', token)
         let tokenList = this.state.tokenList
         let foundToken = tokenList.find(x => x._id === token._id)
         if (foundToken) {
@@ -414,15 +393,13 @@ class Orders extends Component {
                     foundToken.status = 'served';
                     break;
                 case "served":
-                // foundToken.status = 'inprogress';
-                // break;
+                    foundToken.status = 'prepared';
+                    break;
             }
 
-            console.log('foundToken :', foundToken)
             const responseToken = await ApiToken.save(foundToken)
             foundToken = responseToken.data;
             foundToken.senderID = this.senderID;
-            // console.log('Send KOT Token Response AAAAAAAAAAAAA:', JSON.stringify(kotToken))
             //SignalRService.sendMessage(JSON.stringify(foundToken));
 
             this.setState({ tokenList: tokenList })
@@ -431,54 +408,25 @@ class Orders extends Component {
     }
 
     render() {
-        const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningTables, tokenList } = this.state
-
-        let runningBillTableList
-
-        if ((currentCart) && (currentCart.tableid._id !== "")) {
-            runningBillTableList = runningTables.map(bill =>
-                <li onClick={() => this.setCurrentCartHandler(bill.tableid)} className="nav-item" key={bill.tableid._id} id={bill.tableid._id}>
-                    <a className={`nav-link ${currentCart.tableid._id === bill.tableid._id ? "active" : ""}`} href="#">
-                        <div className="pos-table-bar-cap">Table</div>
-                        <div className="pos-table-bar-num">{bill.tableid.property.tablename}</div>
-                    </a>
-                </li>
-            );
-        }
+        const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningOrders, tokenList } = this.state
 
         if (activePage === PAGES.TABLEBOOK) {
-
-            // const renderTableList = tables.map(table =>
-            //     <li onClick={() => this.setCurrentCartHandler(table)} className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id}>
-            //         <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-            //             <div className="card-body p-2 ">
-            //                 <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{table.property.capacity}</span> </div>
-            //                 <div className="d-flex justify-content-center align-items-center flex-column">
-            //                     <div className="table-restaurant-title">{table.property.tablename}</div>
-            //                     {/* <div className="table-number">01</div> */}
-            //                 </div>
-            //             </div>
-            //         </div>
-            //     </li>
-            // );
-
-            // return <TableBook tables={tables} tableList={renderTableList} />
-
             return <TableBook tableList={tables} setCurrentCartHandler={this.setCurrentCartHandler} />
         }
 
         return (
             <React.Fragment >
+                <TakeOrderPopup />
                 <div id="layoutSidenav_content">
                     {/* <main> */}
                     <div className="container-fluid">
                         <div className="row table-item-gutters">
-                            <OrderTypeSelectionUI activeOrderType={activeOrderType}></OrderTypeSelectionUI>
-                            <RunningTable runningBillTableList={runningBillTableList} newOrderHandler={() => this.newOrderHandler} />
+                            <OrderTypeSelectionUI activeOrderType={activeOrderType} changeOrderType={this.changeOrderType}></OrderTypeSelectionUI>
+                            <RunningOrders activeOrderType={activeOrderType} currentCart={currentCart} runningOrders={runningOrders} setCurrentCartHandler={this.setCurrentCartHandler} newOrderHandler={this.newOrderHandler} />
                         </div>
                         {(currentCart) &&
                             <div className="row table-item-gutters">
-                                <CartTemplate currentCart={currentCart} tokenList={tokenList} sendTokenHandler={() => this.sendToken} changeTokenStatusHandler={() => this.changeTokenStatusHandler} />
+                                <CartTemplate currentCart={currentCart} tokenList={tokenList} sendTokenHandler={this.sendToken} changeTokenStatusHandler={this.changeTokenStatusHandler} />
 
                                 <div className="col-xl-8 col-lg-8 col-md-7">
                                     <ul className="nav nav-pills mb-2 categories-pills" id="pills-tab" role="tablist">

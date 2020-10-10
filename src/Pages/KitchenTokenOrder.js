@@ -110,6 +110,9 @@ export default class KitchenTokenOrder extends Component {
         if (token.status === 'prepared' && prepared !== true) {
             return null
         }
+        if (token.status === 'served') {
+            return null
+        }
 
         return <div key={token._id} className="white-box card">
             <div className="d-flex kot-top-bar in-progress-bg">
@@ -158,11 +161,25 @@ export default class KitchenTokenOrder extends Component {
 
     render() {
         const { waiting, inProgress, prepared, tokenList } = this.state;
+        let newTokenList = []
+        tokenList.forEach(tokenStatusFilter)
 
-        const renderTokenList = tokenList.map((token) =>
+        function tokenStatusFilter(token) {
+
+            if (token.status === 'waiting' && waiting === true) {
+                newTokenList.push(token)
+            }
+            if (token.status === 'inprogress' && inProgress === true) {
+                newTokenList.push(token)
+            }
+            if (token.status === 'prepared' && prepared === true) {
+                newTokenList.push(token)
+            }
+        }
+
+        const renderTokenList = newTokenList.map((token) =>
             <this.renderToken key={token._id} token={token}></this.renderToken>
         );
-
 
         return (
             <React.Fragment>

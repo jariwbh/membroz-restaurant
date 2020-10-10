@@ -1390,7 +1390,6 @@ button:focus {
 .min-height-63 {
 	min-height: 63px;
 }
-
 .card.mb-10.w-100.white-box:hover, .card.mb-10.w-100.white-box.selected {
 	border: 1px solid #28a745 !important;
 }
@@ -1409,3 +1408,20 @@ button:focus {
 	align-items: center;
 	justify-content: center;
 }
+.my-10 {
+	margin-top: 10px;
+	margin-bottom:10px;
+}
+
+/* custom scroll tt */
+.scrollcontent{ 
+	height: auto;
+	max-height: 63px;
+	width: auto;
+	max-width: calc(100% - 149px);
+	display: inline-block;
+	vertical-align: bottom;
+}
+/* custom scroll tt */
+
+/* misc */

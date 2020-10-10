@@ -1,20 +1,54 @@
 import React from 'react'
 import ConfirmItemsModalPopup from '../components/ConfirmItemsModalPopup'
 
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const Undo = ({ onUndo, closeToast, token }) => {
+    const handleClick = () => {
+        onUndo();
+        closeToast();
+    };
+    return (
+        <div>
+            <h3>
+                {token.prefix}{token.tokennumber} is Served <button onClick={handleClick}>UNDO</button>
+            </h3>
+        </div>
+    );
+};
+
 function CartTemplate(props) {
+    const tokenList = props.tokenList.filter(token => token.status !== 'served')
+
+    const undoServedToken = (token) => {
+        props.changeTokenStatusHandler(token)
+    }
+    const tokenServed = (token) => {
+        props.changeTokenStatusHandler(token)
+        toast(<Undo onUndo={() => undoServedToken(token)} token={token} />, {
+            position: toast.POSITION.TOP_LEFT
+        });
+    };
 
     return (
         <div className="col-xl-4 col-lg-4 col-md-5">
+            <ToastContainer closeOnClick={false} closeButton={true} />
             <div className="white-box mb-3">
                 <div className="person-table-p">
                     <div className="person-table-p">
-                        <div className="table-num-title d-flex justify-content-end">{props.currentCart.tableid.property.tablename}</div>
+                        {props.currentCart.tableid &&
+                            <div className="table-num-title d-flex justify-content-end">{props.currentCart.tableid.property.tablename}</div>
+                        }
+                        {props.currentCart.property.token &&
+                            <div className="table-num-title d-flex justify-content-end">{props.currentCart.property.token.prefix} {props.currentCart.property.token.tokennumber}</div>
+                        }
                     </div>
                 </div>
                 <div className="d-flex customer-name-p">
                     <div className="flex-grow-1">
-                        <div>Kamlesh Patel</div>
-                        <div>9825141942</div>
+                        <div>{props.currentCart.customerid.property.fullname} {props.currentCart.customerid.property.numberofperson ? (props.currentCart.customerid.property.numberofperson) : ""} </div>
+                        <div>{props.currentCart.customerid.property.mobilenumber}</div>
                     </div>
                     <div className="table-num-title"> <a href="#"><img src="images/add-icon.svg" alt="" /> </a> </div>
                 </div>
@@ -69,21 +103,21 @@ function CartTemplate(props) {
                 </div>
                 <div className="row customer-name-p">
                     <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#confirmitemsmodalpopup" data-keyboard="false" data-backdrop="static">Confirm</button>
-                        <ConfirmItemsModalPopup token={props.currentCart.token} sendTokenHandler={props.sendTokenHandler()} />
+                        <ConfirmItemsModalPopup token={props.currentCart.token} sendTokenHandler={props.sendTokenHandler} />
                     </div>
                     <div className="col-6"><button type="button" className="btn btn-success btn-lg btn-block">Checkout</button>
                     </div>
                 </div>
-                {/* <KOTView tokenList={props.tokenList} />{} */}
+                {/* <KOTView tokenList={tokenList} />{} */}
 
-                {(props.tokenList) && (props.tokenList.length > 0) &&
+                {(tokenList) && (tokenList.length > 0) &&
                     <div>
                         <div className="row token-status-p mt-3">
                             <div className="col-12 table-num-title">KOT View</div>
                         </div>
 
                         {
-                            props.tokenList.map(token =>
+                            tokenList.map(token =>
                                 <div className="kot-view-block" key={token._id}>
                                     <div className="d-flex">
                                         <div className="flex-grow-1 font-weight-bold">{token.prefix}{token.tokennumber}</div>
@@ -96,7 +130,7 @@ function CartTemplate(props) {
                                             }
                                             {(token.status === "prepared") &&
                                                 <div>
-                                                    <span onClick={() => props.changeTokenStatusHandler(token)} className="badge badge-pill badge-success token-status cursor-pointer">Prepared</span>
+                                                    <span onClick={() => tokenServed(token)} className="badge badge-pill badge-success token-status cursor-pointer">Prepared</span>
                                                 </div>
                                             }
                                             {(token.status === "served") &&

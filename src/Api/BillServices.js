@@ -20,12 +20,12 @@ const branchid = "5ece552879b40e583fa63925"
 //     return axios.post('billings/filter', body);
 // }
 
-function getRunningTables() {
+function getRunningOrders() {
     const body = {
         "search": [
             { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
             { "searchfield": "tableid", "searchvalue": "true", "criteria": "exists", "datatype": "boolean" },
-            { "searchfield": "property.posstatus", "searchvalue": "running", "criteria": "eq" }
+            { "searchfield": "property.orderstatus", "searchvalue": "running", "criteria": "eq" }
         ],
         "select": [
             { "fieldname": "items.quantity", "value": 1 },
@@ -33,7 +33,8 @@ function getRunningTables() {
             { "fieldname": "totalamount", "value": 1 },
             { "fieldname": "property", "value": 1 },
             { "fieldname": "billprefix", "value": 1 },
-            { "fieldname": "billnumber", "value": 1 }
+            { "fieldname": "billnumber", "value": 1 },
+            { "fieldname": "postype", "value": 1 }
         ]
     }
 
@@ -45,11 +46,17 @@ function getByID(id) {
 }
 
 function save(body) {
-    if (body._id) {
-        return axios.put('billings/' + body._id, body);
-    } else {
+    if (body._id.startsWith('unsaved_')) {
         return axios.post('billings', body);
+    } else {
+        return axios.put('billings/' + body._id, body);
     }
+
+    // if (body._id) {
+    //     return axios.put('billings/' + body._id, body);
+    // } else {
+    //     return axios.post('billings', body);
+    // }
 }
 
 function getLocalBills() {
@@ -69,10 +76,10 @@ function saveLocalBill(bill) {
 }
 
 function removeLocalBill(currentCart) {
-    if (currentCart && currentCart.unsavedid) {
+    if (currentCart) {
         let localBills = this.getLocalBills();
         if (localBills) {
-            const filteredBills = localBills.filter(bill => bill.unsavedid !== currentCart.unsavedid)
+            const filteredBills = localBills.filter(bill => bill._id !== currentCart._id)
             localStorage.setItem('localunsavedbill', JSON.stringify(filteredBills));
         }
     }
@@ -90,4 +97,4 @@ function getBillFormate() {
     return axios.get('branches/' + branchid);
 }
 
-export { getRunningTables, getByID, save, getLocalBills, saveLocalBill, removeLocalBill, getBillFormate }
+export { getRunningOrders, getByID, save, getLocalBills, saveLocalBill, removeLocalBill, getBillFormate }

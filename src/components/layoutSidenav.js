@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 
-function layoutSidenav() {
+function LayoutSideNav() {
     return (
         <React.Fragment>
             <div id="layoutSidenav_nav">
@@ -31,4 +31,4 @@ function layoutSidenav() {
     )
 }
 
-export default layoutSidenav
+export default LayoutSideNav
