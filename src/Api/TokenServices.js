@@ -32,26 +32,17 @@ function save(body) {
     }
 }
 
-function getLocalTokenId(currentCart) {
-    let id = currentCart.unsavedid
-    if (currentCart._id && currentCart._id !== "") {
-        id = currentCart._id
-    }
-
-    return id;
-}
-
 function getLocalToken(currentCart) {
-    const token = JSON.parse(localStorage.getItem('token_' + getLocalTokenId(currentCart)));
+    const token = JSON.parse(localStorage.getItem('token_' + currentCart._id));
     return token;
 }
 
 function saveLocalToken(currentCart, token) {
-    localStorage.setItem('token_' + getLocalTokenId(currentCart), JSON.stringify(token));
+    localStorage.setItem('token_' + currentCart._id, JSON.stringify(token));
 }
 
-function removeLocalToken(currentCart) {
-    localStorage.removeItem('token_' + getLocalTokenId(currentCart))
+function removeLocalToken(currentCartID) {
+    localStorage.removeItem('token_' + currentCartID)
 }
 
 export { getList, getListByContextId, save, getLocalToken, saveLocalToken, removeLocalToken }

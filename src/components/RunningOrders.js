@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 function RunningTable(props) {
     const runningOrders = props.runningOrders.filter(x => x.postype === props.activeOrderType)
     const currentCart = props.currentCart
-    console.log('runningOrders:', runningOrders)
 
     return (
         <React.Fragment>
@@ -16,7 +15,7 @@ function RunningTable(props) {
                                 {currentCart && runningOrders && runningOrders.length > 0 &&
                                     runningOrders.map(bill =>
                                         <li onClick={() => props.setCurrentCartHandler(bill)} className="nav-item" key={bill._id} id={bill._id}>
-                                            <a className={`nav-link ${currentCart.tableid._id === bill.tableid._id ? "active" : ""}`} href="#">
+                                            <a className={`nav-link ${currentCart._id === bill._id ? "active" : ""}`} href="#">
                                                 <div className="pos-table-bar-cap">Table</div>
                                                 <div className="pos-table-bar-num">{bill.tableid.property.tablename}</div>
                                             </a>

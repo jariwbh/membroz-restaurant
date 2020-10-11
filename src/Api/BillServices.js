@@ -45,18 +45,18 @@ function getByID(id) {
     return axios.get('billings/' + id);
 }
 
-function save(body) {
+function save(currentCart) {
+    const body = { ...currentCart, customerid: currentCart.customerid._id }
+
     if (body._id.startsWith('unsaved_')) {
-        return axios.post('billings', body);
-    } else {
-        return axios.put('billings/' + body._id, body);
+        delete body._id
     }
 
-    // if (body._id) {
-    //     return axios.put('billings/' + body._id, body);
-    // } else {
-    //     return axios.post('billings', body);
-    // }
+    if (body._id) {
+        return axios.put('billings/' + body._id, body);
+    } else {
+        return axios.post('billings', body);
+    }
 }
 
 function getLocalBills() {
@@ -75,11 +75,11 @@ function saveLocalBill(bill) {
     localStorage.setItem('localunsavedbill', JSON.stringify(localBills));
 }
 
-function removeLocalBill(currentCart) {
-    if (currentCart) {
+function removeLocalBill(currentCartID) {
+    if (currentCartID) {
         let localBills = this.getLocalBills();
         if (localBills) {
-            const filteredBills = localBills.filter(bill => bill._id !== currentCart._id)
+            const filteredBills = localBills.filter(bill => bill._id !== currentCartID)
             localStorage.setItem('localunsavedbill', JSON.stringify(filteredBills));
         }
     }

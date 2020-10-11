@@ -67,6 +67,7 @@ export default class TableBook extends Component {
             tableList: props.tableList,
             reservedTableList: [],
             search: null,
+            onModel: '',
             customername: '',
             mobile_number: '',
             noofperson: '',
@@ -131,6 +132,7 @@ export default class TableBook extends Component {
         if (this.state.checkedvalue === 'existcustomer') {
             const customerFind = this.state.searchData.find(x => x._id === event)
             this.setState({
+                onModel: customerFind.property.onModel,
                 mobile_number: customerFind.property.mobile_number,
                 customername: customerFind.property.fullname,
                 customerid: customerFind._id,
@@ -333,7 +335,7 @@ export default class TableBook extends Component {
     }
 
     allocateTable(customerObj, allocatedObj, reservationObj) {
-        const { noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
+        const { onModel, noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
 
         let orderObj = {
             _id: 'unsaved_' + uuid(),
@@ -350,7 +352,7 @@ export default class TableBook extends Component {
                     noofperson: noofperson
                 }
             },
-            onModel: "Member",
+            onModel: onModel,
             amount: 0,
             totalamount: 0,
             discount: 0,

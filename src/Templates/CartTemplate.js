@@ -3,6 +3,7 @@ import ConfirmItemsModalPopup from '../components/ConfirmItemsModalPopup'
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { PAGES } from '../Pages/OrderEnums'
 
 const Undo = ({ onUndo, closeToast, token }) => {
     const handleClick = () => {
@@ -105,7 +106,8 @@ function CartTemplate(props) {
                     <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#confirmitemsmodalpopup" data-keyboard="false" data-backdrop="static">Confirm</button>
                         <ConfirmItemsModalPopup token={props.currentCart.token} sendTokenHandler={props.sendTokenHandler} />
                     </div>
-                    <div className="col-6"><button type="button" className="btn btn-success btn-lg btn-block">Checkout</button>
+                    <div className="col-6">
+                        <button type="button" className="btn btn-success btn-lg btn-block" onClick={() => props.setActivePage(PAGES.PAYMENT)}>Checkout</button>
                     </div>
                 </div>
                 {/* <KOTView tokenList={tokenList} />{} */}
