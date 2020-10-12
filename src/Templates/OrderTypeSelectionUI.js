@@ -6,7 +6,7 @@ function OrderTypeSelectionUI(props) {
     return (
         <React.Fragment>
             <div className="col-xl-4 col-lg-4 col-md-5">
-                <div className="white-box mt-3 mb-0 mb-md-3">
+                <div className="white-box mt-10 mb-0 mb-md-10">
                     <ul className="nav nav-pills d-flex justify-content-around flex-lg-nowrap">
                         <li className="nav-item" onClick={() => props.changeOrderType(ORDERTYPES.DINEIN)}>
                             <a className={`nav-link ${props.activeOrderType === ORDERTYPES.DINEIN ? "active" : ""}`} href="#">

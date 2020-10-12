@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import uuid from 'react-uuid'
 import SignalRService from '../Helpers/signalRService';
 import * as Api from '../Api/TokenServices'
-import * as Sounds from '../components/Sounds.js'
+import * as Sounds from '../components/Sounds'
 
 export default class KitchenTokenOrder extends Component {
     constructor(props) {
@@ -185,7 +185,7 @@ export default class KitchenTokenOrder extends Component {
             <React.Fragment>
                 <div id="layoutSidenav_content">
                     <div className="container-fluid">
-                        <div className="row table-item-gutters my-3">
+                        <div className="row table-item-gutters my-10">
                             <div className="col-xl-12 col-lg-12 col-md-12">
                                 <div className="row">
                                     <div className="col-xl-7 col-lg-6 col-md-6">

@@ -458,7 +458,7 @@ export default class TableBook extends Component {
                 <div id="layoutSidenav_content" >
                     <main>
                         <div className="container-fluid">
-                            <div className="row table-item-gutters my-3">
+                            <div className="row table-item-gutters my-10">
                                 <div className="col-xl-4 col-lg-4 col-md-5" >
                                     <div className="white-box mb-3 white-box-full" >
                                         <ul className="nav nav-pills categories-pills person-table-p d-flex justify-content-around" id="pills-tab-list" role="tablist">

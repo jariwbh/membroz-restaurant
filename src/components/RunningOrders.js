@@ -8,7 +8,7 @@ function RunningTable(props) {
     return (
         <React.Fragment>
             <div className="col-xl-8 col-lg-8 col-md-7">
-                <div className="white-box my-3">
+                <div className="white-box my-10">
                     <div className="d-flex align-items-center min-height-63">
                         <div className="flex-grow-1 scrollcontent" id="scrollcontent">
                             <ul className="nav nav-pills">
