@@ -12,10 +12,10 @@ const Undo = ({ onUndo, closeToast, token }) => {
     };
     return (
         <div className="p-1">
-            <h4 className="kot-item-served mb-1"> 
+            <h4 className="kot-item-served mb-1">
                 {token.prefix}{token.tokennumber} is Served   <button onClick={handleClick} className="btn btn-primary ml-2" type="button">Undo</button>
             </h4>
-           
+
         </div>
     );
 };
@@ -27,7 +27,6 @@ function CartTemplate(props) {
         props.changeTokenStatusHandler(token)
     }
     const tokenServed = (token) => {
-        console.log("TTTT",token)
         props.changeTokenStatusHandler(token)
         toast(<Undo onUndo={() => undoServedToken(token)} token={token} />, {
             position: toast.POSITION.TOP_LEFT
@@ -36,7 +35,7 @@ function CartTemplate(props) {
 
     return (
         <div className="col-xl-4 col-lg-4 col-md-5">
-             
+
             <div className="white-box mb-10 white-box-full-order">
                 <div className="person-table-p">
                     <div className="person-table-p">
@@ -115,13 +114,13 @@ function CartTemplate(props) {
                 {/* <KOTView tokenList={tokenList} />{} */}
 
                 {/* {(tokenList) && (tokenList.length > 0) && */}
-                    <div>
-                        <div className="row token-status-p mt-3">
-                            <div className="col-12 table-num-title">KOT View</div>
-                        </div>
-                       
-                        <div className="position-relative">
-                        <ToastContainer closeOnClick={false} closeButton={true} autoClose={5000}  />   
+                <div>
+                    <div className="row token-status-p mt-3">
+                        <div className="col-12 table-num-title">KOT View</div>
+                    </div>
+
+                    <div className="position-relative">
+                        <ToastContainer closeOnClick={false} closeButton={true} autoClose={5000} />
                         {
                             tokenList.map(token =>
                                 <div className="kot-view-block" key={token._id}>
@@ -161,8 +160,8 @@ function CartTemplate(props) {
                                 </div>
                             )
                         }
-                        </div>
                     </div>
+                </div>
                 {/* } */}
             </div>
         </div>

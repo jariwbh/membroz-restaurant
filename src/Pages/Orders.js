@@ -118,11 +118,19 @@ class Orders extends Component {
     getRunningOrders = async () => {
         const response = await BillApi.getRunningOrders();
         let runningOrders = response.data;
-        const localRunningTable = BillApi.getLocalOrders();
+        const localRunningOrder = BillApi.getLocalOrders();
 
         let runningTableMerged = runningOrders
-        if (localRunningTable) {
-            runningTableMerged = runningOrders.concat(localRunningTable)
+        if (localRunningOrder) {
+
+            runningTableMerged = runningOrders.map(x1 => {
+                let order = localRunningOrder.find(x2 => x2._id === x1._id)
+                if (order) {
+                    return order;
+                } else {
+                    return x1;
+                }
+            });
         }
 
         return runningTableMerged;
@@ -167,11 +175,11 @@ class Orders extends Component {
         let runningOrders = []
         let currentCart = undefined
         let tokenList = []
+        let items = this.state.items
 
         if (order) {
             currentCart = this.state.runningOrders.find(x => x._id === order._id)
             if (currentCart) {
-
                 if (!currentCart._id.startsWith('unsaved_')) {
                     let response = await BillApi.getByID(currentCart._id)
                     currentCart = response.data
@@ -200,19 +208,36 @@ class Orders extends Component {
                 currentCart = currentCartTemp
             }
         }
+
+        if (!currentCart.token) {
+            currentCart.token = this.getTokenModel(currentCart.tableid)
+        }
+
+        let mappedItems = items.map(x1 => {
+            let item = currentCart.token.property.items.find(x2 => x2._id === x1._id)
+            if (item) {
+                return { ...x1, tokenquantity: item.quantity };
+            } else {
+                return { ...x1, tokenquantity: 0 };
+            }
+        });
+
         if (runningOrders.length > 0) {
             this.setState({
+                items: mappedItems,
                 runningOrders: runningOrders,
                 currentCart: currentCart,
-                tokenList: tokenList
+                tokenList: tokenList,
+                activePage: PAGES.ORDERS
             });
         } else {
             this.setState({
+                items: mappedItems,
                 currentCart: currentCart,
-                tokenList: tokenList
+                tokenList: tokenList,
+                activePage: PAGES.ORDERS
             });
         }
-
     }
 
     sendToken = async () => {
@@ -231,16 +256,22 @@ class Orders extends Component {
             currentToken.contextid = currentCart._id
             const responseToken = await ApiToken.save(currentToken)
             if (responseToken.status === 200) {
-                const token = responseToken.data;
-                token.senderID = this.senderID;
-                SignalRService.sendMessage(JSON.stringify(token));
+                currentToken = responseToken.data;
+                currentToken.senderID = this.senderID;
+
+                SignalRService.sendMessage(JSON.stringify(currentToken));
+
+                if (this.state.activeOrderType === ORDERTYPES.TAKEAWAY || this.state.activeOrderType === ORDERTYPES.DELIVERY) {
+                    currentCart.property.token = currentToken
+                    const response = await BillApi.save(currentCart)
+                    currentCart = response.data
+                }
             } else {
                 console.log('sendToken Save Token ERROR', response.errors)
                 alert("sendToken Save Token ERROR : " + response.errors.toString())
             }
 
             BillApi.removeLocalOrder(beforeSaveID);
-            ApiToken.removeLocalToken(beforeSaveID);
 
             const responseGetByID = await BillApi.getByID(currentCart._id)
             currentCart = responseGetByID.data

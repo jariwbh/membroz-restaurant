@@ -37,6 +37,7 @@ class SignalRController {
 
         return this.rConnection.invoke("SendMessage", message)
             .catch(function (data) {
+                console.log("cannot connect to the serve ERROR:", data);
                 alert('cannot connect to the server');
             });
     }

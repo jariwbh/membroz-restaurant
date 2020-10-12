@@ -24,25 +24,14 @@ function getListByContextId(contextId) {
     return axios.post('tokens/filter', body);
 }
 
-function save(body) {
-    if (body._id) {
-        return axios.put('tokens/' + body._id, body);
+function save(token) {
+    if (token._id) {
+        return axios.put('tokens/' + token._id, token);
     } else {
-        return axios.post('tokens', body);
+        delete token.prefix
+        delete token.tokennumber
+        return axios.post('tokens', token);
     }
 }
 
-function getLocalToken(currentCart) {
-    const token = JSON.parse(localStorage.getItem('token_' + currentCart._id));
-    return token;
-}
-
-function saveLocalToken(currentCart, token) {
-    localStorage.setItem('token_' + currentCart._id, JSON.stringify(token));
-}
-
-function removeLocalToken(currentCartID) {
-    localStorage.removeItem('token_' + currentCartID)
-}
-
-export { getList, getListByContextId, save, getLocalToken, saveLocalToken, removeLocalToken }
+export { getList, getListByContextId, save }
