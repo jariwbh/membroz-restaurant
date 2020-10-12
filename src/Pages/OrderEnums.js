@@ -7,7 +7,7 @@ export const PAGES = {
 export const ORDERTYPES = {
     DINEIN: 'dinein',
     TAKEAWAY: 'takeaway',
-    DELIVERY: 'Delivery'
+    DELIVERY: 'delivery'
 }
 
 export const PAYMENTMETHODS = {

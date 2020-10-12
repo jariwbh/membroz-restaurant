@@ -59,29 +59,48 @@ function save(currentCart) {
     }
 }
 
-function getLocalBills() {
-    const localBills = JSON.parse(localStorage.getItem('localunsavedbill'));
-    return localBills;
+function getLocalOrders() {
+    const localOrders = JSON.parse(localStorage.getItem('localorders'));
+    return localOrders
+    // const currentCart = JSON.parse(localStorage.getItem('token_' + currentCartId));
+    // return currentCart;
 }
 
-function saveLocalBill(bill) {
-    let localBills = this.getLocalBills();
+function getLocalOrderByID(currentCartId) {
+    let localOrders = this.getLocalOrders();
+    let foundOrder
 
-    if (!localBills) {
-        localBills = [];
+    if (localOrders) {
+        foundOrder = localOrders.find(x => x._id === currentCartId)
     }
 
-    localBills.push(bill);
-    localStorage.setItem('localunsavedbill', JSON.stringify(localBills));
+    return foundOrder
+    // const currentCart = JSON.parse(localStorage.getItem('order_' + currentCartId));
+    // return currentCart;
 }
 
-function removeLocalBill(currentCartID) {
-    if (currentCartID) {
-        let localBills = this.getLocalBills();
-        if (localBills) {
-            const filteredBills = localBills.filter(bill => bill._id !== currentCartID)
-            localStorage.setItem('localunsavedbill', JSON.stringify(filteredBills));
-        }
+function saveLocalOrder(currentCart) {
+    let localOrders = this.getLocalOrders();
+    let filteredOrders = []
+    if (localOrders) {
+        filteredOrders = localOrders.filter(x => x._id !== currentCart._id)
+    }
+
+    if (!filteredOrders) {
+        filteredOrders = [];
+    }
+
+    filteredOrders.push(currentCart);
+    localStorage.setItem('localorders', JSON.stringify(filteredOrders));
+}
+
+function removeLocalOrder(currentCartID) {
+    let localOrders = this.getLocalOrders();
+    let filteredOrders = []
+
+    if (localOrders) {
+        filteredOrders = localOrders.filter(x => x._id !== currentCartID)
+        localStorage.setItem('localorders', JSON.stringify(filteredOrders));
     }
 }
 
@@ -97,4 +116,4 @@ function getBillFormate() {
     return axios.get('branches/' + branchid);
 }
 
-export { getRunningOrders, getByID, save, getLocalBills, saveLocalBill, removeLocalBill, getBillFormate }
+export { getRunningOrders, getByID, save, getLocalOrders, getLocalOrderByID, saveLocalOrder, removeLocalOrder, getBillFormate }

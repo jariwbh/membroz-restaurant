@@ -27,7 +27,6 @@ class Orders extends Component {
         window.scrollTo(0, 0);
 
         this.senderID = uuid();
-        this.currentCart = undefined;
 
         this.state = {
             activePage: PAGES.ORDERS,
@@ -70,7 +69,6 @@ class Orders extends Component {
             //     tokenList.push(token)
             // }
 
-            // let tokenList = await this.getTokenList(this.currentCart._id)
             // this.setState({ tokenList: tokenList })
             // console.log('this.state.tokenList SENDER ID: ', token.senderID)
             //console.log('this.state.tokenList SENDER CLIENT ID: ', this.senderID)
@@ -93,8 +91,8 @@ class Orders extends Component {
 
     changeOrderType = (orderTypeName) => {
         if (this.state.activeOrderType !== orderTypeName) {
+            this.setState({ activeOrderType: orderTypeName });
             this.setCurrentCartHandler()
-            //this.setState({ activeOrderType: orderTypeName });
         }
     }
 
@@ -120,7 +118,7 @@ class Orders extends Component {
     getRunningOrders = async () => {
         const response = await BillApi.getRunningOrders();
         let runningOrders = response.data;
-        const localRunningTable = BillApi.getLocalBills();
+        const localRunningTable = BillApi.getLocalOrders();
 
         let runningTableMerged = runningOrders
         if (localRunningTable) {
@@ -163,74 +161,58 @@ class Orders extends Component {
         this.setState({ activePage: PAGES.TABLEBOOK });
     }
 
-    loadUnsavedCartItems = () => {
-        let token = ApiToken.getLocalToken(this.currentCart)
-        this.currentCart.token = token;
-
-        if (token) {
-            token.property.items.forEach(item => this.addItemToCart(item._id, item.quantity));
-        }
-    }
-
     setCurrentCartHandler = async (order) => {
         let orderType = this.state.activeOrderType
 
-        if (order) {
-            this.currentCart = this.state.runningOrders.find(x => x._id === order._id)
-            if (this.currentCart) {
-                if (this.currentCart._id.startsWith('unsaved_')) {
-                    this.loadUnsavedCartItems();
-                    this.setState({ currentCart: this.currentCart, tokenList: [] })
-                } else {
-                    if (!this.currentCart._id.startsWith('unsaved_')) {
-                        let response = await BillApi.getByID(this.currentCart._id)
-                        this.currentCart = response.data
-                    }
-                    let tokenList = await this.getTokenList(this.currentCart._id)
+        let runningOrders = []
+        let currentCart = undefined
+        let tokenList = []
 
-                    this.loadUnsavedCartItems();
-                    this.setState({
-                        currentCart: this.currentCart,
-                        tokenList: tokenList,
-                        activePage: PAGES.ORDERS
-                    })
+        if (order) {
+            currentCart = this.state.runningOrders.find(x => x._id === order._id)
+            if (currentCart) {
+
+                if (!currentCart._id.startsWith('unsaved_')) {
+                    let response = await BillApi.getByID(currentCart._id)
+                    currentCart = response.data
+                    tokenList = await this.getTokenList(currentCart._id)
                 }
             }
 
-            if (!this.currentCart) {
-                let runningOrders = this.state.runningOrders;
-                this.currentCart = order;
-                runningOrders.push(this.currentCart);
-                BillApi.saveLocalBill(this.currentCart);
-
-                this.setState({
-                    runningOrders: runningOrders,
-                    currentCart: this.currentCart,
-                    tokenList: [],
-                    activePage: PAGES.ORDERS
-                });
+            if (!currentCart) {
+                runningOrders = this.state.runningOrders;
+                currentCart = order;
+                runningOrders.push(currentCart);
+                BillApi.saveLocalOrder(currentCart);
             }
 
         } else {
             const filterRunningOrders = this.state.runningOrders.filter(x => x.postype === orderType)
-
             if (filterRunningOrders && filterRunningOrders.length > 0) {
-                this.currentCart = filterRunningOrders[0] //filterRunningOrders.length - 1
-                let tokenList = await this.getTokenList(this.currentCart._id)
-                this.loadUnsavedCartItems();
-                this.setState({
-                    currentCart: this.currentCart,
-                    tokenList: tokenList,
-                    activeOrderType: orderType
-                });
-            } else {
-                this.setState({
-                    currentCart: undefined,
-                    activePage: PAGES.ORDERS,
-                    activeOrderType: orderType
-                });
+                currentCart = filterRunningOrders[0] //filterRunningOrders.length - 1
+                tokenList = await this.getTokenList(currentCart._id)
             }
         }
+
+        if (currentCart) {
+            let currentCartTemp = BillApi.getLocalOrderByID(currentCart._id)
+            if (currentCartTemp) {
+                currentCart = currentCartTemp
+            }
+        }
+        if (runningOrders.length > 0) {
+            this.setState({
+                runningOrders: runningOrders,
+                currentCart: currentCart,
+                tokenList: tokenList
+            });
+        } else {
+            this.setState({
+                currentCart: currentCart,
+                tokenList: tokenList
+            });
+        }
+
     }
 
     sendToken = async () => {
@@ -247,7 +229,6 @@ class Orders extends Component {
 
             currentCart = response.data
             currentToken.contextid = currentCart._id
-
             const responseToken = await ApiToken.save(currentToken)
             if (responseToken.status === 200) {
                 const token = responseToken.data;
@@ -258,7 +239,7 @@ class Orders extends Component {
                 alert("sendToken Save Token ERROR : " + response.errors.toString())
             }
 
-            BillApi.removeLocalBill(beforeSaveID);
+            BillApi.removeLocalOrder(beforeSaveID);
             ApiToken.removeLocalToken(beforeSaveID);
 
             const responseGetByID = await BillApi.getByID(currentCart._id)
@@ -268,7 +249,6 @@ class Orders extends Component {
             const updatedRunningOrders = this.state.runningOrders.map(x => x._id === beforeSaveID ? currentCart : x);
 
             let tokenList = await this.getTokenList(currentCart._id)
-            this.currentCart = currentCart
             this.setState({ runningOrders: updatedRunningOrders, currentCart: currentCart, tokenList: tokenList })
         } else {
             console.log('sendToken Save Bill ERROR', response.errors)
@@ -287,9 +267,7 @@ class Orders extends Component {
 
         const response = await BillApi.save(currentCart)
         if (response.status === 200) {
-            console.log('Save Bill Response', response.data)
-            BillApi.removeLocalBill(beforeSaveID);
-            ApiToken.removeLocalToken(beforeSaveID);
+            BillApi.removeLocalOrder(beforeSaveID);
 
             const runningOrders = await this.getRunningOrders();
 
@@ -320,7 +298,7 @@ class Orders extends Component {
             alert("Empty Current KOT")
             return false;
         }
-        if (currentToken.property.items.length = 0) {
+        if (currentToken.property.items.length === 0) {
             alert("Empty Current KOT")
             return false;
         }
@@ -329,17 +307,19 @@ class Orders extends Component {
     }
 
     addToCart = (item) => {
-        this.addItemToCart(item._id, 1);
-        let token = this.addItemToToken(item._id);
+        let currentCart = this.addItemToCart(item._id, 1);
+        let token = this.addItemToToken(item._id, 1);
 
-        //currentCart.token = token;
-        this.setState({ currentCart: this.currentCart });
+        currentCart.token = token;
+        BillApi.saveLocalOrder(currentCart);
+        this.setState({ currentCart: currentCart });
     }
 
     addItemToCart = (itemid, quantity) => {
+        let currentCart = this.state.currentCart
         const item = this.state.items.find(x => x._id === itemid);
 
-        let cartItem = this.currentCart.items.find(x => ((x.item._id) && (x.item._id === itemid)) || ((x.item) && (x.item === itemid)));
+        let cartItem = currentCart.items.find(x => ((x.item._id) && (x.item._id === itemid)) || ((x.item) && (x.item === itemid)));
         if (cartItem) {
             cartItem.quantity = Number(cartItem.quantity) + Number(quantity);
             cartItem.totalcost = Number(cartItem.cost) * Number(cartItem.quantity);
@@ -347,39 +327,40 @@ class Orders extends Component {
             let cartItem = {
                 _id: itemid,
                 item: itemid,
-                quantity: Number(1),
+                quantity: Number(quantity),
                 cost: item.itemid.sale.rate,
                 totalcost: item.itemid.sale.rate,
                 discount: 0,
                 itemname: item.itemid.itemname,
                 tax: []
             }
-            this.currentCart.items.push(cartItem);
+            currentCart.items.push(cartItem);
         }
 
-        this.currentCart.totalquantity = this.currentCart.items.map(item => item.quantity).reduce((prev, next) => prev + next);
-        this.currentCart.amount = this.currentCart.items.map(item => item.amount).reduce((prev, next) => prev + next);
-        this.currentCart.totalamount = this.currentCart.items.map(item => item.totalcost).reduce((prev, next) => prev + next);
+        currentCart.totalquantity = currentCart.items.map(item => item.quantity).reduce((prev, next) => prev + next);
+        currentCart.amount = currentCart.items.map(item => item.amount).reduce((prev, next) => prev + next);
+        currentCart.totalamount = currentCart.items.map(item => item.totalcost).reduce((prev, next) => prev + next);
 
-        return this.currentCart;
+        return currentCart;
     }
 
-    addItemToToken = (itemid) => {
-        let item = this.state.items.find(x => x._id === itemid);
-        let token = ApiToken.getLocalToken(this.currentCart);
+    addItemToToken = (itemid, quantity) => {
+        let currentCart = this.state.currentCart
+        let token = currentCart.token;
 
         if (!token) {
-            token = this.getTokenModel(this.currentCart.tableid)
+            token = this.getTokenModel(currentCart.tableid)
         }
 
+        let item = this.state.items.find(x => x._id === itemid);
         let tokenItem = token.property.items.find(x => x._id === itemid);
         if (tokenItem) {
-            tokenItem.quantity = Number(tokenItem.quantity) + Number(1);
+            tokenItem.quantity = Number(tokenItem.quantity) + Number(quantity);
             tokenItem.totalcost = Number(tokenItem.cost) * Number(tokenItem.quantity);
         } else {
             tokenItem = {
                 _id: itemid,
-                quantity: Number(1),
+                quantity: Number(quantity),
                 itemname: item.itemid.itemname,
                 cost: item.itemid.sale.rate,
                 totalcost: item.itemid.sale.rate
@@ -392,9 +373,7 @@ class Orders extends Component {
         token.totalquantity = token.property.items.map(item => item.quantity).reduce((prev, next) => prev + next);
         token.totalamount = token.property.items.map(item => item.totalcost).reduce((prev, next) => prev + next);
 
-        ApiToken.saveLocalToken(this.currentCart, token)
-
-        this.currentCart.token = token;
+        currentCart.token = token;
         return token;
     }
 
