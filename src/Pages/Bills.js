@@ -316,34 +316,48 @@ class Bills extends Component {
                 <div id="layoutSidenav_content">
                     <main>
                         <div className="container-fluid">
-                            <form className="form-inline ">
-                                <h1>Today's Bills</h1>
-                                <input className="form-control" type="search" onChange={(e) => this.searchSpace(e)} style={{ marginLeft: '65%' }} placeholder="Search Bills" aria-label="Search" />
-                            </form>
-                            <div className="row table-item-gutters">
-                                <table id="billtable" name="billtable" className="table" cellSpacing="1" style={{ cursor: 'pointer' }}>
-                                    <thead className="thead-dark">
-                                        <tr>
-                                            <th className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
-                                            <th className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
-                                            <th className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('tablename')}>Table</th>
-                                            <th className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
-                                            <th className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
-                                            <th width="50px"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {billList.length === 0 ?
-                                            <tr>
-                                                <td colSpan="5" className="text-center text-nowrap">No records to display</td>
-                                            </tr>
-                                            :
-                                            billList
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="form-inline">
+                            <div className="row">
+                                <div className="col-xl-10 offset-xl-1">  
+                                    <div className="white-box p-3 mt-5">
+                                    <form className="row">
+                                        <div className="col-md-9">
+                                          <h3>Today's Bills</h3>
+                                        </div>
+                                        <div className="col-md-3">
+                                           <input className="form-control mb-2" type="search" onChange={(e) => this.searchSpace(e)}  placeholder="Search Bills" aria-label="Search" />
+                                        </div>
+                                        
+                                      
+                                    </form>
+                                    <div className="row">
+                                        <div className="col-md-12">
+                                        <div className="mb-3">
+                                       
+                                        <table id="billtable" name="billtable" className="table" cellSpacing="1" style={{ cursor: 'pointer' }}>
+                                            <thead className="thead-dark">
+                                                <tr>
+                                                    <th className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
+                                                    <th className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
+                                                    <th className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('tablename')}>Table</th>
+                                                    <th className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
+                                                    <th className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
+                                                    <th width="50px"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {billList.length === 0 ?
+                                                    <tr>
+                                                        <td colSpan="5" className="text-center text-nowrap">No records to display</td>
+                                                    </tr>
+                                                    :
+                                                    billList
+                                                }
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                        </div>
+                                      </div>
+                                    <div className="form-inline">
                                 <nav>
                                     <ul className="pagination justify-content-right">
                                         <Pagination
@@ -359,6 +373,9 @@ class Bills extends Component {
                                         />
                                     </ul>
                                 </nav>
+                            </div>
+                              </div>
+                              </div>
                             </div>
                         </div>
                     </main>
