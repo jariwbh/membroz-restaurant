@@ -1456,3 +1456,27 @@ margin-top:10px;
    position: absolute !important;
 }
 /* misc */
+/* bill */
+
+.table .thead-dark th {
+  color: #fff;
+  background-color: #2F408F;
+  border-color: #2F408F;
+}
+.pagination .page-item.active .page-link {
+  z-index: 3;
+  color: #fff;
+  background-color: #F29015;
+  border-color: #F29015;
+}
+.pagination .page-link:hover {
+  z-index: 2;
+  color: #fff;
+  text-decoration: none;
+  background-color: #F29015;
+  border-color: #F29015;
+}
+.pagination .page-link  {
+  color: #333333;
+}
+ /* bill */ 
