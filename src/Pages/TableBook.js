@@ -12,6 +12,7 @@ import SelectSearch from 'react-select-search';
 import '../Assets/css/DropDownstyles.css'
 import '../Assets/css/ErrorMessage.css'
 import uuid from 'react-uuid'
+import { ORDERTYPES } from '../Pages/OrderEnums'
 
 export default class TableBook extends Component {
     constructor(props) {
@@ -84,6 +85,7 @@ export default class TableBook extends Component {
             disableCustomer: false,
             customerobjnew: [],
             tableobj: [],
+            checkedtable: null,
             runningOrders: props.runningOrders
         }
         this.submitted = false;
@@ -213,18 +215,20 @@ export default class TableBook extends Component {
             validation: validator,
             getcustomerid: '',
             tableid: '',
+            tablename: '',
             customerid: '',
+            customername: '',
             submitted: false,
             disableCustomer: false,
-            customerobjnew: []
+            customerobjnew: [],
+            checkedtable: null
         });
     }
 
     async clicktoSelectTableOpenModel(tableobj) {
         const currentTableobj = tableobj
-        const checkedRunningTable = this.state.runningOrders.find(x => x.tableid._id === currentTableobj._id)
-        // console.log('checkedRunningTable', checkedRunningTable);
-        //const id = (checkedRunningTable !== null ? checkedRunningTable.tableid._id : '')
+        const checkedRunningTable = this.state.runningOrders.filter(x => x.postype === ORDERTYPES.DINEIN).find(x => x.tableid._id === currentTableobj._id)
+
         if (checkedRunningTable) {
             this.props.setCurrentCartHandler(checkedRunningTable)
         } else {
@@ -234,11 +238,12 @@ export default class TableBook extends Component {
                 customerid: '',
                 customername: '',
                 mobile_number: '',
-                time: '',
-                date: '',
+                time: this.state.time,
+                date: this.state.date,
                 tableid: currentTableobj._id,
                 tablename: currentTableobj.property.tablename,
-                checkedvalue: 'existcustomer'
+                checkedvalue: 'existcustomer',
+                checkedtable: currentTableobj
             });
             document.getElementById('existcustomer').checked = true;
         }
@@ -622,20 +627,24 @@ export default class TableBook extends Component {
                                             <span className="help-block">{validation.mobile_number.message}</span>
                                         </div>
                                     </div>
-                                    <div className="form-group row">
-                                        <label htmlFor="time" className="col-sm-4 col-form-label">Time <span style={{ color: 'red' }}>*</span></label>
-                                        <div className="col-sm-8">
-                                            <input type="text" className="form-control" name='time' placeholder="Enter Time" id="timeid" value={this.state.time} onChange={this.handleInputChange} />
-                                            <span className="help-block">{validation.time.message}</span>
+                                    {this.state.checkedtable === null ?
+                                        <div className="form-group row">
+                                            <label htmlFor="time" className="col-sm-4 col-form-label">Time <span style={{ color: 'red' }}>*</span></label>
+                                            <div className="col-sm-8">
+                                                <input type="text" className="form-control" name='time' placeholder="Enter Time" id="timeid" value={this.state.time} onChange={this.handleInputChange} />
+                                                <span className="help-block">{validation.time.message}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="form-group row">
-                                        <label htmlFor="date" className="col-sm-4 col-form-label">Date <span style={{ color: 'red' }}>*</span></label>
-                                        <div className="col-sm-8">
-                                            <input type="text" className="form-control" name='date' placeholder="Enter Date" id="dateid" defaultValue={this.state.date} onChange={this.handleInputChange} />
-                                            <span className="help-block">{validation.date.message}</span>
+                                        : ''}
+                                    {this.state.checkedtable === null ?
+                                        <div className="form-group row">
+                                            <label htmlFor="date" className="col-sm-4 col-form-label">Date <span style={{ color: 'red' }}>*</span></label>
+                                            <div className="col-sm-8">
+                                                <input type="text" className="form-control" name='date' placeholder="Enter Date" id="dateid" defaultValue={this.state.date} onChange={this.handleInputChange} />
+                                                <span className="help-block">{validation.date.message}</span>
+                                            </div>
                                         </div>
-                                    </div>
+                                        : ''}
                                     <div className="form-group row">
                                         <label htmlFor="table" className="col-sm-4 col-form-label">Table
                                                     {checkedvalue === 'existcustomer' ? <span style={{ color: 'red' }}>*</span> : ''}
