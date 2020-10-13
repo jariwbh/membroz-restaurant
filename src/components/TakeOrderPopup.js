@@ -65,7 +65,6 @@ export default class TakeOrderPopup extends Component {
             onModel: ''
         }
         this.submitted = false;
-        // this.handleradioOnChange = this.handleradioOnChange.bind(this);
     }
 
     handleInputChange = event => {
@@ -183,7 +182,7 @@ export default class TakeOrderPopup extends Component {
                 table: tablename
             },
             postype: this.props.activeOrderType,
-            property: { orderstatus: "running", token: '' },
+            property: { orderstatus: "running", noofperson: '' },
             customerid: {
                 _id: customerid,
                 property: {
