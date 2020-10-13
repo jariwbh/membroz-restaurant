@@ -35,20 +35,20 @@ function CartTemplate(props) {
 
     return (
         <div className="col-xl-4 col-lg-4 col-md-5">
-            <div className="white-box mb-10 white-box-full-order">               
-                    <div className="d-flex person-table-p">
-                    <div class="flex-grow-1 person-title"> Person {props.currentCart.customerid.property.numberofperson} 4</div>              
-                        {props.currentCart.tableid &&
-                            <div className="table-num-title d-flex justify-content-end">{props.currentCart.tableid.property.tablename}</div>
-                        }
-                        {props.currentCart.property.token &&
-                            <div className="table-num-title d-flex justify-content-end">{props.currentCart.property.token.prefix} {props.currentCart.property.token.tokennumber}</div>
-                        }
-                    </div>
-             
+            <div className="white-box mb-10 white-box-full-order">
+                <div className="d-flex person-table-p">
+                    <div className="flex-grow-1 person-title"> Person {props.currentCart.property.noofperson}</div>
+                    {props.currentCart.tableid &&
+                        <div className="table-num-title d-flex justify-content-end">{props.currentCart.tableid.property.tablename}</div>
+                    }
+                    {props.currentCart.property.token &&
+                        <div className="table-num-title d-flex justify-content-end">{props.currentCart.property.token.prefix} {props.currentCart.property.token.tokennumber}</div>
+                    }
+                </div>
+
                 <div className="d-flex customer-name-p">
                     <div className="flex-grow-1">
-                        <div>{props.currentCart.customerid.property.fullname} {props.currentCart.customerid.property.numberofperson ? (props.currentCart.customerid.property.numberofperson) : ""} </div>
+                        <div>{props.currentCart.customerid.property.fullname}</div>
                         <div>{props.currentCart.customerid.property.mobilenumber}</div>
                     </div>
                     <div className="table-num-title"> <a href="#"><img src="images/add-icon.svg" alt="" /> </a> </div>

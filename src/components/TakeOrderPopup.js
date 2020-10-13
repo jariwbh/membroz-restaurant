@@ -175,14 +175,15 @@ export default class TakeOrderPopup extends Component {
             }
         }
 
+        // tableid: {
+        //     _id: tableid,
+        //     table: tablename
+        // },
+
         let takeOrderObj = {
             _id: 'unsaved_' + uuid(),
-            tableid: {
-                _id: tableid,
-                table: tablename
-            },
             postype: this.props.activeOrderType,
-            property: { orderstatus: "running", noofperson: '' },
+            property: { orderstatus: "running", noofperson: '', token: { prefix: "NEW", tokennumber: 1 } },
             customerid: {
                 _id: customerid,
                 property: {
@@ -331,7 +332,7 @@ export default class TakeOrderPopup extends Component {
                                         <div className="col-sm-8">
                                             {checkedvalues === 'existcustomer'
                                                 ?
-                                                <SelectSearch                                                
+                                                <SelectSearch
                                                     options={customerDropdown}
                                                     value={customerid}
                                                     name="customername"

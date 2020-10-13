@@ -91,6 +91,7 @@ class Orders extends Component {
 
     changeOrderType = (orderTypeName) => {
         if (this.state.activeOrderType !== orderTypeName) {
+            this.state.activeOrderType = orderTypeName
             this.setState({ activeOrderType: orderTypeName });
             this.setCurrentCartHandler()
         }
@@ -110,8 +111,11 @@ class Orders extends Component {
         return response.data
     }
 
-    getItems = async (categoryid) => {
+    getItems = async (categoryid, needSetState = false) => {
         const response = await Api.getItems(categoryid)
+        if (needSetState) {
+            this.setState({ items: response.data })
+        }
         return response.data
     }
 
@@ -122,8 +126,10 @@ class Orders extends Component {
 
         let runningTableMerged = runningOrders
         if (localRunningOrder) {
+            let arr1 = []
+            let arr2 = []
 
-            runningTableMerged = runningOrders.map(x1 => {
+            arr1 = runningOrders.map(x1 => {
                 let order = localRunningOrder.find(x2 => x2._id === x1._id)
                 if (order) {
                     return order;
@@ -131,6 +137,15 @@ class Orders extends Component {
                     return x1;
                 }
             });
+
+            arr2 = localRunningOrder.map(x1 => {
+                let order = runningTableMerged.find(x2 => x2._id === x1._id)
+                if (!order) {
+                    return x1;
+                }
+            });
+
+            runningTableMerged = arr1.concat(arr2)
         }
 
         return runningTableMerged;
@@ -149,15 +164,19 @@ class Orders extends Component {
         return response.data;
     }
 
-    getTokenModel = (table) => {
+    getTokenModel = (currentCart) => {
+        let table = undefined
+
+        if (this.state.activeOrderType === ORDERTYPES.DINEIN) {
+            table = { _id: currentCart.tableid._id, tablename: currentCart.tableid.property.tablename }
+        }
+
         let token = {
-            prefix: undefined,
-            tokennumber: undefined,
             status: "waiting",
             contextid: "",
             onModel: "Billing",
             property: {
-                table: { _id: table._id, tablename: table.property.tablename },
+                table: table,
                 items: []
             }
         }
@@ -176,7 +195,8 @@ class Orders extends Component {
         let currentCart = undefined
         let tokenList = []
         let items = this.state.items
-
+        let mappedItems = items
+        debugger
         if (order) {
             currentCart = this.state.runningOrders.find(x => x._id === order._id)
             if (currentCart) {
@@ -207,20 +227,20 @@ class Orders extends Component {
             if (currentCartTemp) {
                 currentCart = currentCartTemp
             }
-        }
 
-        if (!currentCart.token) {
-            currentCart.token = this.getTokenModel(currentCart.tableid)
-        }
-
-        let mappedItems = items.map(x1 => {
-            let item = currentCart.token.property.items.find(x2 => x2._id === x1._id)
-            if (item) {
-                return { ...x1, tokenquantity: item.quantity };
-            } else {
-                return { ...x1, tokenquantity: 0 };
+            if (!currentCart.token) {
+                currentCart.token = this.getTokenModel(currentCart)
             }
-        });
+
+            mappedItems = items.map(x1 => {
+                let item = currentCart.token.property.items.find(x2 => x2._id === x1._id)
+                if (item) {
+                    return { ...x1, tokenquantity: item.quantity };
+                } else {
+                    return { ...x1, tokenquantity: 0 };
+                }
+            });
+        }
 
         if (runningOrders.length > 0) {
             this.setState({
@@ -262,9 +282,11 @@ class Orders extends Component {
                 SignalRService.sendMessage(JSON.stringify(currentToken));
 
                 if (this.state.activeOrderType === ORDERTYPES.TAKEAWAY || this.state.activeOrderType === ORDERTYPES.DELIVERY) {
-                    currentCart.property.token = currentToken
-                    const response = await BillApi.save(currentCart)
-                    currentCart = response.data
+                    if (beforeSaveID.startsWith('unsaved_')) {
+                        currentCart.property.token = currentToken
+                        const response = await BillApi.save(currentCart)
+                        currentCart = response.data
+                    }
                 }
             } else {
                 console.log('sendToken Save Token ERROR', response.errors)
@@ -275,7 +297,7 @@ class Orders extends Component {
 
             const responseGetByID = await BillApi.getByID(currentCart._id)
             currentCart = responseGetByID.data
-            currentCart.token = this.getTokenModel(currentCart.tableid)
+            currentCart.token = this.getTokenModel(currentCart)
 
             const updatedRunningOrders = this.state.runningOrders.map(x => x._id === beforeSaveID ? currentCart : x);
 
@@ -288,7 +310,6 @@ class Orders extends Component {
     }
 
     doPayment = async (wallet, paymentMethod) => {
-        //debugger
         let currentCart = this.state.currentCart
         currentCart.paidamount = currentCart.totalamount
         currentCart.status = "Paid"
@@ -380,7 +401,7 @@ class Orders extends Component {
         let token = currentCart.token;
 
         if (!token) {
-            token = this.getTokenModel(currentCart.tableid)
+            token = this.getTokenModel(currentCart)
         }
 
         let item = this.state.items.find(x => x._id === itemid);
@@ -458,14 +479,14 @@ class Orders extends Component {
         const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningOrders, tokenList } = this.state
 
         if (activePage === PAGES.TABLEBOOK) {
-            return <TableBook tableList={tables} setCurrentCartHandler={this.setCurrentCartHandler} />
+            return <TableBook tableList={tables} runningOrders={runningOrders} setCurrentCartHandler={this.setCurrentCartHandler} />
         }
 
         return (
             <React.Fragment >
                 <div id="layoutSidenav_content">
                     {/* <main> */}
-                    <TakeOrderPopup activeOrderType={activeOrderType} />
+                    <TakeOrderPopup activeOrderType={activeOrderType} setCurrentCartHandler={this.setCurrentCartHandler} />
                     <div className="container-fluid">
                         <div className="row table-item-gutters">
                             <OrderTypeSelectionUI activeOrderType={activeOrderType} changeOrderType={this.changeOrderType}></OrderTypeSelectionUI>
@@ -494,7 +515,7 @@ class Orders extends Component {
                                                     key={category._id}
                                                     id={category._id}
                                                     titile={category.property.title}
-                                                    clickHandler={() => this.getItems(category._id)}
+                                                    clickHandler={() => this.getItems(category._id, true)}
                                                 />
                                             )}
                                         </ul>

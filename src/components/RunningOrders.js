@@ -5,6 +5,7 @@ import { ORDERTYPES } from '../Pages/OrderEnums'
 function RunningTable(props) {
     const runningOrders = props.runningOrders.filter(x => x.postype === props.activeOrderType)
     const currentCart = props.currentCart
+    console.log('runningOrders :', runningOrders)
 
     return (
         <React.Fragment>
