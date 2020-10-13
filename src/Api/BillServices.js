@@ -66,7 +66,7 @@ function getLocalOrders() {
 }
 
 function getLocalOrderByID(currentCartId) {
-    let localOrders = this.getLocalOrders();
+    let localOrders = getLocalOrders();
     let foundOrder
 
     if (localOrders) {
@@ -79,7 +79,7 @@ function getLocalOrderByID(currentCartId) {
 }
 
 function saveLocalOrder(currentCart) {
-    let localOrders = this.getLocalOrders();
+    let localOrders = getLocalOrders();
     let filteredOrders = []
     if (localOrders) {
         filteredOrders = localOrders.filter(x => x._id !== currentCart._id)
@@ -94,7 +94,7 @@ function saveLocalOrder(currentCart) {
 }
 
 function removeLocalOrder(currentCartID) {
-    let localOrders = this.getLocalOrders();
+    let localOrders = getLocalOrders();
     let filteredOrders = []
 
     if (localOrders) {
