@@ -4,6 +4,7 @@ import uuid from 'react-uuid'
 import SignalRService from '../Helpers/signalRService';
 import * as Api from '../Api/TokenServices'
 import * as Sounds from '../components/Sounds'
+import { ORDERTYPES, TOKENSTATUS } from './OrderEnums'
 
 export default class KitchenTokenOrder extends Component {
     constructor(props) {
@@ -14,6 +15,7 @@ export default class KitchenTokenOrder extends Component {
             waiting: true,
             inProgress: true,
             prepared: false,
+            tokenType: "All",
             tokenList: []
         };
 
@@ -21,12 +23,8 @@ export default class KitchenTokenOrder extends Component {
     }
 
     receiveMessage = (msg) => {
-        //console.log('Signal received by component: ' + msg);
-        //console.log('Signal received by component: ', JSON.parse(msg));
         const token = JSON.parse(msg)
-        // this.setState(previousState => ({
-        //     tokenList: [...previousState.tokenList, token]
-        // }));
+
         if (token.senderID && token.senderID !== this.senderID) {
             let tokenList = this.state.tokenList
             let foundToken = tokenList.find(x => x._id === token._id)
@@ -50,29 +48,26 @@ export default class KitchenTokenOrder extends Component {
         let foundToken = tokenList.find(x => x._id === token._id)
         if (foundToken) {
             switch (token.status) {
-                case "waiting":
-                    foundToken.status = 'inprogress';
+                case TOKENSTATUS.WAITING:
+                    foundToken.status = TOKENSTATUS.INPROGRESS;
                     break;
-                case "inprogress":
-                    foundToken.status = 'prepared';
+                case TOKENSTATUS.INPROGRESS:
+                    foundToken.status = TOKENSTATUS.PREPARED;
                     break;
-                case "prepared":
-                    foundToken.status = 'served';
+                case TOKENSTATUS.PREPARED:
+                    foundToken.status = TOKENSTATUS.INPROGRESS;
                     break;
-                case "served":
-                    foundToken.status = 'inprogress';
+                case TOKENSTATUS.SERVED:
+                    foundToken.status = TOKENSTATUS.PREPARED;
                     break;
             }
-
 
             const responseToken = await Api.save(foundToken)
             foundToken = responseToken.data;
             foundToken.senderID = this.senderID;
-            // console.log('Send KOT Token Response AAAAAAAAAAAAA:', JSON.stringify(kotToken))
             SignalRService.sendMessage(JSON.stringify(foundToken));
 
             this.setState({ tokenList: tokenList })
-            //console.log('this.state.tokenList : ', this.state.tokenList)
         }
     }
 
@@ -97,25 +92,49 @@ export default class KitchenTokenOrder extends Component {
         this.setState({ [name]: value });
     }
 
+    setTokenType = (tokenType) => {
+        this.setState({ tokenType: tokenType });
+    }
+
     renderToken = (props) => {
         const token = props.token;
-        const { waiting, inProgress, prepared } = this.state;
+        const { waiting, inProgress, prepared, tokenType } = this.state;
+        debugger
+        if (tokenType !== "All" && token.property.type !== tokenType) {
+            return null
+        }
 
-        if (token.status === 'waiting' && waiting !== true) {
+        if (token.status === TOKENSTATUS.WAITING && waiting === false) {
             return null
         }
-        if (token.status === 'inprogress' && inProgress !== true) {
+        if (token.status === TOKENSTATUS.INPROGRESS && inProgress === false) {
             return null
         }
-        if (token.status === 'prepared' && prepared !== true) {
+        if (token.status === TOKENSTATUS.PREPARED && prepared === false) {
             return null
         }
-        if (token.status === 'served') {
+        if (token.status === TOKENSTATUS.SERVED) {
             return null
+        }
+
+        let tokenStatsClass = "waiting-bg"
+        switch (token.status) {
+            case TOKENSTATUS.WAITING:
+                tokenStatsClass = "waiting-bg";
+                break;
+            case TOKENSTATUS.INPROGRESS:
+                tokenStatsClass = "in-progress-bg";
+                break;
+            case TOKENSTATUS.PREPARED:
+                tokenStatsClass = "prepared-bg";
+                break;
+            case TOKENSTATUS.SERVED:
+                tokenStatsClass = "";
+                break;
         }
 
         return <div key={token._id} className="white-box card">
-            <div className="d-flex kot-top-bar in-progress-bg">
+            <div className={`d-flex kot-top-bar ${tokenStatsClass}`}>
                 <div className="flex-grow-1 person-title">{token.prefix}{token.tokennumber}</div>
                 {(token.property.table) &&
                     <div className="person-title flex-grow-1"> Table: {token.property.table.tablename}</div>
@@ -147,11 +166,14 @@ export default class KitchenTokenOrder extends Component {
                 <div className="d-flex justify-content-end">
                     {/* <button type="button" className="btn btn-primary btn-block">Accept</button> */}
 
-                    {(token.status === "waiting") &&
+                    {(token.status === TOKENSTATUS.WAITING) &&
                         <button type="button" className="btn btn-primary btn-block" onClick={() => this.changeTokenStatus(token)}>Accept</button>
                     }
-                    {(token.status === "inprogress") &&
+                    {(token.status === TOKENSTATUS.INPROGRESS) &&
                         <button type="button" className="btn btn-primary btn-block" onClick={() => this.changeTokenStatus(token)}>Prepared</button>
+                    }
+                    {(token.status === TOKENSTATUS.PREPARED) &&
+                        <button type="button" className="btn btn-primary btn-block" onClick={() => this.changeTokenStatus(token)}>In Progress</button>
                     }
 
                 </div>
@@ -191,22 +213,22 @@ export default class KitchenTokenOrder extends Component {
                                     <div className="col-xl-7 col-lg-6 col-md-6">
                                         <ul className="nav nav-pills mb-2 categories-pills" id="pills-tab" role="tablist">
                                             <li className="nav-item" role="presentation">
-                                                <a className="nav-link active" id="pills-item-1-tab" data-toggle="pill" href="#pills-item-1" role="tab" aria-controls="pills-item-1" aria-selected="true">All</a>
+                                                <a className="nav-link active" id="pills-item-1-tab" data-toggle="pill" href="#pills-item-1" role="tab" aria-controls="pills-item-1" aria-selected="true" onClick={() => this.setTokenType("All")}>All</a>
                                             </li>
                                             <li className="nav-item" role="presentation">
-                                                <a className="nav-link" id="pills-item-2-tab" data-toggle="pill" href="#pills-item-2" role="tab" aria-controls="pills-item-2" aria-selected="false">Dine In </a>
+                                                <a className="nav-link" id="pills-item-2-tab" data-toggle="pill" href="#pills-item-1" role="tab" aria-controls="pills-item-1" aria-selected="true" onClick={() => this.setTokenType(ORDERTYPES.DINEIN)}>Dine In </a>
                                             </li>
                                             <li className="nav-item" role="presentation">
-                                                <a className="nav-link" id="pills-item-3-tab" data-toggle="pill" href="#pills-item-3" role="tab" aria-controls="pills-item-3" aria-selected="false">Take Away </a>
+                                                <a className="nav-link" id="pills-item-3-tab" data-toggle="pill" href="#pills-item-1" role="tab" aria-controls="pills-item-1" aria-selected="true" onClick={() => this.setTokenType(ORDERTYPES.TAKEAWAY)}>Take Away </a>
                                             </li>
                                             <li className="nav-item" role="presentation">
-                                                <a className="nav-link" id="pills-item-4-tab" data-toggle="pill" href="#pills-item-4" role="tab" aria-controls="pills-item-4" aria-selected="false">Delivery </a>
+                                                <a className="nav-link" id="pills-item-4-tab" data-toggle="pill" href="#pills-item-1" role="tab" aria-controls="pills-item-1" aria-selected="true" onClick={() => this.setTokenType(ORDERTYPES.DELIVERY)}>Delivery </a>
                                             </li>
                                         </ul>
                                     </div>
                                     <div className="col-xl-5 col-lg-6 col-md-6 d-flex justify-content-md-end mb-3 mb-md-0">
                                         <div className="custom-control custom-switch">
-                                            <input type="checkbox" className="custom-control-input inprogress-switch" id="waiting" name="waiting" checked={waiting} onChange={this.handleInputChange} />
+                                            <input type="checkbox" className="custom-control-input waiting-switch" id="waiting" name="waiting" checked={waiting} onChange={this.handleInputChange} />
                                             <label className="custom-control-label font-weight-bold" htmlFor="waiting">Waiting</label>
                                         </div>
                                         <div className="custom-control custom-switch ml-2 ml-lg-4">

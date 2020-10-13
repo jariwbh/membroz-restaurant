@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import uuid from 'react-uuid'
-import { Link } from 'react-router-dom';
 
-import * as Api from '../Api/HomeServices'
+import * as Api from '../Api/ItemServices'
 import * as BillApi from '../Api/BillServices'
 import * as ApiTable from '../Api/TableServices'
 import * as ApiToken from '../Api/TokenServices'
@@ -17,7 +16,7 @@ import SignalRService from '../Helpers/signalRService';
 import OrderTypeSelectionUI from '../Templates/OrderTypeSelectionUI'
 import * as Sounds from '../components/Sounds'
 import TakeOrderPopup from '../components/TakeOrderPopup'
-import { PAGES, ORDERTYPES } from '../Pages/OrderEnums'
+import { PAGES, ORDERTYPES, TOKENSTATUS } from './OrderEnums'
 import Payment from '../components/Payment';
 
 class Orders extends Component {
@@ -55,23 +54,9 @@ class Orders extends Component {
 
 
     receiveMessage = async (msg) => {
-        // console.log('Signal received by component: ', JSON.parse(msg));
-        // this.setState(previousState => ({
-        //     tokenList: [...previousState.tokenList, token]
-        // }));
         const token = JSON.parse(msg)
-        if (token.senderID && token.senderID !== this.senderID) {
-            // let tokenList = this.state.tokenList
-            // let foundToken = tokenList.find(x => x._id === token._id)
-            // if (foundToken) {
-            //     foundToken = token
-            // } else {
-            //     tokenList.push(token)
-            // }
 
-            // this.setState({ tokenList: tokenList })
-            // console.log('this.state.tokenList SENDER ID: ', token.senderID)
-            //console.log('this.state.tokenList SENDER CLIENT ID: ', this.senderID)
+        if (token.senderID && token.senderID !== this.senderID) {
 
             let currentCart = this.state.currentCart;
             if (currentCart && currentCart._id) {
@@ -82,6 +67,33 @@ class Orders extends Component {
                     this.playAudio();
                 }
             }
+        }
+    }
+
+    changeTokenStatusHandler = async (token) => {
+        let tokenList = this.state.tokenList
+        let foundToken = tokenList.find(x => x._id === token._id)
+        if (foundToken) {
+            switch (token.status) {
+                case TOKENSTATUS.WAITING:
+                    foundToken.status = TOKENSTATUS.INPROGRESS;
+                    break;
+                case TOKENSTATUS.INPROGRESS:
+                    foundToken.status = TOKENSTATUS.PREPARED;
+                    break;
+                case TOKENSTATUS.PREPARED:
+                    foundToken.status = TOKENSTATUS.SERVED;
+                    break;
+                case TOKENSTATUS.SERVED:
+                    foundToken.status = TOKENSTATUS.PREPARED;
+                    break;
+            }
+
+            const responseToken = await ApiToken.save(foundToken)
+            foundToken = responseToken.data;
+            foundToken.senderID = this.senderID;
+
+            this.setState({ tokenList: tokenList })
         }
     }
 
@@ -166,6 +178,7 @@ class Orders extends Component {
             contextid: "",
             onModel: "Billing",
             property: {
+                type: currentCart.postype,
                 table: table,
                 items: []
             }
@@ -200,7 +213,7 @@ class Orders extends Component {
             if (!currentCart) {
                 runningOrders = this.state.runningOrders;
                 currentCart = order;
-                runningOrders.push(currentCart);
+                runningOrders.unshift(currentCart);
                 BillApi.saveLocalOrder(currentCart);
             }
 
@@ -276,9 +289,6 @@ class Orders extends Component {
                         currentCart.property.token = currentToken
                         const response = await BillApi.save(currentCart)
                         currentCart = response.data
-                        let runningCartOrder = this.state.runningOrders.find(x => x._id === beforeSaveID);
-
-                        runningCartOrder.property.token = currentToken
                     }
                 }
             } else {
@@ -286,15 +296,15 @@ class Orders extends Component {
                 alert("sendToken Save Token ERROR : " + response.errors.toString())
             }
 
-
             BillApi.removeLocalOrder(beforeSaveID);
 
             const responseGetByID = await BillApi.getByID(currentCart._id)
             currentCart = responseGetByID.data
             currentCart.token = this.getTokenModel(currentCart)
+            let updatedRunningOrders = this.state.runningOrders.map(x => x._id === beforeSaveID ? currentCart : x);
 
             let tokenList = await this.getTokenList(currentCart._id)
-            this.setState({ currentCart: currentCart, tokenList: tokenList })
+            this.setState({ runningOrders: updatedRunningOrders, currentCart: currentCart, tokenList: tokenList })
         } else {
             console.log('sendToken Save Bill ERROR', response.errors)
             alert("sendToken Save Bill ERROR : " + response.errors.toString())
@@ -436,36 +446,6 @@ class Orders extends Component {
         });
     }
 
-    changeTokenStatusHandler = async (token) => {
-        let tokenList = this.state.tokenList
-        let foundToken = tokenList.find(x => x._id === token._id)
-        if (foundToken) {
-            switch (token.status) {
-                case "waiting":
-                    foundToken.status = 'inprogress';
-                    break;
-                case "inprogress":
-                    foundToken.status = 'prepared';
-                    break;
-                case "prepared":
-                    foundToken.status = 'served';
-                    break;
-                case "served":
-                    foundToken.status = 'prepared';
-                    break;
-                default:
-
-            }
-
-            const responseToken = await ApiToken.save(foundToken)
-            foundToken = responseToken.data;
-            foundToken.senderID = this.senderID;
-            //SignalRService.sendMessage(JSON.stringify(foundToken));
-
-            this.setState({ tokenList: tokenList })
-            //console.log('this.state.tokenList : ', this.state.tokenList)
-        }
-    }
 
     render() {
         const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningOrders, tokenList } = this.state

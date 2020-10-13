@@ -15,6 +15,13 @@ export const PAYMENTMETHODS = {
     CARD: 'card'
 }
 
+export const TOKENSTATUS = {
+    WAITING: 'waiting',
+    INPROGRESS: 'inprogress',
+    PREPARED: 'prepared',
+    SERVED: 'served'
+}
+
 // export {
 //     PAGES, ORDERTYPES
 // }

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import * as Api from '../Api/HomeServices'
+import * as Api from '../Api/ItemServices'
 
 import CategoryTemplate from '../Templates/CategoryTemplate'
 import ItemTemplate from '../Templates/ItemTemplate'

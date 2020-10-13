@@ -1,9 +1,12 @@
 import React from 'react'
-import ConfirmItemsModalPopup from '../components/ConfirmItemsModalPopup'
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+import ConfirmItemsModalPopup from '../components/ConfirmItemsModalPopup'
+
 import { PAGES } from '../Pages/OrderEnums'
+import * as images from '../components/Image'
 
 const Undo = ({ onUndo, closeToast, token }) => {
     const handleClick = () => {
@@ -42,7 +45,7 @@ function CartTemplate(props) {
                         <div className="table-num-title d-flex justify-content-end">{props.currentCart.tableid.property.tablename}</div>
                     }
                     {props.currentCart.property.token &&
-                        <div className="table-num-title d-flex justify-content-end">{props.currentCart.property.token.prefix} {props.currentCart.property.token.tokennumber}</div>
+                        <div className="table-num-title d-flex justify-content-end">{props.currentCart.property.token.prefix}{props.currentCart.property.token.tokennumber}</div>
                     }
                 </div>
 
@@ -51,7 +54,7 @@ function CartTemplate(props) {
                         <div>{props.currentCart.customerid.property.fullname}</div>
                         <div>{props.currentCart.customerid.property.mobilenumber}</div>
                     </div>
-                    <div className="table-num-title"> <a href="#"><img src="images/add-icon.svg" alt="" /> </a> </div>
+                    <div className="table-num-title"> <a href="#"><img src={images.addicon} alt="" data-toggle="modal" data-target="#fortakeOrder" /> </a> </div>
                 </div>
                 <div className="table-responsive">
                     <table className="table table-hover">
