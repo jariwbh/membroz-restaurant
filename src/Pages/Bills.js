@@ -304,11 +304,11 @@ class Bills extends Component {
         }).map(tableobj =>
             <tr key={tableobj._id} id={tableobj._id} onClick={() => this.selectedTablerows(tableobj._id)} className="" >
                 <td>{moment(tableobj.date).format('DD-MM-YYYY')}</td>
-                <td>{tableobj.billnumber}</td>
-                <td>{tableobj.tablename}</td>
+                <td className="text-right">{tableobj.billnumber}</td>
+                <td className="text-right">{tableobj.tablename}</td>
                 <td>{tableobj.customername}</td>
-                <td>{`$ ${tableobj.totalamount}`}</td>
-                <td width="50px"><span><img src={Image.billicon} data-toggle="modal" data-target="#billmodelpopup" onClick={() => this.getBill(tableobj._id)} /></span></td>
+                <td className="text-right">{`$ ${tableobj.totalamount}`}</td>
+                <td className="text-right"><span><img src={Image.billicon} data-toggle="modal" data-target="#billmodelpopup" onClick={() => this.getBill(tableobj._id)} /></span></td>
             </tr>
         )
         return (
@@ -331,17 +331,17 @@ class Bills extends Component {
                                     </form>
                                     <div className="row">
                                         <div className="col-md-12">
-                                        <div className="mb-3">
+                                        <div className="table-responsive mb-3">
                                        
                                         <table id="billtable" name="billtable" className="table" cellSpacing="1" style={{ cursor: 'pointer' }}>
                                             <thead className="thead-dark">
                                                 <tr>
-                                                    <th className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
-                                                    <th className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
-                                                    <th className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('tablename')}>Table</th>
-                                                    <th className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
-                                                    <th className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
-                                                    <th width="50px"></th>
+                                                    <th width="13%" className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
+                                                    <th width="15%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
+                                                    <th width="17%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
+                                                    <th width="27%" className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
+                                                    <th width="15%" className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
+                                                    <th width="13%"></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -381,7 +381,7 @@ class Bills extends Component {
                     </main>
                 </div>
                 <div className="modal fade" id="billmodelpopup" tabIndex="-1" role="dialog" aria-labelledby="billmodelpopup" aria-hidden="true">
-                    <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '60%' }} role="document">
+                    <div className="modal-dialog modal-dialog-centered"  role="document">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title" id="billmodelpopup">View Bill</h5>
