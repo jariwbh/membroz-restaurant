@@ -100,56 +100,63 @@ class Login extends Component {
 
         return (
             <React.Fragment>
-                <div class="login-full-page landing-main">
-                    <div class="top-right-square"></div>
-                    <nav class="navbar navbar-expand-md navbar-light p-0">
-                        <div class="container">
-                            <a class="navbar-brand ml-md-0" href="/#"><img src={membrozlogowhite} alt="" /></a>
-                            <button class="navbar-toggler navbar-toggler-login" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"> <span class="navbar-toggler-icon"></span> </button>
-                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                                {/* <ul class="navbar-nav ml-auto">
-                                    <li class="nav-item"> <a class="nav-link white-link" href="#">Admin Login</a> </li>
+                <div className="login-full-page landing-main">
+                    <div className="top-right-square"></div>
+                    <nav className="navbar navbar-expand-md navbar-light p-0">
+                        <div className="container">
+                            <a className="navbar-brand ml-md-0" href="/#"><img src={membrozlogowhite} alt="" /></a>
+                            <button className="navbar-toggler navbar-toggler-login" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"> <span className="navbar-toggler-icon"></span> </button>
+                            <div className="collapse navbar-collapse" id="navbarSupportedContent">
+                                {/* <ul className="navbar-nav ml-auto">
+                                    <li className="nav-item"> <a class="nav-link white-link" href="#">Admin Login</a> </li>
                                 </ul> */}
                             </div>
                         </div>
                     </nav>
-                    <div class="container login-container">
-                        <div class="row" >
-                            <div class="col-xl-6 col-md-6 d-flex align-items-center">
-                                <div class="text-center text-md-left" >
-                                    <div class="top-left-dots"></div>
-                                    <h1 class="h2 landing-head"> Powerful POS Solutions for your business</h1>
-                                    <div class="landing-intro">
+                    <div className="container login-container">
+                        <div className="row" >
+                            <div className="col-xl-6 col-md-6 d-flex align-items-center">
+                                <div className="text-center text-md-left" >
+                                    <div className="top-left-dots"></div>
+                                    <h1 className="h2 landing-head"> Powerful POS Solutions for your business</h1>
+                                    <div className="landing-intro">
                                         <p >A Complete SaaS Solution Tailored to Your Business Need</p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xl-5 col-md-6">
-                                <div class="landing-box p-4 membroz-form align-items-center" >
-                                    <div class="ie-dblock">
-                                        <h4 class="mb-3 font-weight-bold">Staff Login</h4>
-                                        <div class="form-group">
-                                            <input type="text" name='username' class="form-control" placeholder="User Name" id="username" aria-describedby="emailHelp" value={username} onChange={this.handleInputChange} />
+                            <div className="col-xl-5 col-md-6">
+                                <div className="landing-box p-4 membroz-form align-items-center" >
+                                    <div className="ie-dblock">
+                                        <h4 className="mb-3 font-weight-bold">Staff Login</h4>
+                                        <div className="form-group">
+                                            <input type="text" name='username' className="form-control" placeholder="User Name" id="username" aria-describedby="emailHelp" value={username} onChange={this.handleInputChange} />
                                             <span className="help-block">{validation.username.message}</span>
                                         </div>
-                                        <div class="form-group">
-                                            <input type="password" name='password' class="form-control" placeholder="Password" id="password" value={password} onChange={this.handleInputChange} />
+                                        <div className="form-group">
+                                            <input type="password" name='password' className="form-control" placeholder="Password" id="password" value={password} onChange={this.handleInputChange} />
                                             <span className="help-block">{validation.password.message}</span>
                                         </div>
-                                        <div class="form-group">
-                                            <button onClick={this.handleFormSubmit} type="button" class="btn btn-primary btn-lg btn-block" disabled={loading}>
+                                        <div className="form-group">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="rememberMe" checked={rememberme} onChange={this.handleInputChange} />
+                                                <label class="custom-control-label" htmlFor="rememberMe">Remember me</label>
+                                                {/* <Link className="float-right" to="/ForgetPassword">Forgot Password?</Link> */}
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
+                                            <button onClick={this.handleFormSubmit} type="button" className="btn btn-primary btn-lg btn-block" disabled={loading}>
                                                 {loading && <span className="spinner-border spinner-border-sm mr-1"></span>}Login</button>
                                         </div>
-                                        {/* <div class="form-group">
-                                            <div class="row mt-4">
-                                                <div class="col-6"><a href="#" target="_blank">Reset Password?</a></div>
-                                                <div class="col-6 text-right"><a href="#" target="_blank">Reset Wallet PIN?</a></div>
+                                        {/* <div className="form-group">
+                                            <div className="row mt-4">
+                                                <div className="col-6"><a href="#" target="_blank">Reset Password?</a></div>
+                                                <div className="col-6 text-right"><a href="#" target="_blank">Reset Wallet PIN?</a></div>
                                             </div>
                                         </div> */}
-                                        <div class="form-group text-center">
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <select name="lang" class="form-control"><option selected>English</option></select>
+                                        <div className="form-group text-center">
+                                            <div className="row">
+                                                <div className="col-6">
+                                                    <select name="lang" className="form-control"><option defaultValue>English</option></select>
                                                 </div>
                                             </div>
                                         </div>
@@ -158,13 +165,13 @@ class Login extends Component {
                             </div>
                         </div>
                     </div>
-                    <div class="bottom-right-round-square"></div>
-                    <div class="bottom-left-round-square-1"></div>
-                    <div class="bottom-left-round-square-2"></div>
-                    <footer class="login-footer mt-auto py-3">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col text-center"> © Copyright Membroz. Power by <a class="white-link" href="http://www.krtya.com/" target="_blank">Krtya Technologies Pvt. Ltd.</a> </div>
+                    <div className="bottom-right-round-square"></div>
+                    <div className="bottom-left-round-square-1"></div>
+                    <div className="bottom-left-round-square-2"></div>
+                    <footer className="login-footer mt-auto py-3">
+                        <div className="container">
+                            <div className="row">
+                                <div className="col text-center"> © Copyright Membroz. Power by <a className="white-link" href="http://www.krtya.com/" target="_blank">Krtya Technologies Pvt. Ltd.</a> </div>
                             </div>
                         </div>
                     </footer>
