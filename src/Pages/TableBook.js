@@ -220,8 +220,13 @@ export default class TableBook extends Component {
     }
 
     async clicktoSelectTableOpenModel(obj) {
-        this.openReservationTableModel();
         const tblobj = obj
+        //const checkedRunningTable = this.state.tableList.find(x => x._id === tblobj._id)
+        // if (tblobj._id === checkedRunningTable._id) {
+        //     console.log('tblobj._id === checkedRunningTable._id', tblobj._id === checkedRunningTable._id);
+        //     this.props.setCurrentCartHandler(tblobj)
+        // } else {
+        this.openReservationTableModel();
         await this.setState({
             getcustomerid: '',
             customerid: '',
@@ -234,8 +239,8 @@ export default class TableBook extends Component {
             checkedvalue: 'existcustomer'
         });
         document.getElementById('existcustomer').checked = true;
-        console.log('this.state.tableid', this.state.tableid)
-        //document.getElementById("tableid").value = this.state.tableid;
+        console.log('open model', tblobj)
+        // }
     }
 
     modelPopupClose() {

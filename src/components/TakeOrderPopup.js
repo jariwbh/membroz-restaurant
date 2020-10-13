@@ -5,6 +5,7 @@ import * as CustomerApi from '../Api/CustomerSevices';
 import * as UserApi from '../Api/UserServices'
 import * as TableServicesApi from '../Api/TableServices';
 import uuid from 'react-uuid'
+import { ORDERTYPES } from '../Pages/OrderEnums'
 
 export default class TakeOrderPopup extends Component {
     constructor(props) {
@@ -30,30 +31,18 @@ export default class TakeOrderPopup extends Component {
                 validWhen: true,
                 message: 'Enter valid Mobile No.'
             },
-            {
-                field: 'address',
-                method: 'isEmpty',
-                validWhen: false,
-                message: 'Enter Address.'
-            },
-            {
-                field: 'deliveryboyname',
-                method: 'isEmpty',
-                validWhen: false,
-                message: 'Select Delivery Boy.'
-            },
-            {
-                field: 'noofperson',
-                method: 'isEmpty',
-                validWhen: false,
-                message: 'Enter no of person.'
-            },
-            {
-                field: 'tablename',
-                method: 'isEmpty',
-                validWhen: false,
-                message: 'select table.'
-            }
+            // {
+            //     field: 'address',
+            //     method: 'isEmpty',
+            //     validWhen: false,
+            //     message: 'Enter Address.'
+            // },
+            // {
+            //     field: 'tablename',
+            //     method: 'isEmpty',
+            //     validWhen: false,
+            //     message: 'select table.'
+            // }
         ]);
 
         this.state = {
@@ -64,18 +53,19 @@ export default class TakeOrderPopup extends Component {
             deliveryboyid: '',
             deliveryboyname: '',
             validation: this.validator.valid(),
-            checkedvalue: 'existcustomer',
+            checkedvalues: 'existcustomer',
             deliveryboyList: [],
             customerList: [],
             tableobj: [],
             customerobj: [],
             getcustomerid: '',
-            noofperson: '',
             tablename: '',
             availabletableList: [],
             tableid: '',
+            onModel: ''
         }
         this.submitted = false;
+        // this.handleradioOnChange = this.handleradioOnChange.bind(this);
     }
 
     handleInputChange = event => {
@@ -121,12 +111,13 @@ export default class TakeOrderPopup extends Component {
     }
 
     modelPopupClose() {
-        var modelclose = document.getElementById("fortakeOrder")
+        var modelclose = document.getElementById("modelclose")
         modelclose.click();
     }
 
     resetForm() {
-        document.getElementById('takeOrderForm').reset();
+        //document.getElementById('takeOrderForm').reset()
+        this.myFormRef.reset();
         document.getElementById('existcustomer').checked = true;
 
         const validator = {
@@ -138,21 +129,18 @@ export default class TakeOrderPopup extends Component {
             mobile_number: {
                 isInvalid: false,
                 message: ""
-            },
-            address: {
-                isInvalid: false,
-                message: ""
-            },
-            deliveryboyname: {
-                isInvalid: false,
-                message: ""
-            }, tablename: {
-                isInvalid: false,
-                message: ""
-            }, noofperson: {
-                isInvalid: false,
-                message: ""
             }
+            // ,address: {
+            //     isInvalid: false,
+            //     message: ""
+            // },
+            // deliveryboyname: {
+            //     isInvalid: false,
+            //     message: ""
+            // }, tablename: {
+            //     isInvalid: false,
+            //     message: ""
+            // }
         }
 
         this.setState({
@@ -163,13 +151,11 @@ export default class TakeOrderPopup extends Component {
             deliveryboyid: '',
             deliveryboyname: '',
             validation: validator,
-            checkedvalue: 'existcustomer',
-            // deliveryboyList: [],
-            // customerList: [],
+            checkedvalues: 'existcustomer',
             tableobj: [],
             customerobj: [],
-            noofperson: '',
-            tablename: ''
+            tablename: '',
+            onModel: ''
         });
     }
 
@@ -181,11 +167,12 @@ export default class TakeOrderPopup extends Component {
 
     handleFormSubmit = (event) => {
         const btnclickname = event.target.name;
-        const { customername, mobile_number, customerid, address, customerobj, getcustomerid, tableid, tablename, noofperson } = this.state;
+        const { customername, mobile_number, customerid, address, customerobj, getcustomerid, tableid, tablename, onModel } = this.state;
         const newCustomerObj = {
             property: {
                 fullname: customername,
-                mobile_number: mobile_number
+                mobile_number: mobile_number,
+                address: address
             }
         }
 
@@ -195,17 +182,16 @@ export default class TakeOrderPopup extends Component {
                 _id: tableid,
                 table: tablename
             },
-            postype: '',
+            postype: this.props.activeOrderType,
             property: { orderstatus: "running", token: '' },
             customerid: {
                 _id: customerid,
                 property: {
                     fullname: customername,
                     mobile_number: mobile_number,
-                    noofperson: noofperson
                 }
             },
-            onModel: "Member",
+            onModel: onModel,
             amount: 0,
             totalamount: 0,
             discount: 0,
@@ -224,13 +210,13 @@ export default class TakeOrderPopup extends Component {
                         this.setState({ customerid: response.data._id })
                         if (response.data._id) {
                             console.log(response.data._id);
-                            takeOrderObj.property.customerid = response.data._id
-                            console.log(takeOrderObj);
+                            takeOrderObj.customerid._id = response.data._id
+                            console.log('addProspectsTableRecord', takeOrderObj);
                             this.getCustomerList();
-                            this.modelPopupClose();
-                            console.log('save takeOrder');
+                            console.log('save new takeOrder');
                         }
                     })
+                    this.modelPopupClose();
                 } else if (getcustomerid === '') {
                     console.log(takeOrderObj);
                     this.modelPopupClose();
@@ -238,7 +224,7 @@ export default class TakeOrderPopup extends Component {
                 } else {
                     console.log(takeOrderObj);
                     this.modelPopupClose();
-                    console.log('save exit records');
+                    console.log('save exit');
                 }
             }
         }
@@ -248,6 +234,7 @@ export default class TakeOrderPopup extends Component {
         await this.getCustomerList();
         await this.getdeliveryboyList()
         await this.getAvailableTableList()
+        //console.log('activeOrderType', this.props.activeOrderType);
     }
 
     async getCustomerList() {
@@ -271,32 +258,50 @@ export default class TakeOrderPopup extends Component {
     }
 
     CustomerDropdownHandleChange = event => {
-        if (this.state.checkedvalue === 'existcustomer') {
+        if (this.state.checkedvalues === 'existcustomer') {
             const customerFind = this.state.customerList.find(x => x._id === event)
-            this.setState({
-                mobile_number: customerFind.property.mobile_number,
-                customername: customerFind.property.fullname,
-                customerid: customerFind._id,
-                customerobj: customerFind,
-                getcustomerid: customerFind._id,
-            });
+            if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
+                this.setState({
+                    mobile_number: customerFind.property.mobile_number,
+                    customername: customerFind.property.fullname,
+                    customerid: customerFind._id,
+                    customerobj: customerFind,
+                    getcustomerid: customerFind._id,
+                    address: (customerFind.property.address === null ? '' : customerFind.property.address),
+                    onModel: customerFind.property.onModel,
+                });
+            } else {
+                this.setState({
+                    mobile_number: customerFind.property.mobile_number,
+                    customername: customerFind.property.fullname,
+                    customerid: customerFind._id,
+                    customerobj: customerFind,
+                    getcustomerid: customerFind._id,
+                    onModel: customerFind.property.onModel,
+                });
+            }
+            console.log(customerFind);
         }
+    }
+
+    handleradioOnChange = event => {
+        this.setState({
+            checkedvalues: event.target.value
+        });
+        if (event.target.value === "newcustomer") {
+            this.myFormRef.reset();
+        }
+        console.log('event', event.target.value);
     }
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { availabletableList, customerid, deliveryboyid, checkedvalue, mobile_number, noofperson, deliveryboy, deliveryboyList, address, customerList } = this.state;
+        const { availabletableList, customerid, deliveryboyid, checkedvalues, mobile_number, deliveryboy, deliveryboyList, address, customerList } = this.state;
 
-        const handleradioOnChange = event => {
-            this.setState({
-                checkedvalue: event.target.value
-            });
-        }
-
-        const customerDropdown = customerList.map(clientObj => (
+        const customerDropdown = customerList.map(customerObj => (
             {
-                name: clientObj.property.fullname,
-                value: clientObj._id
+                name: customerObj.property.fullname,
+                value: customerObj._id
             }
         ))
 
@@ -313,22 +318,22 @@ export default class TakeOrderPopup extends Component {
                             </div>
                             <div className="modal-body">
                                 <div className="container">
-                                    <input type="radio" id="existcustomer" name="takeorder" value="existcustomer" className="mr-1" defaultChecked onChange={handleradioOnChange} />
+                                    <input type="radio" id="existcustomer" name="takeorder" value="existcustomer" className="mr-1" defaultChecked onClick={this.handleradioOnChange} />
                                     <label htmlFor="existcustomer" className="mr-3">Exist Customer</label>
-                                    <input type="radio" id="newcustomer" name="takeorder" value="newcustomer" className="mr-1" onChange={handleradioOnChange} />
-                                    <label htmlFor="newcustomer" className="mr-3">New Customer</label>
+                                    <input type="radio" id="newcustomername" name="takeorder" value="newcustomer" className="mr-1" onClick={this.handleradioOnChange} />
+                                    <label htmlFor="newcustomername" className="mr-3">New Customer</label>
                                 </div>
-                                <form className="container mt-3" method="post" id="takeOrderForm" name="takeOrderForm" >
+                                <form ref={(el) => this.myFormRef = el} className="container mt-3" method="post" id="takeOrderForm" name="takeOrderForm" >
                                     <div className="form-group row">
                                         <label htmlFor="customer" className="col-sm-4 col-form-label">Customer Name <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            {checkedvalue === 'existcustomer'
+                                            {checkedvalues === 'existcustomer'
                                                 ?
                                                 <SelectSearch
                                                     options={customerDropdown}
                                                     value={customerid}
-                                                    search
                                                     name="customername"
+                                                    search
                                                     placeholder="Select Customer"
                                                     onChange={this.CustomerDropdownHandleChange} />
                                                 :
@@ -338,27 +343,26 @@ export default class TakeOrderPopup extends Component {
                                         </div>
                                     </div>
                                     <div className="form-group row">
-                                        <label htmlFor="noofperson" className="col-sm-4 col-form-label">No of Person <span style={{ color: 'red' }}>*</span></label>
-                                        <div className="col-sm-8">
-                                            <input type="number" name='noofperson' placeholder="Enter No of Person" min="1" className="form-control" id="noofperson" value={noofperson} onChange={this.handleInputChange} />
-                                            <span className="help-block">{validation.noofperson.message}</span>
-                                        </div>
-                                    </div>
-                                    <div className="form-group row">
                                         <label htmlFor="mobilenumber" className="col-sm-4 col-form-label">Mobile Number <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
                                             <input type="text" name='mobile_number' placeholder="Enter Mobile Number" className="form-control" id="mobile_numberid" value={mobile_number} onChange={this.handleInputChange} />
                                             <span className="help-block">{validation.mobile_number.message}</span>
                                         </div>
                                     </div>
-                                    <div className="form-group row">
-                                        <label htmlFor="address" className="col-sm-4 col-form-label">Address <span style={{ color: 'red' }}>*</span></label>
-                                        <div className="col-sm-8">
-                                            <textarea type="textarea" className="form-control" name='address' id="address" placeholder="Enter Delivery Address" value={address} onChange={this.handleInputChange} />
-                                            <span className="help-block">{validation.address.message}</span>
+
+                                    {this.props.activeOrderType === ORDERTYPES.DELIVERY ?
+
+                                        <div className="form-group row">
+                                            <label htmlFor="address" className="col-sm-4 col-form-label">Address <span style={{ color: 'red' }}>*</span></label>
+                                            <div className="col-sm-8">
+                                                <textarea type="textarea" className="form-control" name='address' id="address" placeholder="Enter Delivery Address" value={address} onChange={this.handleInputChange} />
+                                                {/* <span className="help-block">{validation.address.message}</span> */}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="form-group row">
+                                        : <div></div>
+                                    }
+
+                                    {/* <div className="form-group row">
                                         <label htmlFor="table" className="col-sm-4 col-form-label">Table<span style={{ color: 'red' }}>*</span>
                                         </label>
                                         <div className="col-sm-8">
@@ -371,20 +375,23 @@ export default class TakeOrderPopup extends Component {
                                                 ))} </select>
                                             <span className="help-block">{validation.tablename.message}</span>
                                         </div>
-                                    </div>
-                                    <div className="form-group row">
-                                        <label htmlFor="deliveryboylbl" className="col-sm-4 col-form-label">Delivery Boy <span style={{ color: 'red' }}>*</span></label>
-                                        <div className="col-sm-8">
-                                            <select className="form-control" name='deliveryboyname' id="deliveryboyid" value={deliveryboyid}
-                                                onChange={this.handleInputChange} style={{ width: '100%' }}>
-                                                {deliveryboyList.map(deliveryboy => (
-                                                    <option key={deliveryboy._id} value={deliveryboy._id}>
-                                                        {deliveryboy.property.fullname}
-                                                    </option>
-                                                ))} </select>
-                                            <span className="help-block">{validation.deliveryboyname.message}</span>
+                                    </div> */}
+
+                                    {this.props.activeOrderType === ORDERTYPES.DELIVERY ?
+                                        <div className="form-group row">
+                                            <label htmlFor="deliveryboylbl" className="col-sm-4 col-form-label">Delivery Boy </label>
+                                            <div className="col-sm-8">
+                                                <select className="form-control" name='deliveryboyname' id="deliveryboyid" value={deliveryboyid}
+                                                    onChange={this.handleInputChange} style={{ width: '100%' }}>
+                                                    {deliveryboyList.map(deliveryboy => (
+                                                        <option key={deliveryboy._id} value={deliveryboy._id}>
+                                                            {deliveryboy.property.fullname}
+                                                        </option>
+                                                    ))} </select>
+                                            </div>
                                         </div>
-                                    </div>
+                                        : <div></div>
+                                    }
                                 </form>
                             </div>
                             <div className="modal-footer">

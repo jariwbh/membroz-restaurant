@@ -463,9 +463,9 @@ class Orders extends Component {
 
         return (
             <React.Fragment >
-                <TakeOrderPopup />
                 <div id="layoutSidenav_content">
                     {/* <main> */}
+                    <TakeOrderPopup activeOrderType={activeOrderType} />
                     <div className="container-fluid">
                         <div className="row table-item-gutters">
                             <OrderTypeSelectionUI activeOrderType={activeOrderType} changeOrderType={this.changeOrderType}></OrderTypeSelectionUI>

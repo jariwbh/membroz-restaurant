@@ -33,12 +33,15 @@ function RunningTable(props) {
                                     )}
                             </ul>
                         </div>
-                        <div className="d-flex align-items-center mr-2"><button type="button" className="btn btn-primary btn-lg" onClick={() => props.newOrderHandler()}>New Order</button></div>
+                        {props.activeOrderType === ORDERTYPES.DINEIN ? <div className="d-flex align-items-center mr-2"><button type="button" className="btn btn-primary btn-lg" onClick={() => props.newOrderHandler()}>New Order</button></div> :
+                            <div className="d-flex align-items-center mr-2"><button type="button" className="btn btn-primary btn-lg" data-toggle="modal" data-target="#fortakeOrder">New Order</button></div>
+                        }
+                        {/* <div className="d-flex align-items-center mr-2"><button type="button" className="btn btn-primary btn-lg" onClick={() => props.newOrderHandler()}>New Order</button></div> */}
                         {/* <div className="d-flex align-items-center mr-2"><button type="button" className="btn btn-primary btn-lg" data-toggle="modal" data-target="#fortakeOrder" onClick={() => props.newOrderHandler()}>New Order</button></div> */}
                     </div>
                 </div>
             </div>
-        </React.Fragment >
+        </React.Fragment>
     )
 }
 export default RunningTable
