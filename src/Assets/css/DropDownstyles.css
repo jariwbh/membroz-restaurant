@@ -1,7 +1,7 @@
 .select-search {
-    width: 300px;
+    width: auto !important;
     position: relative;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: 'Quicksand';
     box-sizing: border-box;
 }
 
@@ -33,21 +33,20 @@
  * Input
  */
 .select-search__input {
-    display: block;
-    height: 36px;
-    width: 100%;
-    padding: 0 16px;
+    display: block;    
+    width: 100%;    
     background: #fff;
-    border: 1px solid transparent;
-    box-shadow: 0 .0625rem .125rem rgba(0, 0, 0, 0.15);
-    border-radius: 3px;
+    border-radius: .25rem;
     outline: none;
-    font-family: 'Noto Sans', sans-serif;
-    font-size: 14px;
+    font-family: 'Quicksand';    
     text-align: left;
-    text-overflow: ellipsis;
-    line-height: 36px;
+    text-overflow: ellipsis;    
     -webkit-appearance: none;
+    border: 1px solid #BBBABA;	
+    height: calc(1em + 1.25rem + 3px);
+    font-size: 16px;
+    padding: .375rem 1.0rem;
+    box-shadow: none;
 }
 
 .select-search__input::-webkit-search-decoration,
@@ -88,17 +87,18 @@
  * Option
  */
 .select-search__option {
-    display: block;
-    height: 36px;
-    width: 100%;
-    padding: 0 16px;
-    background: #fff;
-    border: none;
+    display: block;    
+    width: 100%;    
+    background: #fff;    
     outline: none;
-    font-family: 'Noto Sans', sans-serif;
-    font-size: 14px;
+    font-family: 'Quicksand';    
     text-align: left;
     cursor: pointer;
+    border: none;
+    height: calc(1em + 1.25rem + 3px);
+    font-size: 16px;
+    padding: .375rem 1.0rem;
+    box-shadow: none;
 }
 
 .select-search--multiple .select-search__option {
@@ -106,18 +106,18 @@
 }
 
 .select-search__option.is-selected {
-    background: #c9e4d9;
+    background: #F29015;
     color: #fff;
 }
 
 .select-search__option.is-highlighted,
 .select-search__option:not(.is-selected):hover {
-    background: rgba(47, 204, 139, 0.1);
+    background: rgba(225, 134, 19, 0.16);
 }
 
 .select-search__option.is-highlighted.is-selected,
 .select-search__option.is-selected:hover {
-    background: #c9e4d9;
+    background: #F29015;
     color: #fff;
 }
 
@@ -175,14 +175,14 @@
 }
 
 .select-search:not(.select-search--multiple) .select-search__input:hover {
-    border-color: #c9e4d9;
+    border-color: #F29015;
 }
 
 
 .select-search:not(.select-search--multiple) .select-search__select {
     position: absolute;
     z-index: 2;
-    top: 44px;
+    top: 40px;
     right: 0;
     left: 0;
     border-radius: 3px;
