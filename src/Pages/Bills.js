@@ -49,6 +49,7 @@ class Bills extends Component {
                 date: bill.tableid.createdAt,
             }));
             this.setState({ billListObj: billList });
+            // console.log('slice.length === 0 && ', slice);
         })
     }
 
@@ -317,71 +318,71 @@ class Bills extends Component {
                     <main>
                         <div className="container-fluid">
                             <div className="row">
-                                <div className="col-xl-10 offset-xl-1">  
+                                <div className="col-xl-10 offset-xl-1">
                                     <div className="white-box p-3 mt-5">
-                                    <form className="row">
-                                        <div className="col-md-9">
-                                          <h3>Today's Bills</h3>
+                                        <form className="row">
+                                            <div className="col-md-9">
+                                                <h3>Today's Bills</h3>
+                                            </div>
+                                            <div className="col-md-3">
+                                                <input className="form-control mb-2" type="search" onChange={(e) => this.searchSpace(e)} placeholder="Search Bills" aria-label="Search" />
+                                            </div>
+
+
+                                        </form>
+                                        <div className="row">
+                                            <div className="col-md-12">
+                                                <div className="table-responsive mb-3">
+
+                                                    <table id="billtable" name="billtable" className="table" cellSpacing="1" style={{ cursor: 'pointer' }}>
+                                                        <thead className="thead-dark">
+                                                            <tr>
+                                                                <th width="13%" className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
+                                                                <th width="15%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
+                                                                <th width="17%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
+                                                                <th width="27%" className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
+                                                                <th width="15%" className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
+                                                                <th width="13%"></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {billList.length === 0 ?
+                                                                <tr>
+                                                                    <td colSpan="5" className="text-center text-nowrap">No records to display</td>
+                                                                </tr>
+                                                                :
+                                                                billList
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="col-md-3">
-                                           <input className="form-control mb-2" type="search" onChange={(e) => this.searchSpace(e)}  placeholder="Search Bills" aria-label="Search" />
+                                        <div className="form-inline">
+                                            <nav>
+                                                <ul className="pagination justify-content-right">
+                                                    <Pagination
+                                                        prevPageText='Previous'
+                                                        nextPageText='Next'
+                                                        activePage={activePage}
+                                                        itemsCountPerPage={perPage}
+                                                        totalItemsCount={totalPages}
+                                                        pageRangeDisplayed={5}
+                                                        onChange={this.handlePageChange.bind(this)}
+                                                        itemClass="page-item"
+                                                        linkClass="page-link"
+                                                    />
+                                                </ul>
+                                            </nav>
                                         </div>
-                                        
-                                      
-                                    </form>
-                                    <div className="row">
-                                        <div className="col-md-12">
-                                        <div className="table-responsive mb-3">
-                                       
-                                        <table id="billtable" name="billtable" className="table" cellSpacing="1" style={{ cursor: 'pointer' }}>
-                                            <thead className="thead-dark">
-                                                <tr>
-                                                    <th width="13%" className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
-                                                    <th width="15%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
-                                                    <th width="17%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
-                                                    <th width="27%" className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
-                                                    <th width="15%" className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
-                                                    <th width="13%"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {billList.length === 0 ?
-                                                    <tr>
-                                                        <td colSpan="5" className="text-center text-nowrap">No records to display</td>
-                                                    </tr>
-                                                    :
-                                                    billList
-                                                }
-                                            </tbody>
-                                        </table>
-                                        </div>
-                                        </div>
-                                      </div>
-                                    <div className="form-inline">
-                                <nav>
-                                    <ul className="pagination justify-content-right">
-                                        <Pagination
-                                            prevPageText='Previous'
-                                            nextPageText='Next'
-                                            activePage={activePage}
-                                            itemsCountPerPage={perPage}
-                                            totalItemsCount={totalPages}
-                                            pageRangeDisplayed={5}
-                                            onChange={this.handlePageChange.bind(this)}
-                                            itemClass="page-item"
-                                            linkClass="page-link"
-                                        />
-                                    </ul>
-                                </nav>
-                            </div>
-                              </div>
-                              </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </main>
                 </div>
                 <div className="modal fade" id="billmodelpopup" tabIndex="-1" role="dialog" aria-labelledby="billmodelpopup" aria-hidden="true">
-                    <div className="modal-dialog modal-dialog-centered"  role="document">
+                    <div className="modal-dialog modal-dialog-centered" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title" id="billmodelpopup">View Bill</h5>
