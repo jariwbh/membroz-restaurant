@@ -124,28 +124,18 @@ class Orders extends Component {
         let runningOrders = response.data;
         const localRunningOrder = BillApi.getLocalOrders();
 
-        let runningTableMerged = runningOrders
+        let runningTableMerged = localRunningOrder
         if (localRunningOrder) {
-            let arr1 = []
-            let arr2 = []
 
-            arr1 = runningOrders.map(x1 => {
-                let order = localRunningOrder.find(x2 => x2._id === x1._id)
-                if (order) {
-                    return order;
-                } else {
-                    return x1;
-                }
-            });
-
-            arr2 = localRunningOrder.map(x1 => {
-                let order = runningTableMerged.find(x2 => x2._id === x1._id)
+            runningOrders.forEach(element => {
+                let order = localRunningOrder.find(x => x._id === element._id)
                 if (!order) {
-                    return x1;
+                    runningTableMerged.push(element)
                 }
             });
 
-            runningTableMerged = arr1.concat(arr2)
+        } else {
+            runningTableMerged = runningOrders
         }
 
         return runningTableMerged;
@@ -286,6 +276,9 @@ class Orders extends Component {
                         currentCart.property.token = currentToken
                         const response = await BillApi.save(currentCart)
                         currentCart = response.data
+                        let runningCartOrder = this.state.runningOrders.find(x => x._id === beforeSaveID);
+
+                        runningCartOrder.property.token = currentToken
                     }
                 }
             } else {
@@ -293,16 +286,15 @@ class Orders extends Component {
                 alert("sendToken Save Token ERROR : " + response.errors.toString())
             }
 
+
             BillApi.removeLocalOrder(beforeSaveID);
 
             const responseGetByID = await BillApi.getByID(currentCart._id)
             currentCart = responseGetByID.data
             currentCart.token = this.getTokenModel(currentCart)
 
-            const updatedRunningOrders = this.state.runningOrders.map(x => x._id === beforeSaveID ? currentCart : x);
-
             let tokenList = await this.getTokenList(currentCart._id)
-            this.setState({ runningOrders: updatedRunningOrders, currentCart: currentCart, tokenList: tokenList })
+            this.setState({ currentCart: currentCart, tokenList: tokenList })
         } else {
             console.log('sendToken Save Bill ERROR', response.errors)
             alert("sendToken Save Bill ERROR : " + response.errors.toString())

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ORDERTYPES } from '../Pages/OrderEnums'
 
 function RunningTable(props) {
+    console.log('props.runningOrders :', props.runningOrders)
     const runningOrders = props.runningOrders.filter(x => x.postype === props.activeOrderType)
     const currentCart = props.currentCart
 
