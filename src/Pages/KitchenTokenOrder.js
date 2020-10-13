@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import uuid from 'react-uuid'
 import SignalRService from '../Helpers/signalRService';
 import * as Api from '../Api/TokenServices'
-import * as Sounds from '../components/SoundsA'
+import * as Sounds from '../components/Sounds'
 
 export default class KitchenTokenOrder extends Component {
     constructor(props) {

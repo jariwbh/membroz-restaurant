@@ -15,7 +15,7 @@ import TableBook from '../Pages/TableBook'
 
 import SignalRService from '../Helpers/signalRService';
 import OrderTypeSelectionUI from '../Templates/OrderTypeSelectionUI'
-import * as Sounds from '../components/SoundsA'
+import * as Sounds from '../components/Sounds'
 import TakeOrderPopup from '../components/TakeOrderPopup'
 import { PAGES, ORDERTYPES } from '../Pages/OrderEnums'
 import Payment from '../components/Payment';
