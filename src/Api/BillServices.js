@@ -24,7 +24,6 @@ function getRunningOrders() {
     const body = {
         "search": [
             { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
-            { "searchfield": "tableid", "searchvalue": "true", "criteria": "exists", "datatype": "boolean" },
             { "searchfield": "property.orderstatus", "searchvalue": "running", "criteria": "eq" }
         ],
         "select": [

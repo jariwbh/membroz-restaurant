@@ -183,7 +183,7 @@ export default class TakeOrderPopup extends Component {
         let takeOrderObj = {
             _id: 'unsaved_' + uuid(),
             postype: this.props.activeOrderType,
-            property: { orderstatus: "running", noofperson: '', token: { prefix: "NEW", tokennumber: 1 } },
+            property: { orderstatus: "running", noofperson: '', token: { prefix: "NEW " + customername } },
             customerid: {
                 _id: customerid,
                 property: {

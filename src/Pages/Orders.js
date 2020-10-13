@@ -196,7 +196,7 @@ class Orders extends Component {
         let tokenList = []
         let items = this.state.items
         let mappedItems = items
-        debugger
+
         if (order) {
             currentCart = this.state.runningOrders.find(x => x._id === order._id)
             if (currentCart) {
