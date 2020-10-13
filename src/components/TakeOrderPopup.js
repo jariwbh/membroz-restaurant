@@ -329,7 +329,7 @@ export default class TakeOrderPopup extends Component {
                                         <div className="col-sm-8">
                                             {checkedvalues === 'existcustomer'
                                                 ?
-                                                <SelectSearch
+                                                <SelectSearch                                                
                                                     options={customerDropdown}
                                                     value={customerid}
                                                     name="customername"
