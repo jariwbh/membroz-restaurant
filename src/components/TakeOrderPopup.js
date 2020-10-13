@@ -215,13 +215,16 @@ export default class TakeOrderPopup extends Component {
                             console.log('save new takeOrder');
                         }
                     })
+                    this.props.setCurrentCartHandler(takeOrderObj)
                     this.modelPopupClose();
                 } else if (getcustomerid === '') {
                     console.log(takeOrderObj);
                     this.modelPopupClose();
+                    this.props.setCurrentCartHandler(takeOrderObj)
                     console.log('save exit records');
                 } else {
                     console.log(takeOrderObj);
+                    this.props.setCurrentCartHandler(takeOrderObj)
                     this.modelPopupClose();
                     console.log('save exit');
                 }
