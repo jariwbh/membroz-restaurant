@@ -45,7 +45,12 @@ function getByID(id) {
 }
 
 function save(currentCart) {
-    const body = { ...currentCart, customerid: currentCart.customerid._id }
+    let customerid = currentCart.customerid
+    if (currentCart.customerid._id) {
+        customerid = currentCart.customerid._id
+    }
+
+    let body = { ...currentCart, customerid: customerid }
 
     if (body._id.startsWith('unsaved_')) {
         delete body._id

@@ -53,7 +53,12 @@ function ConfirmItemsModalPopup(props) {
                         }
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-primary" le='true' data-dismiss="modal" onClick={props.sendTokenHandler}>Send KOT</button>
+                        {(!token || !token.property.items || token.property.items.length === 0) &&
+                            <button type="button" className="btn btn-primary" le='true' data-dismiss="modal">OK</button>
+                        }
+                        {(token && token.property.items && token.property.items.length > 0) &&
+                            <button type="button" className="btn btn-primary" le='true' data-dismiss="modal" onClick={props.sendTokenHandler}>Send KOT</button>
+                        }
                     </div>
                 </div>
             </div>

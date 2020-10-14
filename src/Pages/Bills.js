@@ -43,10 +43,10 @@ class Bills extends Component {
             const billList = slice.map(bill => ({
                 _id: bill._id,
                 billnumber: bill.billnumber,
-                tablename: bill.tableid.property.tablename,
+                tablename: bill.tableid ? bill.tableid.property.tablename : "",
                 customername: bill.customerid.property.fullname,
                 totalamount: bill.totalamount,
-                date: bill.tableid.createdAt,
+                date: bill.createdAt,
             }));
             this.setState({ billListObj: billList });
             // console.log('slice.length === 0 && ', slice);
