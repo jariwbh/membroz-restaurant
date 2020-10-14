@@ -24,6 +24,7 @@ function getRunningOrders() {
     const body = {
         "search": [
             { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
+            { "searchfield": "postype", "searchvalue": ["dinein", "takeaway", "delivery"], "criteria": "in" },
             { "searchfield": "property.orderstatus", "searchvalue": "running", "criteria": "eq" }
         ],
         "select": [
