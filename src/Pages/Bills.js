@@ -13,21 +13,25 @@ class Bills extends Component {
         window.scrollTo(0, 0);
         this.state = {
             billListObj: [],
-            search: null,
+            getBilList: [],
             offset: 0,
             perPage: 15,
             activePage: 1,
             totalPages: 0,
             sortType: "asc",
             sortColumn: '',
+            search: null,
             billheader: null,
-            billheaderinfo: null,
-            getBilList: [],
+            billnumber: '',
             cartitem: null,
+            totaldiscount: 0,
             totalamount: null,
-            totaldiscount: 0
+            address: '',
+            tablename: '',
+            billDate: '',
+            restaurantname: '',
+            city: ''
         }
-        //this.sortByhandle = this.sortByhandle.bind(this);
         this.printInvoiceReceipt = this.printInvoiceReceipt.bind(this);
     }
 
@@ -37,7 +41,6 @@ class Bills extends Component {
 
     receivedData() {
         Api.getRunningOrders().then((response) => {
-            //console.log('response.data', response.data);
             this.setState({ totalPages: response.data.length, getBilList: response.data });
             const slice = response.data.slice((this.state.activePage - 1) * this.state.perPage, this.state.activePage * this.state.perPage)
             const billList = slice.map(bill => ({
@@ -49,7 +52,6 @@ class Bills extends Component {
                 date: bill.createdAt,
             }));
             this.setState({ billListObj: billList });
-            // console.log('slice.length === 0 && ', slice);
         })
     }
 
@@ -69,7 +71,6 @@ class Bills extends Component {
         if (sortType === "asc") {
             this.setState({
                 billListObj: billList.sort(function (a, b) {
-                    console.log('sort asc', a[key]);
                     if (a[key] < b[key]) { return -1 }
                     return 0;
                 }), sortType: "desc", sortColumn: key
@@ -77,7 +78,6 @@ class Bills extends Component {
         } else if (sortType === "desc") {
             this.setState({
                 billListObj: billList.sort(function (a, b) {
-                    console.log('sort desc', a[key]);
                     if (a[key] > b[key]) { return -1 }
                     return 0;
                 }), sortType: "asc", sortColumn: key
@@ -175,49 +175,37 @@ class Bills extends Component {
         const billobj = this.state.getBilList.find(x => x._id === id)
 
         Api.getBillFormate().then((response) => {
+            console.log(response.data);
             this.setState({
-                billheader: response.data.billformat.receiptformat.header,
-                billheaderinfo: response.data.billformat.receiptformat.headerinfo
-            });
-            let obj = {
-                branchlogo: JSON.stringify(response.data.branchlogo),
-                address: response.data.address
-            }
-            let customerobj = {
-                memberid: {
-                    membernumbername: billobj.customerid.membernumber,
-                    membershipid: {
-                        membershipname: billobj.customerid.membernumbername
-                    }
-                },
-                receiptnumberprefix: billobj.billprefix,
-                receiptnumber: billobj.billnumber
-            }
-            const billheader = this.regexrep(this.state.billheader, obj)
-            const billheaderinfo = this.regexrep(this.state.billheaderinfo, customerobj)
-            this.setState({ billheader: billheader, billheaderinfo: billheaderinfo });
-            //console.log('bill api formate', response.data);
-
-            const billcartitemlist = billobj.items.map(cartitem =>
-                <tr key={cartitem._id} id={cartitem._id}>
-                    <td>{cartitem.item.itemid.itemname}</td>
-                    <td>{cartitem.quantity}</td>
-                    <td>{`$ ${cartitem.cost}`}</td>
-                    <td>{`$ ${cartitem.totalcost}`}</td>
-                </tr>
-            )
-            this.setState({ cartitem: billcartitemlist, totalamount: billobj.totalamount });
+                address: response.data.address,
+                restaurantname: response.data.branchname, city: (response.data.city + '-' + response.data.postcode)
+            })
         })
-        console.log('billobj', billobj);
+
+        const billcartitemlist = billobj.items.map(cartitem =>
+            <tr key={cartitem._id} id={cartitem._id}>
+                <td>{cartitem.item.itemid.itemname}</td>
+                <td>{cartitem.quantity}</td>
+                <td>{`$ ${cartitem.cost}`}</td>
+                <td>{`$ ${cartitem.totalcost}`}</td>
+            </tr>
+        )
+
+        this.setState({
+            cartitem: billcartitemlist,
+            totalamount: billobj.totalamount,
+            billheader: billobj.customerid.membernumbername,
+            billnumber: billobj.billnumber,
+            tablename: (billobj.tableid ? billobj.tableid.property.tablename : ''),
+            billDate: moment(billobj.date).format('DD-MM-YYYY')
+        });
+        //console.log('tablename', billobj);
     }
 
     printInvoiceReceipt() {
-        console.log('print');
         let printContents, popupWin;
-
-
         printContents = document.getElementById('prdiv').innerHTML;
-        popupWin = window.open('', '_blank', 'top=0,left=0,height=100%,width=auto');
+        popupWin = window.open('', '_blank', 'top=0,left=0,height=auto,width=auto');
         popupWin.document.open();
         popupWin.document.write(`
         <html>
@@ -225,8 +213,8 @@ class Bills extends Component {
             <title></title>
      <style type="text/css">
         @page {
-           size: A4 portrait;
-           margin: 30pt 30pt 30pt;	
+            size: auto; 
+            margin: 3mm 3mm 3mm;
         }
           
         @media print {
@@ -327,13 +315,10 @@ class Bills extends Component {
                                             <div className="col-md-3">
                                                 <input className="form-control mb-2" type="search" onChange={(e) => this.searchSpace(e)} placeholder="Search Bills" aria-label="Search" />
                                             </div>
-
-
                                         </form>
                                         <div className="row">
                                             <div className="col-md-12">
                                                 <div className="table-responsive mb-3">
-
                                                     <table id="billtable" name="billtable" className="table" cellSpacing="1" style={{ cursor: 'pointer' }}>
                                                         <thead className="thead-dark">
                                                             <tr>
@@ -391,17 +376,38 @@ class Bills extends Component {
                                 </button>
                             </div>
                             <div className="modal-body" id="prdiv">
-                                {ReactHtmlParser(this.state.billheader)}
-                                {ReactHtmlParser(this.state.billheaderinfo)}
-                                {this.state.cartitem === null ? '' :
+                                {this.state.cartitem &&
                                     <>
-                                        <table id="billtable" name="billtable" className="table" cellSpacing="1">
-                                            <thead className="thead-dark">
+                                        <div className="inline-block">{this.state.restaurantname}</div>
+                                        <div>{this.state.billheader}</div>
+                                        <div>{this.state.address}</div>
+                                        <div>{this.state.city}</div>
+                                        <div>CASH/BILL</div>
+                                        <table id="billtableheader" name="billtableheader" className="table mt-2" cellSpacing="1">
+                                            <thead>
                                                 <tr>
-                                                    <th>Description</th>
-                                                    <th>Quantity</th>
-                                                    <th>Unit Price ($)</th>
-                                                    <th>Amount ($)</th>
+                                                    <th style={{ fontWeight: 'bold' }}>Bill No</th>
+                                                    <th style={{ fontWeight: 'bold' }}>TNo</th>
+                                                    <th style={{ fontWeight: 'bold' }}>Date</th>
+                                                    <th style={{ fontWeight: 'bold' }}>Time</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>{this.state.billnumber}</td>
+                                                    <td>{this.state.tablename}</td>
+                                                    <td >{this.state.billDate}</td>
+                                                    <td >{moment().format('LT')}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table id="billtable" name="billtable" className="table" cellSpacing="1">
+                                            <thead>
+                                                <tr>
+                                                    <th style={{ fontWeight: 'bold' }}>Item</th>
+                                                    <th style={{ fontWeight: 'bold' }}>Qty</th>
+                                                    <th style={{ fontWeight: 'bold' }}>Price</th>
+                                                    <th style={{ fontWeight: 'bold' }}>Amount</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -415,24 +421,24 @@ class Bills extends Component {
                                                 <tr>
                                                     <td></td>
                                                     <td></td>
-                                                    <td style={{ fontWeight: 'bold' }}>Tax Amount</td>
+                                                    <td style={{ fontWeight: 'bold' }}>Tax</td>
                                                     <td style={{ fontWeight: 'bold' }}>$ 0.00</td>
                                                 </tr>
                                                 <tr>
                                                     <td></td>
                                                     <td></td>
-                                                    <td style={{ fontWeight: 'bold' }}>Total Discount</td>
+                                                    <td style={{ fontWeight: 'bold' }}>Discount</td>
                                                     <td style={{ fontWeight: 'bold' }}>$ {this.state.totaldiscount}</td>
                                                 </tr>
                                                 <tr>
                                                     <td></td>
                                                     <td></td>
-                                                    <td style={{ fontWeight: 'bold' }}>Total Amount</td>
+                                                    <td style={{ fontWeight: 'bold' }}>Net Amount</td>
                                                     <td style={{ fontWeight: 'bold' }}>$ {this.state.totalamount}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
-                                        <span><p style={{ marginBottom: '20px' }}>This is a computer generated Invoice and doesn’t require any signature. If you have queries regarding this then please contact us. </p></span>
+                                        <span style={{ marginBottom: '20px' }} className="inline-block center"> Thank You 😃</span>
                                     </>
                                 }
                             </div>
