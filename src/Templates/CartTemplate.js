@@ -54,7 +54,7 @@ function CartTemplate(props) {
                         <div>{props.currentCart.customerid.property.fullname}</div>
                         <div>{props.currentCart.customerid.property.mobilenumber}</div>
                     </div>
-                    <div className="table-num-title"> <a href="#"><img src={images.addicon} alt="" data-toggle="modal" data-target="#fortakeOrder" /> </a> </div>
+                    <div className="table-num-title"> <a href="#"><img src={images.addicon} alt="" data-toggle="modal" data-target="#changecustomerpopup" /> </a> </div>
                 </div>
                 <div className="table-responsive">
                     <table className="table table-hover">

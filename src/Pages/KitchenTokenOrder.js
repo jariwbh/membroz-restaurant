@@ -60,6 +60,7 @@ export default class KitchenTokenOrder extends Component {
                 case TOKENSTATUS.SERVED:
                     foundToken.status = TOKENSTATUS.PREPARED;
                     break;
+                default:
             }
 
             const responseToken = await Api.save(foundToken)
@@ -99,7 +100,7 @@ export default class KitchenTokenOrder extends Component {
     renderToken = (props) => {
         const token = props.token;
         const { waiting, inProgress, prepared, tokenType } = this.state;
-        debugger
+
         if (tokenType !== "All" && token.property.type !== tokenType) {
             return null
         }

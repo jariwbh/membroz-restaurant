@@ -39,7 +39,7 @@ function RunningTable(props) {
                             </div>
                             :
                             <div className="d-flex align-items-center mr-2">
-                                <button type="button" className="btn btn-primary btn-lg" data-toggle="modal" data-target="#fortakeOrder">New Order</button>
+                                <button type="button" className="btn btn-primary btn-lg" data-toggle="modal" data-target="#takeOrderpopup">New Order</button>
                             </div>
                         }
                         {/* <div className="d-flex align-items-center mr-2"><button type="button" className="btn btn-primary btn-lg" onClick={() => props.newOrderHandler()}>New Order</button></div> */}

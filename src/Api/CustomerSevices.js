@@ -9,11 +9,11 @@ function getCustomerList() {
 }
 
 
-function addProspectsTableRecord(body) {
+function save(body) {
     return (
         axios.post('prospects/', body)
     )
 }
 
-export { getCustomerList, addProspectsTableRecord }
+export { getCustomerList, save }
 
