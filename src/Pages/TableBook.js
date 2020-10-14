@@ -13,6 +13,7 @@ import '../Assets/css/DropDownstyles.css'
 import '../Assets/css/ErrorMessage.css'
 import uuid from 'react-uuid'
 import { ORDERTYPES } from '../Pages/OrderEnums'
+//import $ from 'jquery'
 
 export default class TableBook extends Component {
     constructor(props) {
@@ -663,8 +664,10 @@ export default class TableBook extends Component {
                                 </form>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-primary mr-auto" name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
-                                <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button>
+                                <button type="button" className={this.state.checkedtable === null ? 'btn btn-primary mr-auto' : 'btn btn-primary'} name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
+                                {this.state.checkedtable === null ?
+                                    <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button>
+                                    : ''}
                             </div>
                         </div>
                     </div>
