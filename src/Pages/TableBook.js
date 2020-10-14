@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import * as ReservedTableApi from '../Api/ReservedTableServices';
-import { deleteicon, addicon } from '../components/Image';
+import { deleteicon, addicon, tableicon } from '../components/Image';
 import { personicon } from '../components/Image';
 import WaitingTable from '../components/WaitingTable'
 import * as TableServicesApi from '../Api/TableServices';
@@ -471,7 +471,7 @@ export default class TableBook extends Component {
                         <div className="container-fluid">
                             <div className="row table-item-gutters my-10">
                                 <div className="col-xl-4 col-lg-4 col-md-5" >
-                                    <div className="white-box mb-3 white-box-full" >
+                                    <div className="white-box mb-10 white-box-full" >
                                         <ul className="nav nav-pills categories-pills person-table-p d-flex justify-content-around" id="pills-tab-list" role="tablist">
                                             <li className="nav-item" role="presentation">
                                                 <a className="nav-link active" id="pills-reserved-2-tab" data-toggle="pill" href="#pills-reserved-2" role="tab" aria-controls="pills-reserved-2" aria-selected="false">Reserved List</a>
@@ -524,52 +524,163 @@ export default class TableBook extends Component {
                                     </div>
                                 </div>
                                 <div className="col-xl-8 col-lg-8 col-md-7">
-                                    <ul className="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
-                                        <li className="nav-item" role="presentation">
-                                            <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true">All</a>
+                                    <ul class="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <a class="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true">All</a>
                                         </li>
-                                        <li className="nav-item" role="presentation">
-                                            <a className="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="false">Occupied <span className="table-status-tab occupied-bg"></span> </a>
+                                        <li class="nav-item" role="presentation">
+                                            <a class="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="false">Occupied <span class="table-status-tab occupied-bg"></span> </a>
                                         </li>
-                                        <li className="nav-item" role="presentation">
-                                            <a className="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="false">Blank <span className="table-status-tab blank-bg"></span></a>
+                                        <li class="nav-item" role="presentation">
+                                            <a class="nav-link " id="pills-table-3-tab" data-toggle="pill" href="#pills-table-3" role="tab" aria-controls="pills-table-3" aria-selected="false">Blank <span class="table-status-tab blank-bg"></span></a>
                                         </li>
-                                        <li className="nav-item" role="presentation">
-                                            <a className="nav-link " id="pills-table-6-tab" data-toggle="pill" href="#pills-table-6" role="tab" aria-controls="pills-table-6" aria-selected="false">No Service <span className="table-status-tab no-service-bg"></span></a>
+                                        <li class="nav-item" role="presentation">
+                                            <a class="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="false">No Service <span class="table-status-tab no-service-bg"></span></a>
                                         </li>
                                     </ul>
-                                    <div className="tab-content categories-tab-content" id="pills-tabContent">
-                                        <div className="tab-pane fade show active" id="pills-table-1" role="tabpanel" aria-labelledby="pills-table-1-tab">
-                                            <div className="row card-item-gutters">
+
+                                    <div class="tab-content categories-tab-content" id="pills-tabContent">
+                                        <div class="tab-pane fade show active" id="pills-table-1" role="tabpanel" aria-labelledby="pills-table-1-tab">
+                                            <div class="row card-item-gutters">
                                                 {this.state.tableList.map(tableobj =>
-                                                    <li className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={tableobj._id} id={tableobj._id} onClick={() => this.clicktoSelectTableOpenModel(tableobj)} style={{ cursor: 'pointer' }}>
-                                                        <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-                                                            <div className="card-body p-2 ">
-                                                                <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{tableobj.property.capacity}</span> </div>
-                                                                <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                    <div className="table-restaurant-title">{tableobj.property.tablename}</div>
-                                                                    <div className="table-number">01</div>
+                                                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={tableobj._id} id={tableobj._id} onClick={() => this.clicktoSelectTableOpenModel(tableobj)} style={{ cursor: 'pointer' }}>
+                                                        <div class="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+                                                            <div class="card-body p-2 ">
+                                                                <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">{tableobj.property.capacity}</span> </div>
+                                                                <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                    <div class="table-number">{tableobj.property.tablename}</div>
+                                                                    <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </li>
+                                                    </div>
                                                 )}
+
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height blank-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height no-service-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height blank-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height no-service-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
+
                                         <div className="tab-pane fade" id="pills-table-2" role="tabpanel" aria-labelledby="pills-table-2-tab">
-                                            2
+                                            <div class="row card-item-gutters">
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        {/* <div className="tab-pane fade" id="pills-table-3" role="tabpanel" aria-labelledby="pills-table-3-tab">
-                                            3
-                                        </div> */}
+                                        <div className="tab-pane fade" id="pills-table-3" role="tabpanel" aria-labelledby="pills-table-3-tab">
+                                            <div class="row card-item-gutters">
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height blank-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height blank-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div className="tab-pane fade" id="pills-table-4" role="tabpanel" aria-labelledby="pills-table-4-tab">
-                                            4
-                                        </div>
-                                        {/* <div className="tab-pane fade" id="pills-table-5" role="tabpanel" aria-labelledby="pills-table-5-tab">
-                                            5
-                                        </div> */}
-                                        <div className="tab-pane fade" id="pills-table-6" role="tabpanel" aria-labelledby="pills-table-6-tab">
-                                            6
+                                            <div class="row card-item-gutters">
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height no-service-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div class="card white-box mb-10 border-0 table-box-height no-service-bg"  >
+                                                        <div class="card-body p-2 ">
+                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
+                                                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                                                <div class="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
