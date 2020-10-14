@@ -525,6 +525,7 @@ fill: currentColor;
 .table-person-title {
 font-size: 18px;
 font-weight: bold;
+color: #ffffff;	
 }
 .table-restaurant-title {
  font-size:16px;
@@ -532,23 +533,24 @@ font-weight: bold;
  line-height: 1.26;
 }
 .table-number {
-font-size:31px;
-font-weight:bold;	
+font-size:27px;
+font-weight:bold;
+color: #ffffff;	
 }
 .occupied-bg {
-background-color: #E6ECFF; 
+background-color: #4772F9 !important; 
 }
 .reserved-bg {
 background-color: #FFDCDC;
 } 
 .blank-bg {
-background-color: #FFFFFF;
+background-color: #1FCC9D !important;
 } 
 .cleaning-bg {
 background-color: #FFECCF;
 } 
 .no-service-bg {
-background-color: #E9E9E9;
+background-color: #333333 !important;
 } 
 
 .table-no-pills .nav-link {
@@ -557,7 +559,7 @@ align-items: center;
 }
 
 .table-status-tab {	
-border: 1px solid #DDDDDD;
+
 border-radius: 8px;
 width: 16px;
 height: 16px;

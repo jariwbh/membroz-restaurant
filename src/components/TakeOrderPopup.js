@@ -3,7 +3,6 @@ import FormValidator from '../components/FormValidator';
 import SelectSearch from 'react-select-search';
 import * as CustomerApi from '../Api/CustomerSevices';
 import * as UserApi from '../Api/UserServices'
-import * as TableServicesApi from '../Api/TableServices';
 import uuid from 'react-uuid'
 import { ORDERTYPES } from '../Pages/OrderEnums'
 
@@ -30,276 +29,208 @@ export default class TakeOrderPopup extends Component {
                 args: [/^\(?\d\d\d\)? ?\d\d\d-?\d\d\d\d$/],
                 validWhen: true,
                 message: 'Enter valid Mobile No.'
-            },
-            // {
-            //     field: 'address',
-            //     method: 'isEmpty',
-            //     validWhen: false,
-            //     message: 'Enter Address.'
-            // },
-            // {
-            //     field: 'tablename',
-            //     method: 'isEmpty',
-            //     validWhen: false,
-            //     message: 'select table.'
-            // }
+            }
         ]);
 
         this.state = {
-            customerid: '',
-            customername: '',
-            mobile_number: '',
-            address: '',
-            deliveryboyid: '',
-            deliveryboyname: '',
-            validation: this.validator.valid(),
-            checkedvalues: 'existcustomer',
-            deliveryboyList: [],
             customerList: [],
-            tableobj: [],
-            customerobj: [],
-            getcustomerid: '',
-            tablename: '',
-            availabletableList: [],
-            tableid: '',
-            onModel: ''
-        }
-        this.submitted = false;
-    }
-
-    handleInputChange = event => {
-        if (this.state.checkedvalue === 'existcustomer') {
-            if (event.target.name === 'deliveryboyname') {
-                const deliveryboynameobj = this.state.deliveryboyList.find(x => x._id === event.target.value)
-                this.setState({
-                    deliveryboyid: deliveryboynameobj._id,
-                    deliveryboyname: deliveryboynameobj.property.fullname
-                });
-            } else if (event.target.name === 'tablename') {
-                const tabledata = this.state.availabletableList.find(x => x._id === event.target.value)
-                this.setState({
-                    tableid: tabledata._id,
-                    tablename: tabledata.property.tablename,
-                    tableobj: tabledata
-                });
-            } else {
-                this.setState({
-                    [event.target.name]: event.target.value
-                });
-            }
-        } else {
-            if (event.target.name === 'deliveryboyname') {
-                const deliveryboynameobj = this.state.deliveryboyList.find(x => x._id === event.target.value)
-                this.setState({
-                    deliveryboyid: deliveryboynameobj._id,
-                    deliveryboyname: deliveryboynameobj.property.fullname
-                });
-            } else if (event.target.name === 'tablename') {
-                const tabledata = this.state.availabletableList.find(x => x._id === event.target.value)
-                this.setState({
-                    tableid: tabledata._id,
-                    tablename: tabledata.property.tablename,
-                    tableobj: tabledata
-                });
-            } else {
-                this.setState({
-                    [event.target.name]: event.target.value
-                });
-            }
-        }
-    }
-
-    modelPopupClose() {
-        var modelclose = document.getElementById("modelclose")
-        modelclose.click();
-    }
-
-    resetForm() {
-        //document.getElementById('takeOrderForm').reset()
-        this.myFormRef.reset();
-        document.getElementById('existcustomer').checked = true;
-
-        const validator = {
-            customername: {
-                isInvalid: false,
-                message: ""
-            },
-            isValid: true,
-            mobile_number: {
-                isInvalid: false,
-                message: ""
-            }
-            // ,address: {
-            //     isInvalid: false,
-            //     message: ""
-            // },
-            // deliveryboyname: {
-            //     isInvalid: false,
-            //     message: ""
-            // }, tablename: {
-            //     isInvalid: false,
-            //     message: ""
-            // }
-        }
-
-        this.setState({
+            deliveryBoyList: [],
+            tableList: [],
+            isExistingCustomer: 'true',
+            onModel: '',
             customerid: '',
             customername: '',
             mobile_number: '',
             address: '',
-            deliveryboyid: '',
-            deliveryboyname: '',
-            validation: validator,
-            checkedvalues: 'existcustomer',
-            tableobj: [],
-            customerobj: [],
-            tablename: '',
-            onModel: ''
-        });
-    }
-
-    getAvailableTableList() {
-        TableServicesApi.getTableList().then((response) => {
-            this.setState({ availabletableList: response.data })
-        })
-    }
-
-    handleFormSubmit = (event) => {
-        const btnclickname = event.target.name;
-        const { customername, mobile_number, customerid, address, customerobj, getcustomerid, tableid, tablename, onModel } = this.state;
-        const newCustomerObj = {
-            property: {
-                fullname: customername,
-                mobile_number: mobile_number,
-                address: address
-            }
+            deliveryboyid: undefined,
+            deliveryboyname: undefined,
+            validation: this.validator.valid()
         }
-
-        // tableid: {
-        //     _id: tableid,
-        //     table: tablename
-        // },
-
-        let takeOrderObj = {
-            _id: 'unsaved_' + uuid(),
-            postype: this.props.activeOrderType,
-            property: { orderstatus: "running", noofperson: '', token: { prefix: "NEW " + customername } },
-            customerid: {
-                _id: customerid,
-                property: {
-                    fullname: customername,
-                    mobile_number: mobile_number,
-                }
-            },
-            onModel: onModel,
-            amount: 0,
-            totalamount: 0,
-            discount: 0,
-            taxamount: 0,
-            totalquantity: 0,
-            items: [],
-            deliveryaddress: address
-        }
-
-        const validation = this.validator.validate(this.state);
-        this.setState({ validation });
-        if (validation.isValid) {
-            if (btnclickname === "takeOrder") {
-                if (customerid === '') {
-                    CustomerApi.addProspectsTableRecord(newCustomerObj).then((response) => {
-                        this.setState({ customerid: response.data._id })
-                        if (response.data._id) {
-                            console.log(response.data._id);
-                            takeOrderObj.customerid._id = response.data._id
-                            console.log('addProspectsTableRecord', takeOrderObj);
-                            this.getCustomerList();
-                            console.log('save new takeOrder');
-                        }
-                    })
-                    this.props.setCurrentCartHandler(takeOrderObj)
-                    this.modelPopupClose();
-                } else if (getcustomerid === '') {
-                    console.log(takeOrderObj);
-                    this.modelPopupClose();
-                    this.props.setCurrentCartHandler(takeOrderObj)
-                    console.log('save exit records');
-                } else {
-                    console.log(takeOrderObj);
-                    this.props.setCurrentCartHandler(takeOrderObj)
-                    this.modelPopupClose();
-                    console.log('save exit');
-                }
-            }
-        }
-    }
-
-    async componentDidMount() {
-        await this.getCustomerList();
-        await this.getdeliveryboyList()
-        await this.getAvailableTableList()
-        //console.log('activeOrderType', this.props.activeOrderType);
     }
 
     async getCustomerList() {
-        return CustomerApi.getCustomerList()
+        CustomerApi.getCustomerList()
             .then((response) => {
                 this.setState({ customerList: response.data })
-                return;
             }, (error) => {
                 console.log("error", error);
             });
     }
 
-    async getdeliveryboyList() {
-        return UserApi.getUserList()
+    async getDeliveryBoyList() {
+        UserApi.getUserList()
             .then((response) => {
-                this.setState({ deliveryboyList: response.data })
-                return;
+                this.setState({ deliveryBoyList: response.data })
             }, (error) => {
                 console.log("error", error);
             })
     }
 
-    CustomerDropdownHandleChange = event => {
-        if (this.state.checkedvalues === 'existcustomer') {
-            const customerFind = this.state.customerList.find(x => x._id === event)
-            if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
+    async componentDidMount() {
+        await this.getCustomerList();
+
+        //if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
+        await this.getDeliveryBoyList()
+        //}
+    }
+
+    onChangeValue = async (event) => {
+        //event.preventDefault();
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+        await this.setState({ [name]: value });
+    }
+
+    onCustomerDropdownChange = value => {
+        if (this.state.isExistingCustomer === "true") {
+            const foundCustomer = this.state.customerList.find(x => x._id === value)
+            if (foundCustomer) {
                 this.setState({
-                    mobile_number: customerFind.property.mobile_number,
-                    customername: customerFind.property.fullname,
-                    customerid: customerFind._id,
-                    customerobj: customerFind,
-                    getcustomerid: customerFind._id,
-                    address: (customerFind.property.address === null ? '' : customerFind.property.address),
-                    onModel: customerFind.property.onModel,
-                });
-            } else {
-                this.setState({
-                    mobile_number: customerFind.property.mobile_number,
-                    customername: customerFind.property.fullname,
-                    customerid: customerFind._id,
-                    customerobj: customerFind,
-                    getcustomerid: customerFind._id,
-                    onModel: customerFind.property.onModel,
+                    onModel: foundCustomer.property.onModel,
+                    customerid: foundCustomer._id,
+                    customername: foundCustomer.property.fullname,
+                    mobile_number: foundCustomer.property.mobile_number,
+                    address: (foundCustomer.property.address === null ? '' : foundCustomer.property.address)
                 });
             }
-            console.log(customerFind);
         }
     }
 
-    handleradioOnChange = event => {
-        this.setState({
-            checkedvalues: event.target.value
-        });
-        if (event.target.value === "newcustomer") {
-            this.myFormRef.reset();
+    onDeliveryBoyDropdownChange = value => {
+        const foundDeliveryBoy = this.state.deliveryBoyList.find(x => x._id === value)
+        if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
+            this.setState({
+                deliveryboyid: foundDeliveryBoy._id,
+                deliveryboyname: foundDeliveryBoy.property.fullname
+            });
         }
-        console.log('event', event.target.value);
+    }
+
+    handleFormSubmit = async (event) => {
+        let { isExistingCustomer, onModel, customerid, customername, mobile_number, address, deliveryboyid, deliveryboyname } = this.state;
+
+        const validation = this.validator.validate(this.state);
+        if (!validation.isValid) {
+            this.setState({ validation });
+            return;
+        }
+
+        if (isExistingCustomer === "false") {
+
+            const newCustomerObj = {
+                property: {
+                    fullname: customername,
+                    mobile_number: mobile_number,
+                    address: address
+                }
+            }
+
+            const response = await CustomerApi.save(newCustomerObj)
+            if (response.status === 200 && response.data._id) {
+                this.setState({ customerid: response.data._id })
+                customerid = response.data._id
+                onModel = "Prospect"
+                this.getCustomerList();
+            } else {
+                alert("Error to save Customer, Need to handle");
+                return;
+            }
+        }
+        if (this.props.newOrder === true) {
+            const takeOrderObj = {
+                _id: 'unsaved_' + uuid(),
+                postype: this.props.activeOrderType,
+                property: {
+                    orderstatus: "running",
+                    noofperson: '',
+                    token: {
+                        prefix: "NEW " + customername
+                    },
+                    deliveryaddress: address,
+                    deliveryboyid: {
+                        _id: deliveryboyid,
+                        property: {
+                            fullname: deliveryboyname
+                        }
+                    }
+                },
+                onModel: onModel,
+                customerid: {
+                    _id: customerid,
+                    property: {
+                        fullname: customername,
+                        mobile_number: mobile_number,
+                    }
+                },
+                amount: 0,
+                totalamount: 0,
+                discount: 0,
+                taxamount: 0,
+                totalquantity: 0,
+                items: []
+            }
+
+            this.modelPopupClose();
+            this.props.setCurrentCartHandler(takeOrderObj)
+        } else {
+            const customer = {
+                onModel: onModel,
+                customerid: {
+                    _id: customerid,
+                    property: {
+                        fullname: customername,
+                        mobile_number: mobile_number,
+                    }
+                }
+            }
+
+            let delivery = undefined
+            if (this.state.activeOrderType === ORDERTYPES.DELIVERY) {
+                delivery = {
+                    deliveryaddress: address,
+                    deliveryboyid: {
+                        _id: deliveryboyid,
+                        property: {
+                            fullname: deliveryboyname
+                        }
+                    }
+                }
+            }
+
+            this.modelPopupClose();
+            this.props.changeCustomerHandler(customer, delivery)
+        }
+    }
+
+    modelPopupClose() {
+        var modelclose
+        if (this.props.newOrder === true) {
+            modelclose = document.getElementById("closemodel_neworder")
+        } else {
+            modelclose = document.getElementById("closemodel_changecustomer")
+        }
+
+        modelclose.click();
+    }
+
+    onClose = () => {
+        this.setState({
+            isExistingCustomer: 'true',
+            onModel: '',
+            customerid: '',
+            customername: '',
+            mobile_number: '',
+            address: '',
+            deliveryboyid: undefined,
+            deliveryboyname: undefined,
+            validation: this.validator.valid()
+        })
     }
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { availabletableList, customerid, deliveryboyid, checkedvalues, mobile_number, deliveryboy, deliveryboyList, address, customerList } = this.state;
+        const { isExistingCustomer, customerid, mobile_number, address, deliveryboyid, deliveryBoyList, customerList } = this.state;
 
         const customerDropdown = customerList.map(customerObj => (
             {
@@ -308,39 +239,66 @@ export default class TakeOrderPopup extends Component {
             }
         ))
 
+        const deliveryBoyDropdown = deliveryBoyList.map(x => (
+            {
+                name: x.property.fullname,
+                value: x._id
+            }
+        ))
+
         return (
             <React.Fragment>
-                <div className="modal fade" id="fortakeOrder" tabIndex="-1" role="dialog" aria-labelledby="takeOrderTitle" aria-hidden="true">
+                <div className="modal fade" id={this.props.newOrder === true ? "takeOrderpopup" : "changecustomerpopup"} tabIndex="-1" role="dialog" aria-labelledby="takeOrderTitle" aria-hidden="true">
                     <div className="modal-dialog modal-dialog-centered" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title" id="taketakeOrderTitleOrder">Take Order</h5>
-                                <button type="button" id="modelclose" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.resetForm()} >
+                                <button type="button" id={this.props.newOrder === true ? "closemodel_neworder" : "closemodel_changecustomer"} className="close" data-dismiss="modal" aria-label="Close" onClick={this.onClose}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div className="modal-body">
                                 <div className="container">
-                                    <input type="radio" id="existcustomer" name="takeorder" value="existcustomer" className="mr-1" defaultChecked onClick={this.handleradioOnChange} />
-                                    <label htmlFor="existcustomer" className="mr-3">Exist Customer</label>
-                                    <input type="radio" id="newcustomername" name="takeorder" value="newcustomer" className="mr-1" onClick={this.handleradioOnChange} />
+                                    <input
+                                        type="radio"
+                                        name="isExistingCustomer"
+                                        value="true"
+                                        checked={isExistingCustomer === "true"}
+                                        className="mr-1"
+                                        onChange={this.onChangeValue}
+                                    />
+                                    <label htmlFor="existingcustomer" className="mr-3">Exist Customer</label>
+                                    <input
+                                        type="radio"
+                                        name="isExistingCustomer"
+                                        value="false"
+                                        checked={isExistingCustomer === "false"}
+                                        className="mr-1"
+                                        onChange={this.onChangeValue}
+                                    />
                                     <label htmlFor="newcustomername" className="mr-3">New Customer</label>
                                 </div>
-                                <form ref={(el) => this.myFormRef = el} className="container mt-3" method="post" id="takeOrderForm" name="takeOrderForm" >
+                                <div className="container mt-3" >
                                     <div className="form-group row">
                                         <label htmlFor="customer" className="col-sm-4 col-form-label">Customer Name <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            {checkedvalues === 'existcustomer'
+                                            {isExistingCustomer === "true"
                                                 ?
                                                 <SelectSearch
                                                     options={customerDropdown}
-                                                    value={customerid}
                                                     name="customername"
+                                                    value={customerid}
                                                     search
                                                     placeholder="Select Customer"
-                                                    onChange={this.CustomerDropdownHandleChange} />
+                                                    onChange={this.onCustomerDropdownChange} />
                                                 :
-                                                <input className="form-control" type="text" placeholder="Enter Customer Name" name='customername' id="customerid" onChange={this.handleInputChange} />
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    placeholder="Enter Customer Name"
+                                                    name='customername'
+                                                    onChange={this.onChangeValue}
+                                                />
                                             }
                                             <span className="help-block">{validation.customername.message}</span>
                                         </div>
@@ -348,57 +306,61 @@ export default class TakeOrderPopup extends Component {
                                     <div className="form-group row">
                                         <label htmlFor="mobilenumber" className="col-sm-4 col-form-label">Mobile Number <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="text" name='mobile_number' placeholder="Enter Mobile Number" className="form-control" id="mobile_numberid" value={mobile_number} onChange={this.handleInputChange} />
+                                            <input
+                                                type="text"
+                                                name='mobile_number'
+                                                value={mobile_number}
+                                                placeholder="Enter Mobile Number"
+                                                className="form-control"
+                                                onChange={this.onChangeValue}
+                                            />
                                             <span className="help-block">{validation.mobile_number.message}</span>
                                         </div>
                                     </div>
 
                                     {this.props.activeOrderType === ORDERTYPES.DELIVERY ?
-
                                         <div className="form-group row">
                                             <label htmlFor="address" className="col-sm-4 col-form-label">Address <span style={{ color: 'red' }}>*</span></label>
                                             <div className="col-sm-8">
-                                                <textarea type="textarea" className="form-control" name='address' id="address" placeholder="Enter Delivery Address" value={address} onChange={this.handleInputChange} />
+                                                <textarea
+                                                    type="textarea"
+                                                    name='address'
+                                                    value={address}
+                                                    placeholder="Enter Delivery Address"
+                                                    className="form-control"
+                                                    onChange={this.onChangeValue} />
                                                 {/* <span className="help-block">{validation.address.message}</span> */}
                                             </div>
                                         </div>
-                                        : <div></div>
+                                        :
+                                        <div></div>
                                     }
-
-                                    {/* <div className="form-group row">
-                                        <label htmlFor="table" className="col-sm-4 col-form-label">Table<span style={{ color: 'red' }}>*</span>
-                                        </label>
-                                        <div className="col-sm-8">
-                                            <select className="form-control" name='tablename' id="tableid" value={this.state.tableid}
-                                                onChange={this.handleInputChange} style={{ width: '100%' }}>
-                                                {availabletableList.map(availableTable => (
-                                                    <option key={availableTable._id} value={availableTable._id}>
-                                                        {`${availableTable.property.tablename}` + ' ' + `(${availableTable.property.capacity})`}
-                                                    </option>
-                                                ))} </select>
-                                            <span className="help-block">{validation.tablename.message}</span>
-                                        </div>
-                                    </div> */}
 
                                     {this.props.activeOrderType === ORDERTYPES.DELIVERY ?
                                         <div className="form-group row">
                                             <label htmlFor="deliveryboylbl" className="col-sm-4 col-form-label">Delivery Boy </label>
                                             <div className="col-sm-8">
-                                                <select className="form-control" name='deliveryboyname' id="deliveryboyid" value={deliveryboyid}
-                                                    onChange={this.handleInputChange} style={{ width: '100%' }}>
-                                                    {deliveryboyList.map(deliveryboy => (
-                                                        <option key={deliveryboy._id} value={deliveryboy._id}>
-                                                            {deliveryboy.property.fullname}
-                                                        </option>
-                                                    ))} </select>
+                                                <SelectSearch
+                                                    options={deliveryBoyDropdown}
+                                                    name="deliveryboyname"
+                                                    value={deliveryboyid}
+                                                    search
+                                                    placeholder="Select Delivery Boy"
+                                                    onChange={this.onDeliveryBoyDropdownChange}
+                                                />
                                             </div>
                                         </div>
-                                        : <div></div>
+                                        :
+                                        <div></div>
                                     }
-                                </form>
+                                </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-primary" name="takeOrder" onClick={this.handleFormSubmit}>Take Order</button>
+                                {this.props.newOrder === true ?
+                                    <button type="button" className="btn btn-primary" name="takeOrder" onClick={this.handleFormSubmit}>Take Order</button>
+                                    :
+                                    <button type="button" className="btn btn-primary" name="takeOrder" onClick={this.handleFormSubmit}>Change</button>
+                                }
                             </div>
                         </div>
                     </div>
@@ -407,4 +369,3 @@ export default class TakeOrderPopup extends Component {
         )
     }
 }
-

@@ -87,6 +87,7 @@ class Orders extends Component {
                 case TOKENSTATUS.SERVED:
                     foundToken.status = TOKENSTATUS.PREPARED;
                     break;
+                default:
             }
 
             const responseToken = await ApiToken.save(foundToken)
@@ -191,6 +192,25 @@ class Orders extends Component {
         this.setState({ activePage: PAGES.TABLEBOOK });
     }
 
+    changeCustomerHandler = (customer, delivery) => {
+        let currentCart = this.state.currentCart
+        if (customer) {
+            currentCart.onModel = customer.onModel
+            currentCart.customerid._id = customer.customerid._id
+            currentCart.customerid.property.fullname = customer.customerid.property.fullname
+            currentCart.customerid.property.mobile_number = customer.customerid.property.mobile_number
+        }
+
+        if (delivery) {
+            currentCart.property.deliveryaddress = delivery.deliveryaddress
+            currentCart.property.deliveryboyid._id = delivery.deliveryboyid._id
+            currentCart.property.deliveryboyid.property.fullname = delivery.deliveryboyid.property.fullname
+        }
+
+        this.setState({ currentCart: currentCart });
+        BillApi.saveLocalOrder(currentCart);
+    }
+
     setCurrentCartHandler = async (order) => {
         let orderType = this.state.activeOrderType
 
@@ -263,6 +283,39 @@ class Orders extends Component {
         }
     }
 
+    validateMe = (currentCart, currentToken) => {
+        if (!currentCart) {
+            alert("Current Cart is undefined")
+            return false;
+        }
+        if (!currentCart.customerid) {
+            alert("Current Cart is undefined")
+            return false;
+        }
+        // if (currentCart.onModel === '') {
+        //     alert("Current Cart onModel is Empty")
+        //     return false;
+        // }
+        if (!currentCart.property) {
+            alert("currentCart.property is undefined")
+            return false;
+        }
+        if (!currentToken) {
+            alert("Current Token is NULL")
+            return false;
+        }
+        if (!currentToken.property.items) {
+            alert("Empty Current KOT")
+            return false;
+        }
+        if (currentToken.property.items.length === 0) {
+            alert("Empty Current KOT")
+            return false;
+        }
+
+        return true;
+    }
+
     sendToken = async () => {
         let currentCart = this.state.currentCart
         let currentToken = this.state.currentCart.token
@@ -272,13 +325,14 @@ class Orders extends Component {
             return;
         }
 
+        console.log('currentCart', JSON.stringify(currentCart))
         const response = await BillApi.save(currentCart)
-        if (response.status === 200) {
+        if (response.status === 200 && !response.data.errors) {
 
             currentCart = response.data
             currentToken.contextid = currentCart._id
             const responseToken = await ApiToken.save(currentToken)
-            if (responseToken.status === 200) {
+            if (responseToken.status === 200 && !responseToken.data.errors) {
                 currentToken = responseToken.data;
                 currentToken.senderID = this.senderID;
 
@@ -292,8 +346,8 @@ class Orders extends Component {
                     }
                 }
             } else {
-                console.log('sendToken Save Token ERROR', response.errors)
-                alert("sendToken Save Token ERROR : " + response.errors.toString())
+                console.log('sendToken Save Token ERROR', responseToken.data.errors)
+                alert("sendToken Save Token ERROR : " + responseToken.data.errors.toString())
             }
 
             BillApi.removeLocalOrder(beforeSaveID);
@@ -306,8 +360,8 @@ class Orders extends Component {
             let tokenList = await this.getTokenList(currentCart._id)
             this.setState({ runningOrders: updatedRunningOrders, currentCart: currentCart, tokenList: tokenList })
         } else {
-            console.log('sendToken Save Bill ERROR', response.errors)
-            alert("sendToken Save Bill ERROR : " + response.errors.toString())
+            console.log('sendToken Save Bill ERROR', response.data.errors)
+            alert("sendToken Save Bill ERROR : " + response.data.errors.toString())
         }
     }
 
@@ -329,35 +383,6 @@ class Orders extends Component {
 
             this.setCurrentCartHandler();
         }
-    }
-
-    validateMe = (currentCart, currentToken) => {
-        if (!currentCart) {
-            alert("Current Cart is undefined")
-            return false;
-        }
-        if (!currentCart.customerid) {
-            alert("Current Cart is undefined")
-            return false;
-        }
-        if (!currentCart.property) {
-            alert("currentCart.property is undefined")
-            return false;
-        }
-        if (!currentToken) {
-            alert("Current Token is NULL")
-            return false;
-        }
-        if (!currentToken.property.items) {
-            alert("Empty Current KOT")
-            return false;
-        }
-        if (currentToken.property.items.length === 0) {
-            alert("Empty Current KOT")
-            return false;
-        }
-
-        return true;
     }
 
     addToCart = (item) => {
@@ -458,7 +483,8 @@ class Orders extends Component {
             <React.Fragment >
                 <div id="layoutSidenav_content">
                     {/* <main> */}
-                    <TakeOrderPopup activeOrderType={activeOrderType} setCurrentCartHandler={this.setCurrentCartHandler} />
+                    <TakeOrderPopup activeOrderType={activeOrderType} newOrder={true} setCurrentCartHandler={this.setCurrentCartHandler} />
+                    <TakeOrderPopup activeOrderType={activeOrderType} newOrder={false} changeCustomerHandler={this.changeCustomerHandler} />
                     <div className="container-fluid">
                         <div className="row table-item-gutters">
                             <OrderTypeSelectionUI activeOrderType={activeOrderType} changeOrderType={this.changeOrderType}></OrderTypeSelectionUI>

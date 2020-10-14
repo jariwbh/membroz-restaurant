@@ -312,7 +312,7 @@ export default class TableBook extends Component {
             this.setState({ submitted: true });
             if (btnclickname === "save") {
                 if (customerid === '') {
-                    CustomerApi.addProspectsTableRecord(customerObj).then((response) => {
+                    CustomerApi.save(customerObj).then((response) => {
                         this.setState({ customerid: response.data._id })
                         if (response.data._id) {
                             console.log(response.data._id);
@@ -393,7 +393,7 @@ export default class TableBook extends Component {
                 })
             }
         } else {
-            CustomerApi.addProspectsTableRecord(customerObj).then((response) => {
+            CustomerApi.save(customerObj).then((response) => {
                 this.setState({ customerid: response.data._id })
                 console.log('id', response.data._id);
                 if (response.data._id) {
