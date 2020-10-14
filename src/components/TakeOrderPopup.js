@@ -4,7 +4,7 @@ import SelectSearch from 'react-select-search';
 import * as CustomerApi from '../Api/CustomerSevices';
 import * as UserApi from '../Api/UserServices'
 import uuid from 'react-uuid'
-import { ORDERTYPES } from '../Pages/OrderEnums'
+import { CUSTOMERTYPES, ORDERTYPES } from '../Pages/OrderEnums'
 
 export default class TakeOrderPopup extends Component {
     constructor(props) {
@@ -36,7 +36,7 @@ export default class TakeOrderPopup extends Component {
             customerList: [],
             deliveryBoyList: [],
             tableList: [],
-            isExistingCustomer: 'true',
+            selectedCustomerType: CUSTOMERTYPES.EXISTING,
             onModel: '',
             customerid: '',
             customername: '',
@@ -46,6 +46,8 @@ export default class TakeOrderPopup extends Component {
             deliveryboyname: undefined,
             validation: this.validator.valid()
         }
+
+        this.onChangeValue = this.onChangeValue.bind(this);
     }
 
     async getCustomerList() {
@@ -74,16 +76,17 @@ export default class TakeOrderPopup extends Component {
         //}
     }
 
-    onChangeValue = async (event) => {
-        //event.preventDefault();
+    onChangeValue = (event) => {
+        event.preventDefault();
         const target = event.target;
         const value = target.type === 'checkbox' ? target.checked : target.value;
         const name = target.name;
-        await this.setState({ [name]: value });
+        this.setState({ [name]: value });
+        this.setState({ selectedCustomerType: value });
     }
 
     onCustomerDropdownChange = value => {
-        if (this.state.isExistingCustomer === "true") {
+        if (this.state.selectedCustomerType === CUSTOMERTYPES.EXISTING) {
             const foundCustomer = this.state.customerList.find(x => x._id === value)
             if (foundCustomer) {
                 this.setState({
@@ -108,7 +111,7 @@ export default class TakeOrderPopup extends Component {
     }
 
     handleFormSubmit = async (event) => {
-        let { isExistingCustomer, onModel, customerid, customername, mobile_number, address, deliveryboyid, deliveryboyname } = this.state;
+        let { selectedCustomerType, onModel, customerid, customername, mobile_number, address, deliveryboyid, deliveryboyname } = this.state;
 
         const validation = this.validator.validate(this.state);
         if (!validation.isValid) {
@@ -116,7 +119,7 @@ export default class TakeOrderPopup extends Component {
             return;
         }
 
-        if (isExistingCustomer === "false") {
+        if (selectedCustomerType === CUSTOMERTYPES.NEW) {
 
             const newCustomerObj = {
                 property: {
@@ -214,9 +217,9 @@ export default class TakeOrderPopup extends Component {
         modelclose.click();
     }
 
-    onClose = () => {
-        this.setState({
-            isExistingCustomer: 'true',
+    onClose = async () => {
+        await this.setState({
+            selectedCustomerType: CUSTOMERTYPES.EXISTING,
             onModel: '',
             customerid: '',
             customername: '',
@@ -230,7 +233,7 @@ export default class TakeOrderPopup extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { isExistingCustomer, customerid, mobile_number, address, deliveryboyid, deliveryBoyList, customerList } = this.state;
+        const { selectedCustomerType, customerid, mobile_number, address, deliveryboyid, deliveryBoyList, customerList } = this.state;
 
         const customerDropdown = customerList.map(customerObj => (
             {
@@ -252,37 +255,41 @@ export default class TakeOrderPopup extends Component {
                     <div className="modal-dialog modal-dialog-centered" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title" id="taketakeOrderTitleOrder">Take Order</h5>
+                                <h5 className="modal-title">Take Order</h5>
                                 <button type="button" id={this.props.newOrder === true ? "closemodel_neworder" : "closemodel_changecustomer"} className="close" data-dismiss="modal" aria-label="Close" onClick={this.onClose}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div className="modal-body">
                                 <div className="container">
-                                    <input
-                                        type="radio"
-                                        name="isExistingCustomer"
-                                        value="true"
-                                        checked={isExistingCustomer === "true"}
-                                        className="mr-1"
-                                        onChange={this.onChangeValue}
-                                    />
-                                    <label htmlFor="existingcustomer" className="mr-3">Exist Customer</label>
-                                    <input
-                                        type="radio"
-                                        name="isExistingCustomer"
-                                        value="false"
-                                        checked={isExistingCustomer === "false"}
-                                        className="mr-1"
-                                        onChange={this.onChangeValue}
-                                    />
-                                    <label htmlFor="newcustomername" className="mr-3">New Customer</label>
+                                    <label className="mr-3">
+                                        <input
+                                            type="radio"
+                                            name="selectedCustomerType"
+                                            value={CUSTOMERTYPES.EXISTING}
+                                            checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
+                                            onChange={this.onChangeValue}
+                                            className="mr-1"
+                                        />
+                                    Exist Customer
+                                </label>
+                                    <label className="mr-3">
+                                        <input
+                                            type="radio"
+                                            name="selectedCustomerType"
+                                            value={CUSTOMERTYPES.NEW}
+                                            checked={selectedCustomerType === CUSTOMERTYPES.NEW}
+                                            onChange={this.onChangeValue}
+                                            className="mr-1"
+                                        />
+                                    New Customer
+                                </label>
                                 </div>
                                 <div className="container mt-3" >
                                     <div className="form-group row">
                                         <label htmlFor="customer" className="col-sm-4 col-form-label">Customer Name <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            {isExistingCustomer === "true"
+                                            {selectedCustomerType === CUSTOMERTYPES.EXISTING
                                                 ?
                                                 <SelectSearch
                                                     options={customerDropdown}
@@ -361,6 +368,8 @@ export default class TakeOrderPopup extends Component {
                                     :
                                     <button type="button" className="btn btn-primary" name="takeOrder" onClick={this.handleFormSubmit}>Change</button>
                                 }
+
+                                {selectedCustomerType}
                             </div>
                         </div>
                     </div>

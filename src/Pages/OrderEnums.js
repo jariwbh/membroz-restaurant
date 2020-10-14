@@ -22,6 +22,11 @@ export const TOKENSTATUS = {
     SERVED: 'served'
 }
 
+export const CUSTOMERTYPES = {
+    NEW: 'new',
+    EXISTING: 'existing'
+}
+
 // export {
 //     PAGES, ORDERTYPES
 // }

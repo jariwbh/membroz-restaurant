@@ -1,34 +1,85 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
-class Test extends Component {
+const OPTIONS = {
+    OPTION1: 'option1',
+    OPTION2: 'option2',
+    OPTION3: 'option3'
+}
+
+export default class Test extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            selectedOption: 'option1'
+        }
+
+        this.handleOptionChange = this.handleOptionChange.bind(this);
     }
-    handleInputChange = event => {
-        console.log(event.target.name);
-        console.log(event.target.value);
+
+    handleOptionChange = (changeEvent) => {
+
+        const target = changeEvent.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+        this.setState({ [name]: value });
     }
 
     render() {
+        const { selectedOption } = this.state
         return (
-            <React.Fragment>
-                <div className="App col-md-4">
-                    <h1>hello select tools</h1>
-                    <select data-live-search="true" className="selectpicker" name='customer' id="customer"
-                        onChange={this.handleInputChange} value='Lychee'>
-                        <option>Mango</option>
-                        <option>Orange</option>
-                        <option>Lychee</option>
-                        <option>Pineapple</option>
-                        <option>Apple</option>
-                        <option>Banana</option>
-                        <option>Grapes</option>
-                        <option>Water Melon</option>
-                    </select>
+            <div className="container">
+                <div className="row">
+                    <div className="col-sm-12">
+
+                        <div>
+                            <div style={{ height: '100px' }}></div>
+                            <div className="form-control">
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="selectedOption"
+                                        value={OPTIONS.OPTION1}
+                                        checked={selectedOption === OPTIONS.OPTION1}
+                                        onChange={this.handleOptionChange}
+                                    />
+                                Option 1
+                            </label>
+                            </div>
+                            <div className="form-control">
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="selectedOption"
+                                        value={OPTIONS.OPTION2}
+                                        checked={selectedOption === OPTIONS.OPTION2}
+                                        onChange={this.handleOptionChange}
+                                    />
+                                    Option 2
+                                </label>
+                            </div>
+                            <div className="form-control">
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="selectedOption"
+                                        value={OPTIONS.OPTION3}
+                                        checked={selectedOption === OPTIONS.OPTION3}
+                                        onChange={this.handleOptionChange}
+                                    />
+                                    Option 3
+                                </label>
+                            </div>
+                            <div className="form-control">
+                                <label>
+                                    {this.state.selectedOption}
+                                </label>
+                            </div>
+                            <button className="btn btn-default" type="submit">Save</button>
+                        </div>
+                    </div>
                 </div>
-            </React.Fragment>
+            </div>
         );
     }
 }
-
-export default Test;

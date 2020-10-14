@@ -39,23 +39,18 @@ class Login extends Component {
             loading: false,
             errorMessage: ''
         }
-        this.handleInputChange = this.handleInputChange.bind(this);
-        this.handleFormSubmit = this.handleFormSubmit.bind(this);
+        this.onChangeValue = this.onChangeValue.bind(this);
+        this.onFormSubmit = this.onFormSubmit.bind(this);
     }
 
-    handleInputChange(event) {
-        // const target = event.target;
-        // const value = target.type === 'checkbox' ? target.checked : target.value;
-        // const name = target.name;
-        // this.setState({ [name]: value });
-        //event.preventDefault();
-        this.setState({
-            [event.target.name]: event.target.value,
-            rememberme: event.target.checked
-        });
+    onChangeValue(event) {
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+        this.setState({ [name]: value });
     }
 
-    handleFormSubmit = async event => {
+    onFormSubmit = async event => {
         event.preventDefault();
         const validation = this.validator.validate(this.state);
         this.setState({ validation });
@@ -67,7 +62,7 @@ class Login extends Component {
             try {
                 const response = await axios.post('auth/login', { username, password })
                 if (response.data.type && response.data.type === 'Error') {
-                    this.setState({ loading: false, error: response.data.message })
+                    this.setState({ loading: false, errorMessage: response.data.message })
                     return
                 }
                 authenticateUser(JSON.stringify(response.data))
@@ -76,7 +71,7 @@ class Login extends Component {
                 this.props.history.push('/')
             }
             catch (error) {
-                this.setState({ loading: false, error: 'User name or password is wrong!' })
+                this.setState({ loading: false, errorMessage: 'User name or password is wrong!' })
             }
         }
         else {
@@ -96,7 +91,7 @@ class Login extends Component {
 
     render() {
         const validation = this.state.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { username, password, rememberme, loading } = this.state;
+        const { username, password, rememberme, loading, errorMessage } = this.state;
 
         return (
             <React.Fragment>
@@ -124,27 +119,52 @@ class Login extends Component {
                                     </div>
                                 </div>
                             </div>
-                            <div className="col-xl-5 col-md-6">
+                            <form onSubmit={this.onFormSubmit} className="col-xl-5 col-md-6">
                                 <div className="landing-box p-4 membroz-form align-items-center" >
                                     <div className="ie-dblock">
                                         <h4 className="mb-3 font-weight-bold">Staff Login</h4>
+                                        <span className="help-block">{errorMessage}</span>
                                         <div className="form-group">
-                                            <input type="text" name='username' className="form-control" placeholder="User Name" id="username" aria-describedby="emailHelp" value={username} onChange={this.handleInputChange} />
+                                            <input
+                                                className="form-control"
+                                                aria-describedby="emailHelp"
+                                                type="text"
+                                                placeholder="User Name"
+                                                id="username"
+                                                name='username'
+                                                value={username}
+                                                onChange={this.onChangeValue}
+                                            />
                                             <span className="help-block">{validation.username.message}</span>
                                         </div>
                                         <div className="form-group">
-                                            <input type="password" name='password' className="form-control" placeholder="Password" id="password" value={password} onChange={this.handleInputChange} />
+                                            <input
+                                                className="form-control"
+                                                type="password"
+                                                placeholder="Password"
+                                                id="password"
+                                                name='password'
+                                                value={password}
+                                                onChange={this.onChangeValue}
+                                            />
                                             <span className="help-block">{validation.password.message}</span>
                                         </div>
                                         <div className="form-group">
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="rememberMe" checked={rememberme} onChange={this.handleInputChange} />
+                                                <input
+                                                    class="custom-control-input"
+                                                    type="checkbox"
+                                                    id="rememberMe"
+                                                    name="rememberme"
+                                                    checked={rememberme}
+                                                    onChange={this.onChangeValue}
+                                                />
                                                 <label class="custom-control-label" htmlFor="rememberMe">Remember me</label>
                                                 {/* <Link className="float-right" to="/ForgetPassword">Forgot Password?</Link> */}
                                             </div>
                                         </div>
                                         <div className="form-group">
-                                            <button onClick={this.handleFormSubmit} type="button" className="btn btn-primary btn-lg btn-block" disabled={loading}>
+                                            <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={loading}>
                                                 {loading && <span className="spinner-border spinner-border-sm mr-1"></span>}Login</button>
                                         </div>
                                         {/* <div className="form-group">
@@ -162,7 +182,7 @@ class Login extends Component {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
                     <div className="bottom-right-round-square"></div>
