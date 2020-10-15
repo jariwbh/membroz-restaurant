@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import uuid from 'react-uuid'
 
-import * as Api from '../Api/ItemServices'
-import * as BillApi from '../Api/BillServices'
-import * as ApiTable from '../Api/TableServices'
-import * as ApiToken from '../Api/TokenServices'
+import * as ItemServices from '../Api/ItemServices'
+import * as BillServices from '../Api/BillServices'
+import * as TableServices from '../Api/TableServices'
+import * as TokenServices from '../Api/TokenServices'
+import * as UserServices from '../Api/UserServices'
+
 import RunningOrders from '../components/RunningOrders'
 import CategoryTemplate from '../Templates/CategoryTemplate'
 import ItemTemplate from '../Templates/ItemTemplate'
@@ -34,6 +36,7 @@ class Orders extends Component {
             items: [],
             tables: [],
             customers: [],
+            deliveryBoyList: [],
             runningOrders: [],
             currentCart: undefined,
             tokenList: []
@@ -90,7 +93,7 @@ class Orders extends Component {
                 default:
             }
 
-            const responseToken = await ApiToken.save(foundToken)
+            const responseToken = await TokenServices.save(foundToken)
             foundToken = responseToken.data;
             foundToken.senderID = this.senderID;
 
@@ -115,27 +118,33 @@ class Orders extends Component {
     }
 
     getTables = async () => {
-        const response = await ApiTable.getTableList()
+        const response = await TableServices.getTableList()
         return response.data
     }
 
     getCategories = async () => {
-        const response = await Api.getCategory()
+        const response = await ItemServices.getCategory()
         return response.data
     }
 
     getItems = async (categoryid, needSetState = false) => {
-        const response = await Api.getItems(categoryid)
+        const response = await ItemServices.getItems(categoryid)
         if (needSetState) {
             this.setState({ items: response.data })
         }
         return response.data
     }
 
+    getDeliveryBoyList = async () => {
+        const response = await UserServices.getUserList()
+        return response.data
+    }
+
+
     getRunningOrders = async () => {
-        const response = await BillApi.getRunningOrders();
+        const response = await BillServices.getRunningOrders();
         let runningOrders = response.data;
-        const localRunningOrder = BillApi.getLocalOrders();
+        const localRunningOrder = BillServices.getLocalOrders();
 
         let runningTableMerged = localRunningOrder
         if (localRunningOrder) {
@@ -162,7 +171,7 @@ class Orders extends Component {
             return []
         }
 
-        let response = await ApiToken.getListByContextId(contextid)
+        let response = await TokenServices.getListByContextId(contextid)
         //this.setState({ tokenList: response.data })
         return response.data;
     }
@@ -208,7 +217,7 @@ class Orders extends Component {
         }
 
         this.setState({ currentCart: currentCart });
-        BillApi.saveLocalOrder(currentCart);
+        BillServices.saveLocalOrder(currentCart);
     }
 
     setCurrentCartHandler = async (order) => {
@@ -224,7 +233,7 @@ class Orders extends Component {
             currentCart = this.state.runningOrders.find(x => x._id === order._id)
             if (currentCart) {
                 if (!currentCart._id.startsWith('unsaved_')) {
-                    let response = await BillApi.getByID(currentCart._id)
+                    let response = await BillServices.getByID(currentCart._id)
                     currentCart = response.data
                     tokenList = await this.getTokenList(currentCart._id)
                 }
@@ -234,7 +243,7 @@ class Orders extends Component {
                 runningOrders = this.state.runningOrders;
                 currentCart = order;
                 runningOrders.unshift(currentCart);
-                BillApi.saveLocalOrder(currentCart);
+                BillServices.saveLocalOrder(currentCart);
             }
 
         } else {
@@ -246,7 +255,7 @@ class Orders extends Component {
         }
 
         if (currentCart) {
-            let currentCartTemp = BillApi.getLocalOrderByID(currentCart._id)
+            let currentCartTemp = BillServices.getLocalOrderByID(currentCart._id)
             if (currentCartTemp) {
                 currentCart = currentCartTemp
             }
@@ -325,13 +334,12 @@ class Orders extends Component {
             return;
         }
 
-        console.log('currentCart', JSON.stringify(currentCart))
-        const response = await BillApi.save(currentCart)
+        const response = await BillServices.save(currentCart)
         if (response.status === 200 && !response.data.errors) {
 
             currentCart = response.data
             currentToken.contextid = currentCart._id
-            const responseToken = await ApiToken.save(currentToken)
+            const responseToken = await TokenServices.save(currentToken)
             if (responseToken.status === 200 && !responseToken.data.errors) {
                 currentToken = responseToken.data;
                 currentToken.senderID = this.senderID;
@@ -341,7 +349,7 @@ class Orders extends Component {
                 if (this.state.activeOrderType === ORDERTYPES.TAKEAWAY || this.state.activeOrderType === ORDERTYPES.DELIVERY) {
                     if (beforeSaveID.startsWith('unsaved_')) {
                         currentCart.property.token = currentToken
-                        const response = await BillApi.save(currentCart)
+                        const response = await BillServices.save(currentCart)
                         currentCart = response.data
                     }
                 }
@@ -350,9 +358,9 @@ class Orders extends Component {
                 alert("sendToken Save Token ERROR : " + responseToken.data.errors.toString())
             }
 
-            BillApi.removeLocalOrder(beforeSaveID);
+            BillServices.removeLocalOrder(beforeSaveID);
 
-            const responseGetByID = await BillApi.getByID(currentCart._id)
+            const responseGetByID = await BillServices.getByID(currentCart._id)
             currentCart = responseGetByID.data
             currentCart.token = this.getTokenModel(currentCart)
             let updatedRunningOrders = this.state.runningOrders.map(x => x._id === beforeSaveID ? currentCart : x);
@@ -365,17 +373,14 @@ class Orders extends Component {
         }
     }
 
-    doPayment = async (wallet, paymentMethod) => {
-        let currentCart = this.state.currentCart
-        currentCart.paidamount = currentCart.totalamount
-        currentCart.status = "Paid"
-        currentCart.property.orderstatus = "checkedout"
+    doPayment = async (currentCart) => {
+        this.state.currentCart = currentCart
 
         const beforeSaveID = currentCart._id
 
-        const response = await BillApi.save(currentCart)
+        const response = await BillServices.save(currentCart)
         if (response.status === 200) {
-            BillApi.removeLocalOrder(beforeSaveID);
+            BillServices.removeLocalOrder(beforeSaveID);
 
             const runningOrders = await this.getRunningOrders();
 
@@ -390,7 +395,7 @@ class Orders extends Component {
         let token = this.addItemToToken(item._id, 1);
 
         currentCart.token = token;
-        BillApi.saveLocalOrder(currentCart);
+        BillServices.saveLocalOrder(currentCart);
         this.setState({ currentCart: currentCart });
     }
 
@@ -461,8 +466,9 @@ class Orders extends Component {
         const itemCategories = await this.getCategories();
         const items = await this.getItems();
         const runningOrders = await this.getRunningOrders();
+        const deliveryBoyList = await this.getDeliveryBoyList();
 
-        this.setState({ tables: tables, itemCategories: itemCategories, items: items, runningOrders: runningOrders })
+        this.setState({ tables: tables, itemCategories: itemCategories, items: items, runningOrders: runningOrders, deliveryBoyList: deliveryBoyList })
 
         this.setCurrentCartHandler();
 
@@ -473,7 +479,7 @@ class Orders extends Component {
 
 
     render() {
-        const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningOrders, tokenList } = this.state
+        const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningOrders, tokenList, deliveryBoyList } = this.state
 
         if (activePage === PAGES.TABLEBOOK) {
             return <TableBook tableList={tables} runningOrders={runningOrders} setCurrentCartHandler={this.setCurrentCartHandler} />
@@ -483,8 +489,8 @@ class Orders extends Component {
             <React.Fragment >
                 <div id="layoutSidenav_content">
                     {/* <main> */}
-                    <TakeOrderPopup activeOrderType={activeOrderType} newOrder={true} setCurrentCartHandler={this.setCurrentCartHandler} />
-                    <TakeOrderPopup activeOrderType={activeOrderType} newOrder={false} changeCustomerHandler={this.changeCustomerHandler} />
+                    <TakeOrderPopup activeOrderType={activeOrderType} deliveryBoyList={deliveryBoyList} newOrder={true} setCurrentCartHandler={this.setCurrentCartHandler} />
+                    <TakeOrderPopup currentCart={currentCart} activeOrderType={activeOrderType} deliveryBoyList={deliveryBoyList} newOrder={false} changeCustomerHandler={this.changeCustomerHandler} />
                     <div className="container-fluid">
                         <div className="row table-item-gutters">
                             <OrderTypeSelectionUI activeOrderType={activeOrderType} changeOrderType={this.changeOrderType}></OrderTypeSelectionUI>
@@ -492,10 +498,10 @@ class Orders extends Component {
                         </div>
                         {(currentCart) &&
                             <div className="row table-item-gutters">
-                                <CartTemplate currentCart={currentCart} tokenList={tokenList} sendTokenHandler={this.sendToken} changeTokenStatusHandler={this.changeTokenStatusHandler} setActivePage={this.setActivePage} />
+                                <CartTemplate activePage={activePage} currentCart={currentCart} tokenList={tokenList} sendTokenHandler={this.sendToken} changeTokenStatusHandler={this.changeTokenStatusHandler} setActivePage={this.setActivePage} />
 
                                 {(activePage === PAGES.PAYMENT) &&
-                                    <Payment doPayment={this.doPayment}></Payment>
+                                    <Payment currentCart={currentCart} deliveryBoyList={deliveryBoyList} activeOrderType={activeOrderType} doPayment={this.doPayment} setActivePage={this.setActivePage}></Payment>
                                 }
                                 {(activePage === PAGES.ORDERS) &&
                                     <div className="col-xl-8 col-lg-8 col-md-7">

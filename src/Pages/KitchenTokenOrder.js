@@ -2,7 +2,9 @@ import React, { Component } from 'react'
 import * as moment from 'moment';
 import uuid from 'react-uuid'
 import SignalRService from '../Helpers/signalRService';
-import * as Api from '../Api/TokenServices'
+
+import * as TokenServices from '../Api/TokenServices'
+
 import * as Sounds from '../components/Sounds'
 import { ORDERTYPES, TOKENSTATUS } from './OrderEnums'
 
@@ -63,7 +65,7 @@ export default class KitchenTokenOrder extends Component {
                 default:
             }
 
-            const responseToken = await Api.save(foundToken)
+            const responseToken = await TokenServices.save(foundToken)
             foundToken = responseToken.data;
             foundToken.senderID = this.senderID;
             SignalRService.sendMessage(JSON.stringify(foundToken));
@@ -73,7 +75,7 @@ export default class KitchenTokenOrder extends Component {
     }
 
     getTokenList = () => {
-        Api.getList().then((response) => {
+        TokenServices.getList().then((response) => {
             this.setState({ tokenList: response.data })
         })
     }

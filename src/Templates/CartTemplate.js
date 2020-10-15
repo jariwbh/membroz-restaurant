@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import ConfirmItemsModalPopup from '../components/ConfirmItemsModalPopup'
 
-import { PAGES } from '../Pages/OrderEnums'
+import { PAGES, TOKENSTATUS } from '../Pages/OrderEnums'
 import * as images from '../components/Image'
 
 const Undo = ({ onUndo, closeToast, token }) => {
@@ -24,7 +24,7 @@ const Undo = ({ onUndo, closeToast, token }) => {
 };
 
 function CartTemplate(props) {
-    const tokenList = props.tokenList.filter(token => token.status !== 'served')
+    const tokenList = props.tokenList.filter(token => token.status !== TOKENSTATUS.SERVED)
 
     const undoServedToken = (token) => {
         props.changeTokenStatusHandler(token)
@@ -52,7 +52,7 @@ function CartTemplate(props) {
                 <div className="d-flex customer-name-p">
                     <div className="flex-grow-1">
                         <div>{props.currentCart.customerid.property.fullname}</div>
-                        <div>{props.currentCart.customerid.property.mobilenumber}</div>
+                        <div>{props.currentCart.customerid.property.mobile_number}</div>
                     </div>
                     <div className="table-num-title"> <a href="#"><img src={images.addicon} alt="" data-toggle="modal" data-target="#changecustomerpopup" /> </a> </div>
                 </div>
@@ -106,12 +106,16 @@ function CartTemplate(props) {
                     </table>
                 </div>
                 <div className="row customer-name-p">
-                    <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#confirmitemsmodalpopup" data-keyboard="false" data-backdrop="static">Confirm</button>
-                        <ConfirmItemsModalPopup token={props.currentCart.token} sendTokenHandler={props.sendTokenHandler} />
-                    </div>
-                    <div className="col-6">
-                        <button type="button" className="btn btn-success btn-lg btn-block" onClick={() => props.setActivePage(PAGES.PAYMENT)}>Checkout</button>
-                    </div>
+                    {props.activePage !== PAGES.PAYMENT &&
+                        <>
+                            <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#confirmitemsmodalpopup" data-keyboard="false" data-backdrop="static">Confirm</button>
+                                <ConfirmItemsModalPopup token={props.currentCart.token} sendTokenHandler={props.sendTokenHandler} />
+                            </div>
+                            <div className="col-6">
+                                <button type="button" className="btn btn-success btn-lg btn-block" onClick={() => props.setActivePage(PAGES.PAYMENT)}>Checkout</button>
+                            </div>
+                        </>
+                    }
                 </div>
                 {/* <KOTView tokenList={tokenList} />{} */}
 

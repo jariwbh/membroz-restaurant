@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import FormValidator from '../components/FormValidator';
 import SelectSearch from 'react-select-search';
-import * as CustomerApi from '../Api/CustomerSevices';
-import * as UserApi from '../Api/UserServices'
+import * as CustomerServices from '../Api/CustomerSevices';
+
 import uuid from 'react-uuid'
 import { CUSTOMERTYPES, ORDERTYPES } from '../Pages/OrderEnums'
 
@@ -34,8 +34,6 @@ export default class TakeOrderPopup extends Component {
 
         this.state = {
             customerList: [],
-            deliveryBoyList: [],
-            tableList: [],
             selectedCustomerType: CUSTOMERTYPES.EXISTING,
             onModel: '',
             customerid: '',
@@ -51,7 +49,7 @@ export default class TakeOrderPopup extends Component {
     }
 
     async getCustomerList() {
-        CustomerApi.getCustomerList()
+        CustomerServices.getCustomerList()
             .then((response) => {
                 this.setState({ customerList: response.data })
             }, (error) => {
@@ -59,27 +57,14 @@ export default class TakeOrderPopup extends Component {
             });
     }
 
-    async getDeliveryBoyList() {
-        UserApi.getUserList()
-            .then((response) => {
-                this.setState({ deliveryBoyList: response.data })
-            }, (error) => {
-                console.log("error", error);
-            })
-    }
-
     async componentDidMount() {
         await this.getCustomerList();
-
-        //if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
-        await this.getDeliveryBoyList()
-        //}
     }
 
     onChangeValue = (event) => {
         //event.preventDefault();
         const target = event.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const value = target.type === "checkbox" ? target.checked : target.value;
         const name = target.name;
         this.setState({ [name]: value });
     }
@@ -100,7 +85,7 @@ export default class TakeOrderPopup extends Component {
     }
 
     onDeliveryBoyDropdownChange = value => {
-        const foundDeliveryBoy = this.state.deliveryBoyList.find(x => x._id === value)
+        const foundDeliveryBoy = this.props.deliveryBoyList.find(x => x._id === value)
         if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
             this.setState({
                 deliveryboyid: foundDeliveryBoy._id,
@@ -128,7 +113,7 @@ export default class TakeOrderPopup extends Component {
                 }
             }
 
-            const response = await CustomerApi.save(newCustomerObj)
+            const response = await CustomerServices.save(newCustomerObj)
             if (response.status === 200 && response.data._id) {
                 this.setState({ customerid: response.data._id })
                 customerid = response.data._id
@@ -232,7 +217,7 @@ export default class TakeOrderPopup extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { selectedCustomerType, customerid, mobile_number, address, deliveryboyid, deliveryBoyList, customerList } = this.state;
+        const { selectedCustomerType, customerid, mobile_number, address, deliveryboyid, customerList } = this.state;
 
         const customerDropdown = customerList.map(customerObj => (
             {
@@ -241,7 +226,7 @@ export default class TakeOrderPopup extends Component {
             }
         ))
 
-        const deliveryBoyDropdown = deliveryBoyList.map(x => (
+        const deliveryBoyDropdown = this.props.deliveryBoyList.map(x => (
             {
                 name: x.property.fullname,
                 value: x._id
@@ -264,6 +249,7 @@ export default class TakeOrderPopup extends Component {
                                     <label className="mr-3">
                                         <input
                                             type="radio"
+                                            id="existingcustomer"
                                             name="selectedCustomerType"
                                             value={CUSTOMERTYPES.EXISTING}
                                             checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
@@ -275,6 +261,7 @@ export default class TakeOrderPopup extends Component {
                                     <label className="mr-3">
                                         <input
                                             type="radio"
+                                            id="newcustomer"
                                             name="selectedCustomerType"
                                             value={CUSTOMERTYPES.NEW}
                                             checked={selectedCustomerType === CUSTOMERTYPES.NEW}
