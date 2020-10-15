@@ -472,7 +472,7 @@ export default class TableBook extends Component {
 
             tableListWithStatus.push({ ...table, tableStatus: tableStatus })
         });
-        console.log('tableListWithStatus', tableListWithStatus);
+
         const renderTableList = tableListWithStatus.map((table) =>
             <this.renderTable key={table._id} table={table}></this.renderTable>
         );
