@@ -416,7 +416,7 @@ export default class TableBook extends Component {
                 break;
         }
 
-        return (<div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id} id={table._id} onClick={() => this.clicktoSelectTableOpenModel(table)} style={{ cursor: 'pointer' }}>
+        return (<div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id} id={table._id} onClick={table.tableStatus === TABLESTATUS.NOSERVICE ? null : () => this.clicktoSelectTableOpenModel(table)} style={{ cursor: 'pointer' }}>
             <div className={`card white-box mb-10 border-0 table-box-height ${tableStatusClass}`}>
                 <div className="card-body p-2 ">
                     <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{table.property.capacity}</span> </div>
@@ -472,7 +472,7 @@ export default class TableBook extends Component {
 
             tableListWithStatus.push({ ...table, tableStatus: tableStatus })
         });
-
+        console.log('tableListWithStatus', tableListWithStatus);
         const renderTableList = tableListWithStatus.map((table) =>
             <this.renderTable key={table._id} table={table}></this.renderTable>
         );
