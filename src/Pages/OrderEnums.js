@@ -27,6 +27,12 @@ export const CUSTOMERTYPES = {
     EXISTING: 'existing'
 }
 
+export const TABLESTATUS = {
+    OCCUPIED: 'occupied',
+    BLANK: 'blank',
+    NOSERVICE: 'noservice',
+}
+
 // export {
 //     PAGES, ORDERTYPES
 // }
