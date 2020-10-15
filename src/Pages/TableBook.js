@@ -12,12 +12,13 @@ import SelectSearch from 'react-select-search';
 import '../Assets/css/DropDownstyles.css'
 import '../Assets/css/ErrorMessage.css'
 import uuid from 'react-uuid'
-import { CUSTOMERTYPES, ORDERTYPES } from '../Pages/OrderEnums'
+import { CUSTOMERTYPES, ORDERTYPES, TABLESTATUS } from '../Pages/OrderEnums'
 
 export default class TableBook extends Component {
     constructor(props) {
         super(props);
-
+        console.log('props.tableList', props.tableList);
+        console.log('props.runningOrders', props.runningOrders);
         this.validator = new FormValidator([
             {
                 field: 'customername',
@@ -82,6 +83,7 @@ export default class TableBook extends Component {
             disableCustomer: false,
             search: null,
             checkedtableValue: null,
+            tableType: "All",
             time: moment().format('LT'),
             date: moment().format('L'),
             validation: this.validator.valid(),
@@ -112,7 +114,7 @@ export default class TableBook extends Component {
         this.getCustomerList()
     }
 
-    searchSpace = (event) => {
+    onSearchCustomer = (event) => {
         let keyword = event.target.value;
         this.setState({ search: keyword })
     }
@@ -132,6 +134,11 @@ export default class TableBook extends Component {
             this.getReservedTableList()
         })
     }
+
+    setTableType = (tableType) => {
+        this.setState({ tableType: tableType });
+    }
+
 
     onChangeValue = (event) => {
         const target = event.target;
@@ -322,7 +329,7 @@ export default class TableBook extends Component {
     }
 
     allocateTable(newCustomerObj, allocatedObj, reservationObj) {
-        const { onModel, noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
+        const { selectedCustomerType, onModel, noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
 
         let orderObj = {
             _id: 'unsaved_' + uuid(),
@@ -348,7 +355,7 @@ export default class TableBook extends Component {
             deliveryaddress: ''
         }
 
-        if (this.state.checkedvalue === 'existcustomer') {
+        if (selectedCustomerType === CUSTOMERTYPES.EXISTING) {
             if (this.state.getcustomerid !== '') {
                 this.setState({ submitted: true });
                 allocatedTableApi.updateAllocateReservationTable(allocatedObj).then(() => {
@@ -433,7 +440,7 @@ export default class TableBook extends Component {
                                                 <div className="d-flex align-items-center customer-name-p">
                                                     <div className="flex-grow-1">
                                                         <form className="form-inline">
-                                                            <input className="form-control" type="search" onChange={(e) => this.searchSpace(e)} placeholder="Search" aria-label="Search" />
+                                                            <input className="form-control" type="search" onChange={(e) => this.onSearchCustomer(e)} placeholder="Search" aria-label="Search" />
                                                         </form>
                                                     </div>
                                                     <div className="table-num-title ml-3">
@@ -470,16 +477,16 @@ export default class TableBook extends Component {
                                 <div className="col-xl-8 col-lg-8 col-md-7">
                                     <ul className="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true">All</a>
+                                            <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true" onClick={() => this.setTableType("All")}>All</a>
                                         </li>
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="false">Occupied <span className="table-status-tab occupied-bg"></span> </a>
+                                            <a className="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.OCCUPIED)}>Occupied <span className="table-status-tab occupied-bg"></span> </a>
                                         </li>
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link " id="pills-table-3-tab" data-toggle="pill" href="#pills-table-3" role="tab" aria-controls="pills-table-3" aria-selected="false">Blank <span className="table-status-tab blank-bg"></span></a>
+                                            <a className="nav-link " id="pills-table-3-tab" data-toggle="pill" href="#pills-table-3" role="tab" aria-controls="pills-table-3" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.BLANK)}>Blank <span className="table-status-tab blank-bg"></span></a>
                                         </li>
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="false">No Service <span className="table-status-tab no-service-bg"></span></a>
+                                            <a className="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.NOSERVICE)}>No Service <span className="table-status-tab no-service-bg"></span></a>
                                         </li>
                                     </ul>
 
