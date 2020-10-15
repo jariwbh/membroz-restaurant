@@ -28,6 +28,7 @@ export const CUSTOMERTYPES = {
 }
 
 export const TABLESTATUS = {
+    ALL: 'all',
     OCCUPIED: 'occupied',
     BLANK: 'blank',
     NOSERVICE: 'noservice',

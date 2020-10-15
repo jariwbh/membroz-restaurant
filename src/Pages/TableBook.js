@@ -17,8 +17,7 @@ import { CUSTOMERTYPES, ORDERTYPES, TABLESTATUS } from '../Pages/OrderEnums'
 export default class TableBook extends Component {
     constructor(props) {
         super(props);
-        console.log('props.tableList', props.tableList);
-        console.log('props.runningOrders', props.runningOrders);
+
         this.validator = new FormValidator([
             {
                 field: 'customername',
@@ -83,7 +82,7 @@ export default class TableBook extends Component {
             disableCustomer: false,
             search: null,
             checkedtableValue: null,
-            tableType: "All",
+            selectedTableStatus: TABLESTATUS.ALL,
             time: moment().format('LT'),
             date: moment().format('L'),
             validation: this.validator.valid(),
@@ -134,11 +133,6 @@ export default class TableBook extends Component {
             this.getReservedTableList()
         })
     }
-
-    setTableType = (tableType) => {
-        this.setState({ tableType: tableType });
-    }
-
 
     onChangeValue = (event) => {
         const target = event.target;
@@ -389,9 +383,56 @@ export default class TableBook extends Component {
         }
     }
 
+    setTableType = (tableStatus) => {
+        this.setState({ selectedTableStatus: tableStatus });
+    }
+
+    renderTable = (props) => {
+        const table = props.table;
+        const { selectedTableStatus } = this.state;
+
+        if (selectedTableStatus !== TABLESTATUS.ALL) {
+            if (table.tableStatus === TABLESTATUS.OCCUPIED && selectedTableStatus !== TABLESTATUS.OCCUPIED) {
+                return null
+            }
+            if (table.tableStatus === TABLESTATUS.BLANK && selectedTableStatus !== TABLESTATUS.BLANK) {
+                return null
+            }
+            if (table.tableStatus === TABLESTATUS.NOSERVICE && selectedTableStatus !== TABLESTATUS.NOSERVICE) {
+                return null
+            }
+        }
+
+        let tableStatusClass = "occupied-bg"
+        switch (table.tableStatus) {
+            case TABLESTATUS.OCCUPIED:
+                tableStatusClass = "occupied-bg";
+                break;
+            case TABLESTATUS.BLANK:
+                tableStatusClass = "blank-bg";
+                break;
+            case TABLESTATUS.NOSERVICE:
+                tableStatusClass = "no-service-bg";
+                break;
+        }
+
+        return (<div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id} id={table._id} onClick={() => this.clicktoSelectTableOpenModel(table)} style={{ cursor: 'pointer' }}>
+            <div className={`card white-box mb-10 border-0 table-box-height ${tableStatusClass}`}>
+                <div className="card-body p-2 ">
+                    <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{table.property.capacity}</span> </div>
+                    <div className="d-flex justify-content-center align-items-center flex-column">
+                        <div className="table-number">{table.property.tablename}</div>
+                        <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
+                    </div>
+                </div>
+            </div>
+        </div>)
+    }
+
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { selectedCustomerType, reservedTableList, availabletableList, customerList, mobile_number, noofperson, checkedtableValue } = this.state;
+        const { selectedCustomerType, reservedTableList, availabletableList, tableList, runningOrders, customerList, mobile_number, noofperson, checkedtableValue } = this.state;
+
         const getReservedTableList = reservedTableList.filter((obj) => {
             if (this.state.search == null) { return (obj) }
             else if (obj.property.customer.toLowerCase().includes(this.state.search.toLowerCase()) ||
@@ -414,6 +455,27 @@ export default class TableBook extends Component {
                 value: x._id
             }
         ))
+
+        let tableListWithStatus = []
+        tableList.forEach(table => {
+            let runningOrder = runningOrders.find(x => x.tableid && x.tableid._id === table._id)
+            let tableStatus = TABLESTATUS.BLANK
+            if (runningOrder) {
+                tableStatus = TABLESTATUS.OCCUPIED
+            } else {
+                if (table.status === TABLESTATUS.NOSERVICE) {
+                    tableStatus = TABLESTATUS.NOSERVICE
+                } else {
+                    tableStatus = TABLESTATUS.BLANK
+                }
+            }
+
+            tableListWithStatus.push({ ...table, tableStatus: tableStatus })
+        });
+
+        const renderTableList = tableListWithStatus.map((table) =>
+            <this.renderTable key={table._id} table={table}></this.renderTable>
+        );
 
         return (
             <React.Fragment>
@@ -477,7 +539,7 @@ export default class TableBook extends Component {
                                 <div className="col-xl-8 col-lg-8 col-md-7">
                                     <ul className="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true" onClick={() => this.setTableType("All")}>All</a>
+                                            <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.ALL)}>All</a>
                                         </li>
                                         <li className="nav-item" role="presentation">
                                             <a className="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.OCCUPIED)}>Occupied <span className="table-status-tab occupied-bg"></span> </a>
@@ -493,144 +555,7 @@ export default class TableBook extends Component {
                                     <div className="tab-content categories-tab-content" id="pills-tabContent">
                                         <div className="tab-pane fade show active" id="pills-table-1" role="tabpanel" aria-labelledby="pills-table-1-tab">
                                             <div className="row card-item-gutters">
-                                                {this.state.tableList.map(tableobj =>
-                                                    <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={tableobj._id} id={tableobj._id} onClick={() => this.clicktoSelectTableOpenModel(tableobj)} style={{ cursor: 'pointer' }}>
-                                                        <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-                                                            <div className="card-body p-2 ">
-                                                                <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{tableobj.property.capacity}</span> </div>
-                                                                <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                    <div className="table-number">{tableobj.property.tablename}</div>
-                                                                    <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height blank-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height no-service-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height blank-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height no-service-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="tab-pane fade" id="pills-table-2" role="tabpanel" aria-labelledby="pills-table-2-tab">
-                                            <div className="row card-item-gutters">
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="tab-pane fade" id="pills-table-3" role="tabpanel" aria-labelledby="pills-table-3-tab">
-                                            <div className="row card-item-gutters">
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height blank-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height blank-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="tab-pane fade" id="pills-table-4" role="tabpanel" aria-labelledby="pills-table-4-tab">
-                                            <div className="row card-item-gutters">
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height no-service-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div className="card white-box mb-10 border-0 table-box-height no-service-bg"  >
-                                                        <div className="card-body p-2 ">
-                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
-                                                            <div className="d-flex justify-content-center align-items-center flex-column">
-                                                                <div className="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                {renderTableList}
                                             </div>
                                         </div>
                                     </div>
