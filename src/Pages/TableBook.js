@@ -12,8 +12,7 @@ import SelectSearch from 'react-select-search';
 import '../Assets/css/DropDownstyles.css'
 import '../Assets/css/ErrorMessage.css'
 import uuid from 'react-uuid'
-import { ORDERTYPES } from '../Pages/OrderEnums'
-//import $ from 'jquery'
+import { CUSTOMERTYPES, ORDERTYPES } from '../Pages/OrderEnums'
 
 export default class TableBook extends Component {
     constructor(props) {
@@ -66,35 +65,27 @@ export default class TableBook extends Component {
         ]);
 
         this.state = {
-            tableList: props.tableList,
             reservedTableList: [],
-            search: null,
+            availabletableList: [],
+            customerList: [],
+            tableList: props.tableList,
+            runningOrders: props.runningOrders,
+            selectedCustomerType: CUSTOMERTYPES.EXISTING,
             onModel: '',
+            customerid: '',
             customername: '',
             mobile_number: '',
             noofperson: '',
-            time: moment().format('LT'),
-            date: moment().format('L'),
-            tablename: '',
-            validation: this.validator.valid(),
-            availabletableList: [],
-            searchData: [],
-            checkedvalue: 'existcustomer',
             tableid: '',
-            customerid: '',
+            tablename: '',
             getcustomerid: '',
             disableCustomer: false,
-            customerobjnew: [],
-            tableobj: [],
-            checkedtable: null,
-            runningOrders: props.runningOrders
+            search: null,
+            checkedtableValue: null,
+            time: moment().format('LT'),
+            date: moment().format('L'),
+            validation: this.validator.valid(),
         }
-        this.submitted = false;
-    }
-
-    searchSpace = (event) => {
-        let keyword = event.target.value;
-        this.setState({ search: keyword })
     }
 
     getReservedTableList() {
@@ -103,67 +94,92 @@ export default class TableBook extends Component {
         })
     }
 
+    getCustomerList() {
+        CustomerApi.getCustomerList().then((response) => {
+            this.setState({ customerList: response.data })
+        })
+    }
+
+    getAvailableTableList() {
+        TableServicesApi.getTableList().then((response) => {
+            this.setState({ availabletableList: response.data })
+        })
+    }
+
+    componentDidMount() {
+        this.getReservedTableList()
+        this.getAvailableTableList()
+        this.getCustomerList()
+    }
+
+    searchSpace = (event) => {
+        let keyword = event.target.value;
+        this.setState({ search: keyword })
+    }
+
+    modelPopupOpen() {
+        var ReservationTableModel = document.getElementById("ReservationTableModel")
+        ReservationTableModel.click();
+    }
+
+    modelPopupClose() {
+        var modelpopupClose1 = document.getElementById("modelpopupclose");
+        modelpopupClose1.click();
+    }
+
     deleteReservedTableById(id) {
         ReservedTableApi.deleteReservationTableRecord(id).then(() => {
             this.getReservedTableList()
         })
     }
 
-    handleInputChange = event => {
-        console.log('handleInputChange', event);
-        if (this.state.checkedvalue === 'existcustomer') {
-            if (event.target.name === 'tablename') {
-                const tabledata = this.state.availabletableList.find(x => x._id === event.target.value)
+    onChangeValue = (event) => {
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+        this.setState({ [name]: value });
+    }
+
+    onCustomerDropdownChange = value => {
+        if (this.state.selectedCustomerType === CUSTOMERTYPES.EXISTING) {
+            const foundCustomer = this.state.customerList.find(x => x._id === value)
+            if (foundCustomer) {
                 this.setState({
-                    tableid: tabledata._id,
-                    tablename: tabledata.property.tablename,
-                    tableobj: tabledata
-                });
-            } else {
-                this.setState({
-                    [event.target.name]: event.target.value
+                    onModel: foundCustomer.property.onModel,
+                    customerid: foundCustomer._id,
+                    customername: foundCustomer.property.fullname,
+                    mobile_number: foundCustomer.property.mobile_number,
+                    address: (foundCustomer.property.address === null ? '' : foundCustomer.property.address)
                 });
             }
         }
-        else {
-            this.setState({
-                [event.target.name]: event.target.value
-            });
-        }
     }
 
-    handleChangeCustomerDropdown = event => {
-        if (this.state.checkedvalue === 'existcustomer') {
-            const customerFind = this.state.searchData.find(x => x._id === event)
-            this.setState({
-                onModel: customerFind.property.onModel,
-                mobile_number: customerFind.property.mobile_number,
-                customername: customerFind.property.fullname,
-                customerid: customerFind._id,
-                customerobjnew: customerFind
-            });
-        }
-    }
-
-    openReservationTableModel() {
-        var ReservationTableModel = document.getElementById("ReservationTableModel")
-        ReservationTableModel.click();
+    onTableDropdownChange = event => {
+        const target = event.target;
+        const value = target.value;
+        const name = target.name;
+        const tabledata = this.state.availabletableList.find(x => x._id === value)
+        this.setState({
+            tableid: tabledata._id,
+            tablename: tabledata.property.tablename,
+        });
     }
 
     async getCustomerDeatils(obj) {
-        this.openReservationTableModel();
-        const customerobjById = obj
+        this.modelPopupOpen();
+        const customerById = obj
 
         await this.setState({
-            getcustomerid: customerobjById._id,
-            customerid: customerobjById.property.customerid,
-            customername: customerobjById.property.customer,
-            mobile_number: customerobjById.property.mobile_number,
-            noofperson: customerobjById.property.noofperson,
-            time: customerobjById.property.time,
-            date: moment(customerobjById.property.date).format('L'),
-            tablename: customerobjById.property.table,
-            tableid: customerobjById.property.tableid,
+            getcustomerid: customerById._id,
+            customerid: customerById.property.customerid,
+            customername: customerById.property.customer,
+            mobile_number: customerById.property.mobile_number,
+            noofperson: customerById.property.noofperson,
+            time: customerById.property.time,
+            date: moment(customerById.property.date).format('L'),
+            tablename: customerById.property.table,
+            tableid: customerById.property.tableid,
             disableCustomer: true
         });
         document.getElementById('existcustomer').checked = true;
@@ -172,105 +188,67 @@ export default class TableBook extends Component {
         document.getElementById("newcustomer").setAttribute('disabled', true);
     }
 
-    async resetForm() {
-        document.getElementById('reservationForm').reset();
-        document.getElementById('existcustomer').checked = true;
+    onClose = async () => {
         document.getElementById('mobile_number').removeAttribute('readonly');
         document.getElementById("existcustomer").removeAttribute('disabled');
         document.getElementById("newcustomer").removeAttribute('disabled');
 
-        const validator = {
-            customername: {
-                isInvalid: false,
-                message: ""
-            },
-            date: {
-                isInvalid: false,
-                message: ""
-            },
-            isValid: true,
-            mobile_number: {
-                isInvalid: false,
-                message: ""
-            },
-            noofperson: {
-                isInvalid: false,
-                message: ""
-            },
-            tablename: {
-                isInvalid: false,
-                message: ""
-            },
-            time: {
-                isInvalid: false,
-                message: ""
-            }
-        }
-
         await this.setState({
-            checkedvalue: 'existcustomer',
-            mobile_number: '',
-            noofperson: '',
-            date: moment().format('L'),
-            time: moment().format('LT'),
-            validation: validator,
-            getcustomerid: '',
-            tableid: '',
-            tablename: '',
+            selectedCustomerType: CUSTOMERTYPES.EXISTING,
+            onModel: '',
             customerid: '',
             customername: '',
-            submitted: false,
+            mobile_number: '',
+            noofperson: '',
+            tableid: '',
+            tablename: '',
+            getcustomerid: '',
             disableCustomer: false,
-            customerobjnew: [],
-            checkedtable: null
+            checkedtableValue: null,
+            time: moment().format('LT'),
+            date: moment().format('L'),
+            validation: this.validator.valid(),
         });
     }
 
-    async clicktoSelectTableOpenModel(tableobj) {
-        const currentTableobj = tableobj
+    async clicktoSelectTableOpenModel(currentTableobj) {
         const checkedRunningTable = this.state.runningOrders.filter(x => x.postype === ORDERTYPES.DINEIN).find(x => x.tableid._id === currentTableobj._id)
-
         if (checkedRunningTable) {
             this.props.setCurrentCartHandler(checkedRunningTable)
         } else {
-            this.openReservationTableModel();
+            this.modelPopupOpen();
             await this.setState({
-                getcustomerid: '',
+                selectedCustomerType: CUSTOMERTYPES.EXISTING,
                 customerid: '',
                 customername: '',
                 mobile_number: '',
-                time: this.state.time,
-                date: this.state.date,
                 tableid: currentTableobj._id,
                 tablename: currentTableobj.property.tablename,
-                checkedvalue: 'existcustomer',
-                checkedtable: currentTableobj
+                getcustomerid: '',
+                time: this.state.time,
+                date: this.state.date,
+                checkedtableValue: currentTableobj
             });
             document.getElementById('existcustomer').checked = true;
         }
     }
 
-    modelPopupClose() {
-        var modelpopupClose1 = document.getElementById("modelpopupclose");
-        modelpopupClose1.click();
-    }
-
     handleFormSubmit = (event) => {
-        console.log('handleFormSubmit');
-        const btnclickname = event.target.name;
         const { customername, mobile_number, noofperson, time, date, tablename, tableid, customerid, getcustomerid } = this.state;
-        const customerObj = {
-            property: {
-                fullname: customername,
-                mobile_number: mobile_number
-            }
-        }
-
+        const btnclickname = event.target.name;
         let status
+
         if (btnclickname === "save") {
             status = ReservedTableApi.activestatus
         } else {
             status = ReservedTableApi.allocatedstatus
+        }
+
+        const newCustomerObj = {
+            property: {
+                fullname: customername,
+                mobile_number: mobile_number
+            }
         }
 
         let reservationObj = {
@@ -309,13 +287,11 @@ export default class TableBook extends Component {
         const validation = this.validator.validate(this.state);
         this.setState({ validation });
         if (validation.isValid) {
-            this.setState({ submitted: true });
             if (btnclickname === "save") {
                 if (customerid === '') {
-                    CustomerApi.save(customerObj).then((response) => {
+                    CustomerApi.save(newCustomerObj).then((response) => {
                         this.setState({ customerid: response.data._id })
                         if (response.data._id) {
-                            console.log(response.data._id);
                             reservationObj.property.customerid = response.data._id
                             ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
                                 this.getCustomerList();
@@ -332,7 +308,6 @@ export default class TableBook extends Component {
                         this.modelPopupClose();
                     })
                 } else {
-                    console.log('customerid', customerid);
                     console.log('update');
                     ReservedTableApi.updateReservationTableRecord(reservationObj).then(() => {
                         this.getReservedTableList();
@@ -341,12 +316,12 @@ export default class TableBook extends Component {
                 }
 
             } else if (btnclickname === "allocate") {
-                this.allocateTable(customerObj, allocatedObj, reservationObj);
+                this.allocateTable(newCustomerObj, allocatedObj, reservationObj);
             }
         }
     }
 
-    allocateTable(customerObj, allocatedObj, reservationObj) {
+    allocateTable(newCustomerObj, allocatedObj, reservationObj) {
         const { onModel, noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
 
         let orderObj = {
@@ -375,7 +350,6 @@ export default class TableBook extends Component {
 
         if (this.state.checkedvalue === 'existcustomer') {
             if (this.state.getcustomerid !== '') {
-                console.log('update allocated', allocatedObj);
                 this.setState({ submitted: true });
                 allocatedTableApi.updateAllocateReservationTable(allocatedObj).then(() => {
                     this.modelPopupClose();
@@ -384,20 +358,17 @@ export default class TableBook extends Component {
                     console.log('update allocated', allocatedObj);
                 })
             } else {
-                console.log('save exit records');
                 ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
                     this.modelPopupClose();
                     this.getReservedTableList();
                     this.props.setCurrentCartHandler(orderObj)
-                    console.log('update allocated', reservationObj);
+                    console.log('save exit records', reservationObj);
                 })
             }
         } else {
-            CustomerApi.save(customerObj).then((response) => {
+            CustomerApi.save(newCustomerObj).then((response) => {
                 this.setState({ customerid: response.data._id })
-                console.log('id', response.data._id);
                 if (response.data._id) {
-                    console.log(response.data._id);
                     allocatedObj.property.customerid = response.data._id
                     allocatedTableApi.allocateReservationTable(allocatedObj).then(() => {
                         this.modelPopupClose();
@@ -405,35 +376,15 @@ export default class TableBook extends Component {
                         this.props.setCurrentCartHandler(orderObj)
                         this.getReservedTableList();
                         console.log('allocatedobj', allocatedObj)
-                        console.log('allocated');
                     })
                 }
             })
         }
     }
 
-    getCustomerList() {
-        CustomerApi.getCustomerList().then((response) => {
-            this.setState({ searchData: response.data })
-        })
-    }
-
-    getAvailableTableList() {
-        TableServicesApi.getTableList().then((response) => {
-            this.setState({ availabletableList: response.data })
-        })
-    }
-
-    componentDidMount() {
-        this.getReservedTableList()
-        this.getAvailableTableList()
-        this.getCustomerList()
-        this.resetForm()
-    }
-
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { error, availabletableList, searchData, checkedvalue, mobile_number, noofperson, reservedTableList } = this.state;
+        const { selectedCustomerType, reservedTableList, availabletableList, customerList, mobile_number, noofperson, checkedtableValue } = this.state;
         const getReservedTableList = reservedTableList.filter((obj) => {
             if (this.state.search == null) { return (obj) }
             else if (obj.property.customer.toLowerCase().includes(this.state.search.toLowerCase()) ||
@@ -450,17 +401,10 @@ export default class TableBook extends Component {
             </tr>
         )
 
-        const handleradioChange = event => {
-            console.log('this.state.tableid radio', this.state.tableid)
-            this.setState({
-                checkedvalue: event.target.value,
-            });
-        }
-
-        const customerdropdown = searchData.map(clientObj => (
+        const customerdropdown = customerList.map(x => (
             {
-                name: clientObj.property.fullname,
-                value: clientObj._id
+                name: x.property.fullname,
+                value: x._id
             }
         ))
 
@@ -524,78 +468,78 @@ export default class TableBook extends Component {
                                     </div>
                                 </div>
                                 <div className="col-xl-8 col-lg-8 col-md-7">
-                                    <ul class="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <a class="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true">All</a>
+                                    <ul className="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
+                                        <li className="nav-item" role="presentation">
+                                            <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true">All</a>
                                         </li>
-                                        <li class="nav-item" role="presentation">
-                                            <a class="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="false">Occupied <span class="table-status-tab occupied-bg"></span> </a>
+                                        <li className="nav-item" role="presentation">
+                                            <a className="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="false">Occupied <span className="table-status-tab occupied-bg"></span> </a>
                                         </li>
-                                        <li class="nav-item" role="presentation">
-                                            <a class="nav-link " id="pills-table-3-tab" data-toggle="pill" href="#pills-table-3" role="tab" aria-controls="pills-table-3" aria-selected="false">Blank <span class="table-status-tab blank-bg"></span></a>
+                                        <li className="nav-item" role="presentation">
+                                            <a className="nav-link " id="pills-table-3-tab" data-toggle="pill" href="#pills-table-3" role="tab" aria-controls="pills-table-3" aria-selected="false">Blank <span className="table-status-tab blank-bg"></span></a>
                                         </li>
-                                        <li class="nav-item" role="presentation">
-                                            <a class="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="false">No Service <span class="table-status-tab no-service-bg"></span></a>
+                                        <li className="nav-item" role="presentation">
+                                            <a className="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="false">No Service <span className="table-status-tab no-service-bg"></span></a>
                                         </li>
                                     </ul>
 
-                                    <div class="tab-content categories-tab-content" id="pills-tabContent">
-                                        <div class="tab-pane fade show active" id="pills-table-1" role="tabpanel" aria-labelledby="pills-table-1-tab">
-                                            <div class="row card-item-gutters">
+                                    <div className="tab-content categories-tab-content" id="pills-tabContent">
+                                        <div className="tab-pane fade show active" id="pills-table-1" role="tabpanel" aria-labelledby="pills-table-1-tab">
+                                            <div className="row card-item-gutters">
                                                 {this.state.tableList.map(tableobj =>
-                                                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={tableobj._id} id={tableobj._id} onClick={() => this.clicktoSelectTableOpenModel(tableobj)} style={{ cursor: 'pointer' }}>
-                                                        <div class="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-                                                            <div class="card-body p-2 ">
-                                                                <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">{tableobj.property.capacity}</span> </div>
-                                                                <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                    <div class="table-number">{tableobj.property.tablename}</div>
-                                                                    <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                    <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={tableobj._id} id={tableobj._id} onClick={() => this.clicktoSelectTableOpenModel(tableobj)} style={{ cursor: 'pointer' }}>
+                                                        <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+                                                            <div className="card-body p-2 ">
+                                                                <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{tableobj.property.capacity}</span> </div>
+                                                                <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                    <div className="table-number">{tableobj.property.tablename}</div>
+                                                                    <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 )}
 
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height blank-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height blank-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height no-service-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height no-service-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height blank-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height blank-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height no-service-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height no-service-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -604,25 +548,25 @@ export default class TableBook extends Component {
                                         </div>
 
                                         <div className="tab-pane fade" id="pills-table-2" role="tabpanel" aria-labelledby="pills-table-2-tab">
-                                            <div class="row card-item-gutters">
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                            <div className="row card-item-gutters">
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height occupied-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height occupied-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -630,25 +574,25 @@ export default class TableBook extends Component {
                                             </div>
                                         </div>
                                         <div className="tab-pane fade" id="pills-table-3" role="tabpanel" aria-labelledby="pills-table-3-tab">
-                                            <div class="row card-item-gutters">
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height blank-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                            <div className="row card-item-gutters">
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height blank-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height blank-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height blank-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -657,25 +601,25 @@ export default class TableBook extends Component {
                                         </div>
 
                                         <div className="tab-pane fade" id="pills-table-4" role="tabpanel" aria-labelledby="pills-table-4-tab">
-                                            <div class="row card-item-gutters">
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height no-service-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                            <div className="row card-item-gutters">
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height no-service-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
-                                                    <div class="card white-box mb-10 border-0 table-box-height no-service-bg"  >
-                                                        <div class="card-body p-2 ">
-                                                            <div class="d-flex justify-content-end"><img src={personicon} alt="" /> <span class="table-person-title ml-2">4</span> </div>
-                                                            <div class="d-flex justify-content-center align-items-center flex-column">
-                                                                <div class="table-number">01</div>
-                                                                <div ><img src={tableicon} alt="" class="img-fluid" /> </div>
+                                                <div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6">
+                                                    <div className="card white-box mb-10 border-0 table-box-height no-service-bg"  >
+                                                        <div className="card-body p-2 ">
+                                                            <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">4</span> </div>
+                                                            <div className="d-flex justify-content-center align-items-center flex-column">
+                                                                <div className="table-number">01</div>
+                                                                <div ><img src={tableicon} alt="" className="img-fluid" /> </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -693,23 +637,44 @@ export default class TableBook extends Component {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title" id="exampleModalLongTitle">Book Reserved  Order</h5>
-                                <button type="button" id="modelpopupclose" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.resetForm()}>
+                                <button type="button" id="modelpopupclose" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.onClose()}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div className="modal-body">
                                 <div className="container">
-                                    <input type="radio" id="existcustomer" name="Reserved" value="existcustomer" className="mr-1" defaultChecked onChange={handleradioChange} />
-                                    <label htmlFor="existcustomer" className="mr-3">Exist Customer</label>
-                                    <input type="radio" id="newcustomer" name="Reserved" value="newcustomer" className="mr-1" onClick={handleradioChange} />
-                                    <label htmlFor="newcustomer" className="mr-3">New Customer</label>
+                                    <div className="container">
+                                        <label className="mr-3">
+                                            <input
+                                                type="radio"
+                                                id="existcustomer"
+                                                name="selectedCustomerType"
+                                                value={CUSTOMERTYPES.EXISTING}
+                                                checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
+                                                onChange={this.onChangeValue}
+                                                className="mr-1"
+                                            />
+                                    Exist Customer
+                                </label>
+                                        <label className="mr-3">
+                                            <input
+                                                type="radio"
+                                                id="newcustomer"
+                                                name="selectedCustomerType"
+                                                value={CUSTOMERTYPES.NEW}
+                                                checked={selectedCustomerType === CUSTOMERTYPES.NEW}
+                                                onChange={this.onChangeValue}
+                                                className="mr-1"
+                                            />
+                                    New Customer
+                                </label>
+                                    </div>
                                 </div>
-                                <form className="container mt-3" method="post" id="reservationForm" name="reservationForm" onClick={this.handleFormSubmit}>
-                                    {error && <div className="alert alert-danger">{error}</div>}
+                                <div className="container mt-3">
                                     <div className="form-group row">
                                         <label htmlFor="customer" className="col-sm-4 col-form-label">Customer<span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            {checkedvalue === 'existcustomer'
+                                            {selectedCustomerType === CUSTOMERTYPES.EXISTING
                                                 ?
                                                 <SelectSearch
                                                     options={customerdropdown}
@@ -718,9 +683,14 @@ export default class TableBook extends Component {
                                                     disabled={this.state.disableCustomer}
                                                     name="customer"
                                                     placeholder="Select Customer"
-                                                    onChange={this.handleChangeCustomerDropdown} />
+                                                    onChange={this.onCustomerDropdownChange} />
                                                 :
-                                                <input className="form-control" type="text" placeholder="Enter Customer Name" name='customername' id="customer" onChange={this.handleInputChange} />
+                                                <input
+                                                    type="text"
+                                                    name="customername"
+                                                    className="form-control"
+                                                    placeholder="Enter Customer Name"
+                                                    onChange={this.onChangeValue} />
                                             }
                                             <span className="help-block">{validation.customername.message}</span>
                                         </div>
@@ -728,42 +698,66 @@ export default class TableBook extends Component {
                                     <div className="form-group row">
                                         <label htmlFor="noofperson" className="col-sm-4 col-form-label">No of Person <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="number" name='noofperson' placeholder="Enter No of Person" min="1" className="form-control" id="noofperson" value={noofperson} onChange={this.handleInputChange} />
+                                            <input
+                                                type="number"
+                                                name="noofperson"
+                                                className="form-control"
+                                                placeholder="Enter No of Person"
+                                                min="1"
+                                                value={noofperson}
+                                                onChange={this.onChangeValue} />
                                             <span className="help-block">{validation.noofperson.message}</span>
                                         </div>
                                     </div>
                                     <div className="form-group row">
                                         <label htmlFor="mobilenumber" className="col-sm-4 col-form-label">Mobile Number <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="text" name='mobile_number' placeholder="Enter Mobile Number" className="form-control" id="mobile_number" value={mobile_number} onChange={this.handleInputChange} />
+                                            <input
+                                                type="text"
+                                                id="mobile_number"
+                                                name="mobile_number"
+                                                className="form-control"
+                                                placeholder="Enter Mobile Number"
+                                                value={mobile_number}
+                                                onChange={this.onChangeValue} />
                                             <span className="help-block">{validation.mobile_number.message}</span>
                                         </div>
                                     </div>
-                                    {this.state.checkedtable === null ?
+                                    {checkedtableValue === null ?
                                         <div className="form-group row">
                                             <label htmlFor="time" className="col-sm-4 col-form-label">Time <span style={{ color: 'red' }}>*</span></label>
                                             <div className="col-sm-8">
-                                                <input type="text" className="form-control" name='time' placeholder="Enter Time" id="timeid" value={this.state.time} onChange={this.handleInputChange} />
+                                                <input
+                                                    type="text"
+                                                    name="time"
+                                                    className="form-control"
+                                                    placeholder="Enter Time"
+                                                    value={this.state.time}
+                                                    onChange={this.onChangeValue} />
                                                 <span className="help-block">{validation.time.message}</span>
                                             </div>
                                         </div>
                                         : ''}
-                                    {this.state.checkedtable === null ?
+                                    {checkedtableValue === null ?
                                         <div className="form-group row">
                                             <label htmlFor="date" className="col-sm-4 col-form-label">Date <span style={{ color: 'red' }}>*</span></label>
                                             <div className="col-sm-8">
-                                                <input type="text" className="form-control" name='date' placeholder="Enter Date" id="dateid" defaultValue={this.state.date} onChange={this.handleInputChange} />
+                                                <input
+                                                    type="text"
+                                                    name="date"
+                                                    className="form-control"
+                                                    placeholder="Enter Date"
+                                                    value={this.state.date}
+                                                    onChange={this.onChangeValue} />
                                                 <span className="help-block">{validation.date.message}</span>
                                             </div>
                                         </div>
                                         : ''}
                                     <div className="form-group row">
-                                        <label htmlFor="table" className="col-sm-4 col-form-label">Table
-                                                    {checkedvalue === 'existcustomer' ? <span style={{ color: 'red' }}>*</span> : ''}
-                                        </label>
+                                        <label htmlFor="table" className="col-sm-4 col-form-label">Table{selectedCustomerType === CUSTOMERTYPES.EXISTING ? <span style={{ color: 'red' }}>*</span> : ''}</label>
                                         <div className="col-sm-8">
-                                            <select className="form-control" name='tablename' id="tableid" value={this.state.tableid}
-                                                onChange={this.handleInputChange} style={{ width: '100%' }}>
+                                            <select className="form-control" name="tablename" id="tableid" value={this.state.tableid}
+                                                onChange={this.onTableDropdownChange} style={{ width: "100%" }}>
                                                 {availabletableList.map(availableTable => (
                                                     <option key={availableTable._id} value={availableTable._id}>
                                                         {`${availableTable.property.tablename}` + ' ' + `(${availableTable.property.capacity})`}
@@ -772,13 +766,11 @@ export default class TableBook extends Component {
                                             <span className="help-block">{validation.tablename.message}</span>
                                         </div>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className={this.state.checkedtable === null ? 'btn btn-primary mr-auto' : 'btn btn-primary'} name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
-                                {this.state.checkedtable === null ?
-                                    <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button>
-                                    : ''}
+                                <button type="button" className={checkedtableValue === null ? "btn btn-primary mr-auto" : "btn btn-primary"} name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
+                                {checkedtableValue === null ? <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button> : ''}
                             </div>
                         </div>
                     </div>
