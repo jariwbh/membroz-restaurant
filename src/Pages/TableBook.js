@@ -159,7 +159,6 @@ export default class TableBook extends Component {
     onTableDropdownChange = event => {
         const target = event.target;
         const value = target.value;
-        const name = target.name;
         const tabledata = this.state.availabletableList.find(x => x._id === value)
         this.setState({
             tableid: tabledata._id,
@@ -172,6 +171,7 @@ export default class TableBook extends Component {
         const customerById = obj
 
         await this.setState({
+            selectedCustomerType: CUSTOMERTYPES.EXISTING,
             getcustomerid: customerById._id,
             customerid: customerById.property.customerid,
             customername: customerById.property.customer,
@@ -183,17 +183,9 @@ export default class TableBook extends Component {
             tableid: customerById.property.tableid,
             disableCustomer: true
         });
-        document.getElementById('existcustomer').checked = true;
-        document.getElementById('mobile_number').setAttribute('readonly', true);
-        document.getElementById("existcustomer").setAttribute('disabled', true);
-        document.getElementById("newcustomer").setAttribute('disabled', true);
     }
 
     onClose = async () => {
-        document.getElementById('mobile_number').removeAttribute('readonly');
-        document.getElementById("existcustomer").removeAttribute('disabled');
-        document.getElementById("newcustomer").removeAttribute('disabled');
-
         await this.setState({
             selectedCustomerType: CUSTOMERTYPES.EXISTING,
             onModel: '',
@@ -230,7 +222,6 @@ export default class TableBook extends Component {
                 date: this.state.date,
                 checkedtableValue: currentTableobj
             });
-            document.getElementById('existcustomer').checked = true;
         }
     }
 
@@ -431,7 +422,7 @@ export default class TableBook extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { selectedCustomerType, reservedTableList, availabletableList, tableList, runningOrders, customerList, mobile_number, noofperson, checkedtableValue } = this.state;
+        const { selectedCustomerType, reservedTableList, availabletableList, tableList, runningOrders, customerList, mobile_number, noofperson, checkedtableValue, disableCustomer } = this.state;
 
         const getReservedTableList = reservedTableList.filter((obj) => {
             if (this.state.search == null) { return (obj) }
@@ -585,6 +576,7 @@ export default class TableBook extends Component {
                                                 checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
                                                 onChange={this.onChangeValue}
                                                 className="mr-1"
+                                                disabled={disableCustomer === true ? true : false}
                                             />
                                     Exist Customer
                                 </label>
@@ -597,6 +589,7 @@ export default class TableBook extends Component {
                                                 checked={selectedCustomerType === CUSTOMERTYPES.NEW}
                                                 onChange={this.onChangeValue}
                                                 className="mr-1"
+                                                disabled={disableCustomer === true ? true : false}
                                             />
                                     New Customer
                                 </label>
@@ -651,7 +644,9 @@ export default class TableBook extends Component {
                                                 className="form-control"
                                                 placeholder="Enter Mobile Number"
                                                 value={mobile_number}
-                                                onChange={this.onChangeValue} />
+                                                onChange={this.onChangeValue}
+                                                readOnly={disableCustomer === true ? true : false}
+                                            />
                                             <span className="help-block">{validation.mobile_number.message}</span>
                                         </div>
                                     </div>
