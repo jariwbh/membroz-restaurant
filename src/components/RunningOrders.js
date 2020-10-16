@@ -1,10 +1,21 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
 import { ORDERTYPES } from '../Pages/OrderEnums'
+import $ from 'jquery'
+import 'malihu-custom-scrollbar-plugin'
+import 'malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css'
+import 'jquery-mousewheel'
 
 function RunningTable(props) {
     const runningOrders = props.runningOrders.filter(x => x.postype === props.activeOrderType)
     const currentCart = props.currentCart
+    $(window).on("load", function () {
+        $('#scrollcontent').mCustomScrollbar({
+            theme: "dark",
+            axis: 'x',
+            advanced: { autoExpandHorizontalScroll: true },
+        })
+    });
 
     return (
         <React.Fragment>
@@ -42,8 +53,6 @@ function RunningTable(props) {
                                 <button type="button" className="btn btn-primary btn-lg" data-toggle="modal" data-target="#takeOrderpopup">New Order</button>
                             </div>
                         }
-                        {/* <div className="d-flex align-items-center mr-2"><button type="button" className="btn btn-primary btn-lg" onClick={() => props.newOrderHandler()}>New Order</button></div> */}
-                        {/* <div className="d-flex align-items-center mr-2"><button type="button" className="btn btn-primary btn-lg" data-toggle="modal" data-target="#fortakeOrder" onClick={() => props.newOrderHandler()}>New Order</button></div> */}
                     </div>
                 </div>
             </div>
