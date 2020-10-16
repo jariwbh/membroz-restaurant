@@ -323,10 +323,10 @@ class Bills extends Component {
                                                         <thead className="thead-dark">
                                                             <tr>
                                                                 <th width="13%" className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
-                                                                <th width="15%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
-                                                                <th width="17%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
+                                                                <th width="15%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
+                                                                <th width="17%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
                                                                 <th width="27%" className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
-                                                                <th width="15%" className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : 'text-right'} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
+                                                                <th width="15%" className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
                                                                 <th width="13%"></th>
                                                             </tr>
                                                         </thead>
@@ -378,11 +378,11 @@ class Bills extends Component {
                             <div className="modal-body" id="prdiv">
                                 {this.state.cartitem &&
                                     <>
-                                        <div className="inline-block">{this.state.restaurantname}</div>
-                                        <div>{this.state.billheader}</div>
-                                        <div>{this.state.address}</div>
-                                        <div>{this.state.city}</div>
-                                        <div>CASH/BILL</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.restaurantname}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.billheader}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.address}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.city}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>CASH/BILL</div>
                                         <table id="billtableheader" name="billtableheader" className="table mt-2" cellSpacing="1">
                                             <thead>
                                                 <tr>
@@ -438,7 +438,7 @@ class Bills extends Component {
                                                 </tr>
                                             </tbody>
                                         </table>
-                                        <span style={{ marginBottom: '20px' }} className="inline-block center"> Thank You 😃</span>
+                                        <div style={{ marginBottom: '20px' }} className="d-flex justify-content-center"> Thank You 😃</div>
                                     </>
                                 }
                             </div>
