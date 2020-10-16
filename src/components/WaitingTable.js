@@ -7,6 +7,7 @@ import moment from 'moment'
 import $ from 'jquery'
 import SelectSearch from 'react-select-search';
 import '../Assets/css/DropDownstyles.css'
+import { CUSTOMERTYPES } from '../Pages/OrderEnums'
 
 export default class WaitingTable extends Component {
     constructor(props) {
@@ -53,127 +54,48 @@ export default class WaitingTable extends Component {
         ]);
 
         this.state = {
+            waitingTableList: [],
+            customerList: [],
+            selectedCustomerTypes: CUSTOMERTYPES.EXISTING,
+            customerid: '',
             customername: '',
-            mobile_number: '',
             noofperson: '',
+            mobile_number: '',
+            getcustomerid: '',
+            disableCustomer: false,
+            search: null,
             time: moment().format('LT'),
             date: moment().format('L'),
             validation: this.validator.valid(),
-            searchData: [],
-            tablecheckedvalue: 'existcustomertable',
-            waitingTableList: [],
-            search: null,
-            customerid: '',
-            getcustomerid: '',
-            disableCustomer: false
         }
-        this.submitted = false;
         this.getWaitingTableList = this.getWaitingTableList.bind(this);
     }
 
-    searchSpace = (event) => {
+    async getWaitingTableList() {
+        WaitingTableApi.getWaitingTableList().then((response) => {
+            this.setState({ waitingTableList: response.data })
+        })
+    }
+
+    async getCustomerList() {
+        CustomerApi.getCustomerList().then((response) => {
+            this.setState({ customerList: response.data })
+        })
+    }
+
+    async componentDidMount() {
+        await this.getCustomerList();
+        await this.getWaitingTableList()
+    }
+
+    onSearchCustomer = (event) => {
         let keyword = event.target.value;
         this.setState({ search: keyword })
     }
 
-    deleteWaitingTableRecord(id) {
-        WaitingTableApi.deleteWaitingTableRecord(id).then(() => {
-            this.getWaitingTableList()
-        })
-    }
-
-    resetForm() {
-        document.getElementById('waitingForm').reset();
-        document.getElementById('existcustomertable').checked = true;
-        document.getElementById('mobile_numberid').removeAttribute('readonly');
-        //document.getElementById('customerid').removeAttribute('readonly');
-        //document.getElementById("customerid").disabled = false;
-        document.getElementById("existcustomertable").removeAttribute('disabled');
-        document.getElementById("newcustomertable").removeAttribute('disabled');
-        const validator = {
-            customername: {
-                isInvalid: false,
-                message: ""
-            },
-            date: {
-                isInvalid: false,
-                message: ""
-            },
-            isValid: true,
-            mobile_number: {
-                isInvalid: false,
-                message: ""
-            },
-            noofperson: {
-                isInvalid: false,
-                message: ""
-            },
-            time: {
-                isInvalid: false,
-                message: ""
-            }
-        }
-
-        this.setState({
-            tablecheckedvalue: 'existcustomertable',
-            mobile_number: '',
-            noofperson: '',
-            date: moment().format('L'),
-            time: moment().format('LT'),
-            validation: validator,
-            getcustomerid: '',
-            customerid: '',
-            customername: '',
-            submitted: false,
-            disableCustomer: false
-        });
-    }
-
-    getCustomerDeatils = (id) => {
-        $(function () {
-            var WaitingTableModel = document.getElementById("WaitingTableModel")
-            WaitingTableModel.click();
-        });
-        const customerdata = this.state.waitingTableList.find(x => x._id === id)
-        this.setState({
-            getcustomerid: customerdata._id,
-            customerid: customerdata.property.customerid,
-            customername: customerdata.property.customer,
-            mobile_number: customerdata.property.mobile_number,
-            noofperson: customerdata.property.noofperson,
-            time: customerdata.property.time,
-            date: moment(customerdata.property.date).format('L'),
-            disableCustomer: true
-        });
-        document.getElementById('existcustomertable').checked = true;
-        document.getElementById('mobile_numberid').setAttribute('readonly', true);
-        //document.getElementById("customerid").disabled = true;
-        // document.getElementById('customerid').setAttribute('readonly', true);
-        document.getElementById("existcustomertable").setAttribute('disabled', true);
-        document.getElementById("newcustomertable").setAttribute('disabled', true);
-    }
-
-    handleInputChange = event => {
-        if (this.state.tablecheckedvalue === 'existcustomertable') {
-            this.setState({
-                [event.target.name]: event.target.value
-            });
-        } else {
-            this.setState({
-                [event.target.name]: event.target.value
-            });
-        }
-    }
-
-    CustomerDropdownHandleChange = event => {
-        if (this.state.tablecheckedvalue === 'existcustomertable') {
-            const customerFind = this.state.searchData.find(x => x._id === event)
-            this.setState({
-                mobile_number: customerFind.property.mobile_number,
-                customername: customerFind.property.fullname,
-                customerid: customerFind._id,
-            });
-        }
+    modelPopupOpen() {
+        var WaitingTableModel = document.getElementById("WaitingTableModel")
+        WaitingTableModel.click();
     }
 
     modelPopupClose() {
@@ -181,9 +103,76 @@ export default class WaitingTable extends Component {
         modelclose.click();
     }
 
-    handleFormSubmit = (event) => {
-        const btnclickname = event.target.name;
+    deleteWaitingTableById(id) {
+        WaitingTableApi.deleteWaitingTableRecord(id).then(() => {
+            this.getWaitingTableList()
+        })
+    }
+
+    async onClose() {
+        await this.setState({
+            selectedCustomerTypes: CUSTOMERTYPES.EXISTING,
+            customerid: '',
+            customername: '',
+            noofperson: '',
+            mobile_number: '',
+            getcustomerid: '',
+            disableCustomer: false,
+            date: moment().format('L'),
+            time: moment().format('LT'),
+            validation: this.validator.valid()
+        });
+    }
+
+    getCustomerDetails = async (id) => {
+        this.modelPopupOpen();
+        const foundCustomer = this.state.waitingTableList.find(x => x._id === id)
+        await this.setState({
+            getcustomerid: foundCustomer._id,
+            customerid: foundCustomer.property.customerid,
+            customername: foundCustomer.property.customer,
+            mobile_number: foundCustomer.property.mobile_number,
+            noofperson: foundCustomer.property.noofperson,
+            time: foundCustomer.property.time,
+            date: moment(foundCustomer.property.date).format('L'),
+            disableCustomer: true
+        });
+    }
+
+    onChangeValue = event => {
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+        this.setState({ [name]: value });
+    }
+
+    onTableDropdownChange = event => {
+        const target = event.target;
+        const value = target.value;
+        const tabledata = this.state.availabletableList.find(x => x._id === value)
+        this.setState({
+            tableid: tabledata._id,
+            tablename: tabledata.property.tablename,
+        });
+    }
+
+    onCustomerDropdownChange = value => {
+        if (this.state.selectedCustomerTypes === CUSTOMERTYPES.EXISTING) {
+            const foundCustomer = this.state.customerList.find(x => x._id === value)
+            if (foundCustomer) {
+                this.setState({
+                    mobile_number: foundCustomer.property.mobile_number,
+                    customername: foundCustomer.property.fullname,
+                    customerid: foundCustomer._id,
+                });
+            }
+        }
+    }
+
+    handleFormSubmit = () => {
         const { customername, mobile_number, noofperson, time, date, customerid, getcustomerid } = this.state;
+        const validation = this.validator.validate(this.state);
+
         const customerObj = {
             property: {
                 fullname: customername,
@@ -191,7 +180,7 @@ export default class WaitingTable extends Component {
             }
         }
 
-        let waitingTableObj = {
+        const waitingTableObj = {
             _id: getcustomerid,
             status: WaitingTableApi.activestatus,
             property: {
@@ -206,95 +195,59 @@ export default class WaitingTable extends Component {
             formid: WaitingTableApi.tableformid
         }
 
-        const validation = this.validator.validate(this.state);
         this.setState({ validation });
         if (validation.isValid) {
-            this.setState({ submitted: true });
-            if (btnclickname === "save") {
-                if (customerid === '') {
-                    CustomerApi.save(customerObj).then((response) => {
-                        this.setState({ customerid: response.data._id })
-                        if (response.data._id) {
-                            console.log(response.data._id);
-                            waitingTableObj.property.customerid = response.data._id
-                            WaitingTableApi.addWaitingTableRecord(waitingTableObj).then(() => {
-                                this.getCustomerList();
-                                this.getWaitingTableList();
-                                this.modelPopupClose();
-                                console.log('save');
-                            })
-                        }
-                    })
-                } else if (getcustomerid === '') {
-                    WaitingTableApi.addWaitingTableRecord(waitingTableObj).then(() => {
-                        this.getWaitingTableList();
-                        this.modelPopupClose();
-                        console.log('save exit records');
-                    })
-                } else {
-                    WaitingTableApi.updateWaitingTableRecord(waitingTableObj).then(() => {
-                        this.getWaitingTableList();
-                        this.modelPopupClose();
-                        console.log('update');
-                    })
-                }
+            if (customerid === '') {
+                CustomerApi.save(customerObj).then((response) => {
+                    this.setState({ customerid: response.data._id })
+                    if (response.data._id) {
+                        waitingTableObj.property.customerid = response.data._id
+                        WaitingTableApi.addWaitingTableRecord(waitingTableObj).then(() => {
+                            this.getCustomerList();
+                            this.getWaitingTableList();
+                            this.modelPopupClose();
+                            console.log('save');
+                        })
+                    }
+                })
+            } else if (getcustomerid === '') {
+                WaitingTableApi.addWaitingTableRecord(waitingTableObj).then(() => {
+                    this.getWaitingTableList();
+                    this.modelPopupClose();
+                    console.log('save exit records');
+                })
+            } else {
+                WaitingTableApi.updateWaitingTableRecord(waitingTableObj).then(() => {
+                    this.getWaitingTableList();
+                    this.modelPopupClose();
+                    console.log('update');
+                })
             }
         }
     }
 
-    async componentDidMount() {
-        await this.getCustomerList();
-        await this.getWaitingTableList()
-    }
-
-    async getCustomerList() {
-        return CustomerApi.getCustomerList()
-            .then((response) => {
-                this.setState({ searchData: response.data })
-                return;
-            }, (error) => {
-                console.log("error", error);
-            });
-    }
-
-    async getWaitingTableList() {
-        return WaitingTableApi.getWaitingTableList()
-            .then((response) => {
-                this.setState({ waitingTableList: response.data })
-                return;
-            }, (error) => {
-                console.log("error", error);
-            })
-    }
-
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { searchData, tablecheckedvalue, mobile_number, waitingTableList, noofperson } = this.state;
+        const { waitingTableList, customerList, selectedCustomerTypes, customerid, customername, noofperson, mobile_number, disableCustomer } = this.state;
         const getWaitingTableList = waitingTableList.filter((obj) => {
             if (this.state.search == null) { return (obj) }
             else if (obj.property.customer.toLowerCase().includes(this.state.search.toLowerCase()) ||
                 obj.property.mobile_number.toLowerCase().includes(this.state.search.toLowerCase())
             ) { return (obj) }
-        }).map(waitingtableobj =>
-            <tr key={waitingtableobj._id} id={waitingtableobj._id} onDoubleClick={() => this.getCustomerDeatils(waitingtableobj._id)} style={{ cursor: 'pointer' }}>
-                <td >{waitingtableobj.property.customer}</td>
-                <td>{waitingtableobj.property.noofperson}</td>
-                <td >{waitingtableobj.property.mobile_number}</td>
-                <td>{waitingtableobj.property.time}</td>
-                <td><img src={deleteicon} alt="" style={{ cursor: 'pointer' }} onClick={() => this.deleteWaitingTableRecord(waitingtableobj._id)} /></td>
+        }).map(waitingtable =>
+            <tr key={waitingtable._id} id={waitingtable._id} onDoubleClick={() => this.getCustomerDetails(waitingtable._id)} style={{ cursor: 'pointer' }}>
+                <td >{waitingtable.property.customer}</td>
+                <td>{waitingtable.property.noofperson}</td>
+                <td >{waitingtable.property.mobile_number}</td>
+                <td>{waitingtable.property.time}</td>
+                <td><img src={deleteicon} alt="" style={{ cursor: 'pointer' }} onClick={() => this.deleteWaitingTableById(waitingtable._id)} /></td>
             </tr>
         )
 
-        const handleradioOnChange = event => {
-            this.setState({
-                tablecheckedvalue: event.target.value
-            });
-        }
-
-        const customerDropdownObj = searchData.map(clientObj => (
+        const customerDropdown1 = customerList.map(c => (
             {
-                name: clientObj.property.fullname,
-                value: clientObj._id
+                name: c.property.fullname,
+                value: c._id
             }
         ))
 
@@ -307,7 +260,7 @@ export default class WaitingTable extends Component {
                     <div className="d-flex align-items-center customer-name-p">
                         <div className="flex-grow-1">
                             <form className="form-inline">
-                                <input className="form-control" type="search" onChange={(e) => this.searchSpace(e)} placeholder="Search" aria-label="Search" />
+                                <input className="form-control" type="search" onChange={(e) => this.onSearchCustomer(e)} placeholder="Search" aria-label="Search" />
                             </form>
                         </div>
                         <div className="table-num-title ml-3">
@@ -342,33 +295,64 @@ export default class WaitingTable extends Component {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title" id="WaitingTableLongTitle">Book Waiting Table</h5>
-                                <button type="button" id="modelclose" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.resetForm()}>
+                                <button type="button" id="modelclose" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.onClose()}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div className="modal-body">
                                 <div className="container">
-                                    <input type="radio" id="existcustomertable" name="waiting" value="existcustomertable" className="mr-1" defaultChecked onChange={handleradioOnChange} />
-                                    <label htmlFor="existcustomertable" className="mr-3">Exist Customer</label>
-                                    <input type="radio" id="newcustomertable" name="waiting" value="newcustomertable" className="mr-1" onClick={handleradioOnChange} />
-                                    <label htmlFor="newcustomertable" className="mr-3">New Customer</label>
+                                    <div className="container">
+                                        <div className="container">
+                                            <label className="mr-3">
+                                                <input
+                                                    type="radio"
+                                                    id="existcustomer"
+                                                    name="selectedCustomerTypes"
+                                                    value={CUSTOMERTYPES.EXISTING}
+                                                    checked={selectedCustomerTypes === CUSTOMERTYPES.EXISTING}
+                                                    onChange={this.onChangeValue}
+                                                    className="mr-1"
+                                                    disabled={disableCustomer === true ? true : false}
+                                                />
+                                                    Exist Customer
+                                            </label>
+                                            <label className="mr-3">
+                                                <input
+                                                    type="radio"
+                                                    id="newcustomer"
+                                                    name="selectedCustomerTypes"
+                                                    value={CUSTOMERTYPES.NEW}
+                                                    checked={selectedCustomerTypes === CUSTOMERTYPES.NEW}
+                                                    onChange={this.onChangeValue}
+                                                    className="mr-1"
+                                                    disabled={disableCustomer === true ? true : false}
+                                                />
+                                                    New Customer
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
-                                <form className="container mt-3" method="post" id="waitingForm" name="waitingForm" >
+                                <div className="container mt-3">
                                     <div className="form-group row">
                                         <label htmlFor="customer" className="col-sm-4 col-form-label">Customer<span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            {tablecheckedvalue === 'existcustomertable'
+                                            {selectedCustomerTypes === CUSTOMERTYPES.EXISTING
                                                 ?
                                                 <SelectSearch
-                                                    options={customerDropdownObj}
-                                                    value={this.state.customerid}
+                                                    options={customerDropdown1}
+                                                    value={customerid}
                                                     search
-                                                    disabled={this.state.disableCustomer}
+                                                    disabled={disableCustomer}
                                                     name="customername"
                                                     placeholder="Select Customer"
-                                                    onChange={this.CustomerDropdownHandleChange} />
+                                                    onChange={this.onCustomerDropdownChange} />
                                                 :
-                                                <input className="form-control" type="text" placeholder="Enter Customer" name='customername' id="customerid" onChange={this.handleInputChange} />
+                                                <input className="form-control"
+                                                    type="text"
+                                                    placeholder="Enter Customer"
+                                                    name='customername'
+                                                    id="customerid"
+                                                    onChange={this.onChangeValue} />
                                             }
                                             <span className="help-block">{validation.customername.message}</span>
                                         </div>
@@ -376,39 +360,60 @@ export default class WaitingTable extends Component {
                                     <div className="form-group row">
                                         <label htmlFor="noofperson" className="col-sm-4 col-form-label">No of Person <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="number" name='noofperson' placeholder="Enter No of Person" min="1" className="form-control" id="noofpersonid" value={noofperson} onChange={this.handleInputChange} />
+                                            <input
+                                                type="number"
+                                                name="noofperson"
+                                                className="form-control"
+                                                placeholder="Enter No of Person"
+                                                min="1"
+                                                value={noofperson}
+                                                onChange={this.onChangeValue} />
                                             <span className="help-block">{validation.noofperson.message}</span>
                                         </div>
                                     </div>
                                     <div className="form-group row">
                                         <label htmlFor="mobilenumber" className="col-sm-4 col-form-label">Mobile Number <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="text" name='mobile_number' placeholder="Enter Mobile Number" className="form-control" id="mobile_numberid" value={mobile_number} onChange={this.handleInputChange} />
+                                            <input
+                                                type="text"
+                                                id="mobile_number"
+                                                name="mobile_number"
+                                                className="form-control"
+                                                placeholder="Enter Mobile Number"
+                                                value={mobile_number}
+                                                onChange={this.onChangeValue}
+                                                readOnly={disableCustomer === true ? true : false}
+                                            />
                                             <span className="help-block">{validation.mobile_number.message}</span>
                                         </div>
                                     </div>
                                     <div className="form-group row">
                                         <label htmlFor="time" className="col-sm-4 col-form-label">Time <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="text" className="form-control" name='time' id="time" value={this.state.time} onChange={this.handleInputChange} />
+                                            <input type="text"
+                                                className="form-control"
+                                                name='time'
+                                                id="time"
+                                                value={this.state.time}
+                                                onChange={this.onChangeValue} />
                                             <span className="help-block">{validation.time.message}</span>
                                         </div>
                                     </div>
                                     <div className="form-group row">
                                         <label htmlFor="date" className="col-sm-4 col-form-label">Date <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            <input type="text" className="form-control" name='date' id="date" defaultValue={this.state.date} onChange={this.handleInputChange} />
+                                            <input type="text"
+                                                className="form-control"
+                                                name='date' id="date"
+                                                value={this.state.date}
+                                                onChange={this.onChangeValue} />
                                             <span className="help-block">{validation.date.message}</span>
                                         </div>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                             <div className="modal-footer">
-                                {this.state.submitted === true ?
-                                    <button type="button" className="btn btn-primary" le='true' data-dismiss="modal" name="save" onClick={this.handleFormSubmit} >Save</button>
-                                    :
-                                    <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button>
-                                }
+                                <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button>
                             </div>
                         </div>
                     </div>
