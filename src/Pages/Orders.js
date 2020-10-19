@@ -296,31 +296,33 @@ class Orders extends Component {
 
     validateMe = (currentCart, currentToken) => {
         if (!currentCart) {
-            alert("Current Cart is undefined")
+            alert("ERROR! Current Cart is undefined, Note this error with steps")
             return false;
         }
         if (!currentCart.customerid) {
-            alert("Current Cart is undefined")
+            alert("ERROR! Current Cart is undefined, Note this error with steps")
             return false;
         }
-        // if (currentCart.onModel === '') {
-        //     alert("Current Cart onModel is Empty")
-        //     return false;
-        // }
+
+        if (currentCart.onModel === '') {
+            alert("ERROR! Current Cart onModel is Empty, Note this error with steps")
+            return false;
+        }
+
         if (!currentCart.property) {
-            alert("currentCart.property is undefined")
+            alert("ERROR! currentCart.property is undefined, Note this error with steps")
             return false;
         }
         if (!currentToken) {
-            alert("Current Token is NULL")
+            alert("ERROR! Current Token is NULL, Note this error with steps")
             return false;
         }
         if (!currentToken.property.items) {
-            alert("Empty Current KOT")
+            alert("ERROR! Empty Current KOT, Note this error with steps")
             return false;
         }
         if (currentToken.property.items.length === 0) {
-            alert("Empty Current KOT")
+            alert("ERROR! Empty Current KOT, Note this error with steps")
             return false;
         }
 

@@ -10,13 +10,13 @@ class Payment extends Component {
         // window.scrollTo(0, 0);
 
         this.state = {
-            deliveryBoyList: this.props.deliveryBoyList,
-            currentCart: this.props.currentCart,
+            deliveryBoyList: props.deliveryBoyList,
+            currentCart: props.currentCart,
             wallet: true,
             paymentMethod: PAYMENTMETHODS.CASH,
-            deliveryaddress: "",
-            deliveryboyid: "",
-            deliveryboyname: "",
+            deliveryaddress: props.currentCart && props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryaddress : "",
+            deliveryboyid: props.currentCart && props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryboyid._id : "",
+            deliveryboyname: props.currentCart && props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryboyid.property.fullname : ""
         }
 
         this.doPayment = this.doPayment.bind(this);
@@ -136,7 +136,7 @@ class Payment extends Component {
                                 <div className="col-sm-8">
                                     <textarea
                                         type="textarea"
-                                        name='address'
+                                        name='deliveryaddress'
                                         value={deliveryaddress}
                                         placeholder="Enter Delivery Address"
                                         className="form-control"
@@ -163,10 +163,10 @@ class Payment extends Component {
                         }
 
                         <div className="row">
-                            <div className="offset-xl-9 col-xl-3 offset-lg-7 col-lg-5" >
+                            <div className="offset-xl-6 col-xl-3 offset-lg-2 col-lg-5" >
                                 <button type="button" className="btn btn-success btn-lg btn-block" onClick={() => this.doPayment()}>Pay Now</button>
                             </div>
-                            <div className="offset-xl-9 col-xl-3 offset-lg-7 col-lg-5" >
+                            <div className="col-xl-3 col-lg-5" >
                                 <button type="button" className="btn btn-secondary btn-lg btn-block" onClick={() => this.props.setActivePage(PAGES.ORDERS)}>Cancel</button>
                             </div>
                         </div>

@@ -40,7 +40,7 @@ export default class TakeOrderPopup extends Component {
             customerid: '',
             customername: '',
             mobile_number: '',
-            address: '',
+            deliveryaddress: '',
             deliveryboyid: undefined,
             deliveryboyname: undefined,
             validation: this.validator.valid()
@@ -95,7 +95,7 @@ export default class TakeOrderPopup extends Component {
                     customerid: foundCustomer._id,
                     customername: foundCustomer.property.fullname,
                     mobile_number: foundCustomer.property.mobile_number,
-                    address: (foundCustomer.property.address === null ? '' : foundCustomer.property.address)
+                    deliveryaddress: (foundCustomer.property.address === null ? '' : foundCustomer.property.address)
                 });
             }
         }
@@ -112,7 +112,7 @@ export default class TakeOrderPopup extends Component {
     }
 
     handleFormSubmit = async (event) => {
-        let { selectedCustomerType, onModel, customerid, customername, mobile_number, address, deliveryboyid, deliveryboyname } = this.state;
+        let { selectedCustomerType, onModel, customerid, customername, mobile_number, deliveryaddress, deliveryboyid, deliveryboyname } = this.state;
 
         const validation = this.validator.validate(this.state);
         if (!validation.isValid) {
@@ -126,7 +126,7 @@ export default class TakeOrderPopup extends Component {
                 property: {
                     fullname: customername,
                     mobile_number: mobile_number,
-                    address: address
+                    address: deliveryaddress
                 }
             }
 
@@ -151,7 +151,7 @@ export default class TakeOrderPopup extends Component {
                 token: {
                     prefix: "NEW " + customername
                 },
-                deliveryaddress: address,
+                deliveryaddress: deliveryaddress,
                 deliveryboyid: {
                     _id: deliveryboyid,
                     property: {
@@ -187,20 +187,20 @@ export default class TakeOrderPopup extends Component {
     onClose = async () => {
         await this.setState({
             selectedCustomerType: CUSTOMERTYPES.EXISTING,
-            onModel: '',
-            customerid: '',
-            customername: '',
-            mobile_number: '',
-            address: '',
-            deliveryboyid: undefined,
-            deliveryboyname: undefined,
+            onModel: "",
+            customerid: "",
+            customername: "",
+            mobile_number: "",
+            deliveryaddress: "",
+            deliveryboyid: "",
+            deliveryboyname: "",
             validation: this.validator.valid()
         })
     }
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { selectedCustomerType, customerid, mobile_number, address, deliveryboyid, customerList } = this.state;
+        const { selectedCustomerType, customerid, mobile_number, deliveryaddress, deliveryboyid, customerList } = this.state;
 
         const customerDropdown = customerList.map(customerObj => (
             {
@@ -298,12 +298,12 @@ export default class TakeOrderPopup extends Component {
                                             <div className="col-sm-8">
                                                 <textarea
                                                     type="textarea"
-                                                    name='address'
-                                                    value={address}
+                                                    name='deliveryaddress'
+                                                    value={deliveryaddress}
                                                     placeholder="Enter Delivery Address"
                                                     className="form-control"
                                                     onChange={this.onChangeValue} />
-                                                {/* <span className="help-block">{validation.address.message}</span> */}
+                                                {/* <span className="help-block">{validation.deliveryaddress.message}</span> */}
                                             </div>
                                         </div>
                                         :
