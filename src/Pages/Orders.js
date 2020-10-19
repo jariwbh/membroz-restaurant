@@ -1,25 +1,28 @@
 import React, { Component } from 'react'
 import uuid from 'react-uuid'
 
+import SignalRService from '../Helpers/signalRService';
+import * as Sounds from '../components/Sounds'
+
 import * as ItemServices from '../Api/ItemServices'
 import * as BillServices from '../Api/BillServices'
 import * as TableServices from '../Api/TableServices'
 import * as TokenServices from '../Api/TokenServices'
 import * as UserServices from '../Api/UserServices'
 
+import OrderTypeSelectionUI from '../Templates/OrderTypeSelectionUI'
 import RunningOrders from '../components/RunningOrders'
 import CategoryTemplate from '../Templates/CategoryTemplate'
 import ItemTemplate from '../Templates/ItemTemplate'
 import CartTemplate from '../Templates/CartTemplate'
 
 import TableBook from '../Pages/TableBook'
-
-import SignalRService from '../Helpers/signalRService';
-import OrderTypeSelectionUI from '../Templates/OrderTypeSelectionUI'
-import * as Sounds from '../components/Sounds'
-import TakeOrderPopup from '../components/TakeOrderPopup'
-import { PAGES, ORDERTYPES, TOKENSTATUS } from './OrderEnums'
 import Payment from '../components/Payment';
+
+import TakeOrderPopup from '../components/TakeOrderPopup'
+import ChangeCustomerPopup from '../components/ChangeCustomerPopup'
+
+import { PAGES, ORDERTYPES, TOKENSTATUS } from './OrderEnums'
 
 class Orders extends Component {
     constructor(props) {
@@ -212,8 +215,7 @@ class Orders extends Component {
 
         if (delivery) {
             currentCart.property.deliveryaddress = delivery.deliveryaddress
-            currentCart.property.deliveryboyid._id = delivery.deliveryboyid._id
-            currentCart.property.deliveryboyid.property.fullname = delivery.deliveryboyid.property.fullname
+            currentCart.property.deliveryboyid = delivery.deliveryboyid
         }
 
         this.setState({ currentCart: currentCart });
@@ -489,8 +491,8 @@ class Orders extends Component {
             <React.Fragment >
                 <div id="layoutSidenav_content">
                     {/* <main> */}
-                    <TakeOrderPopup activeOrderType={activeOrderType} deliveryBoyList={deliveryBoyList} newOrder={true} setCurrentCartHandler={this.setCurrentCartHandler} />
-                    <TakeOrderPopup currentCart={currentCart} activeOrderType={activeOrderType} deliveryBoyList={deliveryBoyList} newOrder={false} changeCustomerHandler={this.changeCustomerHandler} />
+                    <TakeOrderPopup activeOrderType={activeOrderType} deliveryBoyList={deliveryBoyList} setCurrentCartHandler={this.setCurrentCartHandler} />
+                    <ChangeCustomerPopup currentCart={currentCart} activeOrderType={activeOrderType} deliveryBoyList={deliveryBoyList} changeCustomerHandler={this.changeCustomerHandler} />
                     <div className="container-fluid">
                         <div className="row table-item-gutters">
                             <OrderTypeSelectionUI activeOrderType={activeOrderType} changeOrderType={this.changeOrderType}></OrderTypeSelectionUI>
@@ -511,7 +513,7 @@ class Orders extends Component {
                                                 id="A11"
                                                 titile="All"
                                                 selected={true}
-                                                clickHandler={() => this.getItems()}
+                                                clickHandler={() => this.getItems(undefined, true)}
                                             />
 
                                             {itemCategories.map(category =>
