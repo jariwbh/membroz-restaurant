@@ -27,6 +27,8 @@ class Bills extends Component {
             totaldiscount: 0,
             totalamount: null,
             address: '',
+            deliveryaddress: '',
+            deliveryboy: '',
             tablename: '',
             billDate: '',
             restaurantname: '',
@@ -40,7 +42,7 @@ class Bills extends Component {
     }
 
     receivedData() {
-        Api.getRunningOrders().then((response) => {
+        Api.getBillList().then((response) => {
             this.setState({ totalPages: response.data.length, getBilList: response.data });
             const slice = response.data.slice((this.state.activePage - 1) * this.state.perPage, this.state.activePage * this.state.perPage)
             const billList = slice.map(bill => ({
@@ -50,6 +52,8 @@ class Bills extends Component {
                 customername: bill.customerid.property.fullname,
                 totalamount: bill.totalamount,
                 date: bill.createdAt,
+                deliveryaddress: bill.property.deliveryaddress ? bill.property.deliveryaddress : "",
+                deliveryboy: bill.property.deliveryboyid ? bill.property.deliveryboyid.property.fullname : ""
             }));
             this.setState({ billListObj: billList });
         })
@@ -296,10 +300,14 @@ class Bills extends Component {
                 <td className="text-right">{tableobj.billnumber}</td>
                 <td className="text-right">{tableobj.tablename}</td>
                 <td>{tableobj.customername}</td>
+                <td>{tableobj.deliveryaddress}</td>
+                <td>{tableobj.deliveryboy}</td>
                 <td className="text-right">{`$ ${tableobj.totalamount}`}</td>
                 <td className="text-right"><span><img src={Image.billicon} data-toggle="modal" data-target="#billmodelpopup" onClick={() => this.getBill(tableobj._id)} /></span></td>
             </tr>
         )
+
+        console.log('billList', billListObj);
         return (
             <React.Fragment>
                 <div id="layoutSidenav_content">
@@ -326,6 +334,8 @@ class Bills extends Component {
                                                                 <th width="15%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
                                                                 <th width="17%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
                                                                 <th width="27%" className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
+                                                                <th width="15%" >Address</th>
+                                                                <th width="15%">Delivery Boy</th>
                                                                 <th width="15%" className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
                                                                 <th width="13%"></th>
                                                             </tr>
