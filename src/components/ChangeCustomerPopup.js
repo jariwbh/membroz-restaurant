@@ -212,7 +212,7 @@ export default class TakeOrderPopup extends Component {
                     <div className="modal-dialog modal-dialog-centered" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title">Take Order</h5>
+                                <h5 className="modal-title">Change Customer</h5>
                                 <button type="button" id="closemodel_changecustomer" className="close" data-dismiss="modal" aria-label="Close" onClick={this.onClose}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>

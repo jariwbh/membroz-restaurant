@@ -41,6 +41,26 @@ function getRunningOrders() {
     return axios.post('billings/filter', body);
 }
 
+function getBillList() {
+    const body = {
+        "search": [
+            { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
+            { "searchfield": "postype", "searchvalue": ["dinein", "takeaway", "delivery"], "criteria": "in" }
+        ],
+        "select": [
+            { "fieldname": "items.quantity", "value": 1 },
+            { "fieldname": "amount", "value": 1 },
+            { "fieldname": "totalamount", "value": 1 },
+            { "fieldname": "property", "value": 1 },
+            { "fieldname": "billprefix", "value": 1 },
+            { "fieldname": "billnumber", "value": 1 },
+            { "fieldname": "postype", "value": 1 }
+        ]
+    }
+
+    return axios.post('billings/filter', body);
+}
+
 function getByID(id) {
     return axios.get('billings/' + id);
 }
@@ -121,4 +141,4 @@ function getBillFormate() {
     return axios.get('branches/' + branchid);
 }
 
-export { getRunningOrders, getByID, save, getLocalOrders, getLocalOrderByID, saveLocalOrder, removeLocalOrder, getBillFormate }
+export { getRunningOrders, getBillList, getByID, save, getLocalOrders, getLocalOrderByID, saveLocalOrder, removeLocalOrder, getBillFormate }

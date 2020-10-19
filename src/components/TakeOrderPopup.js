@@ -103,7 +103,7 @@ export default class TakeOrderPopup extends Component {
 
     onDeliveryBoyDropdownChange = value => {
         const foundDeliveryBoy = this.props.deliveryBoyList.find(x => x._id === value)
-        if (this.state.activeOrderType === ORDERTYPES.DELIVERY) {
+        if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
             this.setState({
                 deliveryboyid: foundDeliveryBoy._id,
                 deliveryboyname: foundDeliveryBoy.property.fullname
@@ -292,7 +292,7 @@ export default class TakeOrderPopup extends Component {
                                         </div>
                                     </div>
 
-                                    {this.state.activeOrderType === ORDERTYPES.DELIVERY ?
+                                    {this.props.activeOrderType === ORDERTYPES.DELIVERY ?
                                         <div className="form-group row">
                                             <label htmlFor="address" className="col-sm-4 col-form-label">Address <span style={{ color: 'red' }}>*</span></label>
                                             <div className="col-sm-8">
@@ -310,7 +310,7 @@ export default class TakeOrderPopup extends Component {
                                         <div></div>
                                     }
 
-                                    {this.state.activeOrderType === ORDERTYPES.DELIVERY ?
+                                    {this.props.activeOrderType === ORDERTYPES.DELIVERY ?
                                         <div className="form-group row">
                                             <label htmlFor="deliveryboylbl" className="col-sm-4 col-form-label">Delivery Boy </label>
                                             <div className="col-sm-8">

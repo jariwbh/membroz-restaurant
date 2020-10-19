@@ -44,8 +44,12 @@ class Payment extends Component {
 
         if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
             currentCart.property.deliveryaddress = deliveryaddress
-            currentCart.property.deliveryboyid._id = deliveryboyid
-            currentCart.property.deliveryboyid.property.fullname = deliveryboyname
+            currentCart.property.deliveryboyid = {
+                _id: deliveryboyid,
+                property: {
+                    fullname: deliveryboyname
+                }
+            }
         }
 
         this.props.doPayment(currentCart);
