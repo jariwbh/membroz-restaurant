@@ -1,19 +1,18 @@
 import React from 'react'
-import { Link } from 'react-router-dom';
 import { ORDERTYPES } from '../Pages/OrderEnums'
 import $ from 'jquery'
 import 'malihu-custom-scrollbar-plugin'
 import 'malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css'
-import 'jquery-mousewheel'
 
 function RunningTable(props) {
     const runningOrders = props.runningOrders.filter(x => x.postype === props.activeOrderType)
     const currentCart = props.currentCart
+
     $(window).on("load", function () {
         $('#scrollcontent').mCustomScrollbar({
-            theme: "dark",
+            // theme: "dark",
             axis: 'x',
-            advanced: { autoExpandHorizontalScroll: true },
+            advanced: { autoExpandHorizontalScroll: true }
         })
     });
 
