@@ -11,7 +11,7 @@ class Payment extends Component {
 
         this.state = {
             deliveryBoyList: this.props.deliveryBoyList,
-            currentCart: undefined,
+            currentCart: this.props.currentCart,
             wallet: true,
             paymentMethod: PAYMENTMETHODS.CASH,
             deliveryaddress: "",
@@ -26,7 +26,7 @@ class Payment extends Component {
     componentWillReceiveProps(props) {
         if (props.currentCart) {
             this.setState({
-                currentCart: this.props.currentCart,
+                currentCart: props.currentCart,
                 deliveryaddress: props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryaddress : "",
                 deliveryboyid: props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryboyid._id : "",
                 deliveryboyname: props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryboyid.property.fullname : "",
