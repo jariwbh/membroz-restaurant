@@ -11,16 +11,27 @@ class Payment extends Component {
 
         this.state = {
             deliveryBoyList: this.props.deliveryBoyList,
-            currentCart: this.props.currentCart,
+            currentCart: undefined,
             wallet: true,
             paymentMethod: PAYMENTMETHODS.CASH,
-            deliveryaddress: this.props.currentCart.postype === ORDERTYPES.DELIVERY ? this.props.currentCart.property.deliveryaddress : "",
-            deliveryboyid: this.props.currentCart.postype === ORDERTYPES.DELIVERY ? this.props.currentCart.property.deliveryboyid._id : "",
-            deliveryboyname: this.props.currentCart.postype === ORDERTYPES.DELIVERY ? this.props.currentCart.property.deliveryboyid.property.fullname : "",
+            deliveryaddress: "",
+            deliveryboyid: "",
+            deliveryboyname: "",
         }
 
         this.doPayment = this.doPayment.bind(this);
         this.onChangeValue = this.onChangeValue.bind(this);
+    }
+
+    componentWillReceiveProps(props) {
+        if (props.currentCart) {
+            this.setState({
+                currentCart: this.props.currentCart,
+                deliveryaddress: props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryaddress : "",
+                deliveryboyid: props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryboyid._id : "",
+                deliveryboyname: props.currentCart.postype === ORDERTYPES.DELIVERY ? props.currentCart.property.deliveryboyid.property.fullname : "",
+            });
+        }
     }
 
     doPayment = () => {
@@ -84,7 +95,7 @@ class Payment extends Component {
                                 <label className="custom-control-label" htmlFor="customCheck1">Wallet</label>
                             </div>
                         </div>
-                        <div className="payment-box-body mb-4">Usable Wallet balance ₹160</div>
+                        {/* <div className="payment-box-body mb-4">Usable Wallet balance ₹160</div> */}
                         <div className="table-num-title mb-3">Payment Method</div>
 
                         <div className="payment-box mb-3" >

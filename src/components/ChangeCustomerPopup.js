@@ -3,7 +3,6 @@ import FormValidator from '../components/FormValidator';
 import SelectSearch from 'react-select-search';
 import * as CustomerServices from '../Api/CustomerSevices';
 
-import uuid from 'react-uuid'
 import { CUSTOMERTYPES, ORDERTYPES } from '../Pages/OrderEnums'
 
 export default class TakeOrderPopup extends Component {
@@ -35,7 +34,7 @@ export default class TakeOrderPopup extends Component {
         this.state = {
             customerList: [],
             activeOrderType: ORDERTYPES.TAKEAWAY,
-            selectedCustomerType: CUSTOMERTYPES.EXISTING,
+            selectedCustomerTypeA: CUSTOMERTYPES.EXISTING,
             onModel: '',
             customerid: '',
             customername: '',
@@ -49,21 +48,21 @@ export default class TakeOrderPopup extends Component {
         this.onChangeValue = this.onChangeValue.bind(this);
     }
 
-    // componentWillReceiveProps(props) {
-    //     if (props.currentCart) {
-    //         this.setState({
-    //             activeOrderType: props.activeOrderType,
-    //             selectedCustomerType: CUSTOMERTYPES.EXISTING,
-    //             onModel: props.currentCart.onModel,
-    //             customerid: props.currentCart.customerid._id,
-    //             customername: props.currentCart.customerid.property.fullname,
-    //             mobile_number: props.currentCart.customerid.property.mobile_number,
-    //             address: props.currentCart.property.deliveryaddress,
-    //             deliveryboyid: props.currentCart.property.deliveryboyid ? props.currentCart.property.deliveryboyid._id : undefined,
-    //             deliveryboyname: props.currentCart.property.deliveryboyid ? props.currentCart.property.deliveryboyid.fullname : undefined
-    //         });
-    //     }
-    // }
+    componentWillReceiveProps(props) {
+        if (props.currentCart) {
+            this.setState({
+                activeOrderType: props.activeOrderType,
+                selectedCustomerTypeA: CUSTOMERTYPES.EXISTING,
+                onModel: props.currentCart.onModel,
+                customerid: props.currentCart.customerid._id,
+                customername: props.currentCart.customerid.property.fullname,
+                mobile_number: props.currentCart.customerid.property.mobile_number,
+                address: props.currentCart.property.deliveryaddress,
+                deliveryboyid: props.currentCart.property.deliveryboyid ? props.currentCart.property.deliveryboyid._id : undefined,
+                deliveryboyname: props.currentCart.property.deliveryboyid ? props.currentCart.property.deliveryboyid.fullname : undefined
+            });
+        }
+    }
 
     async getCustomerList() {
         CustomerServices.getCustomerList()
@@ -87,7 +86,7 @@ export default class TakeOrderPopup extends Component {
     }
 
     onCustomerDropdownChange = value => {
-        if (this.state.selectedCustomerType === CUSTOMERTYPES.EXISTING) {
+        if (this.state.selectedCustomerTypeA === CUSTOMERTYPES.EXISTING) {
             const foundCustomer = this.state.customerList.find(x => x._id === value)
             if (foundCustomer) {
                 this.setState({
@@ -112,7 +111,7 @@ export default class TakeOrderPopup extends Component {
     }
 
     handleFormSubmit = async (event) => {
-        let { selectedCustomerType, onModel, customerid, customername, mobile_number, address, deliveryboyid, deliveryboyname } = this.state;
+        let { selectedCustomerTypeA, onModel, customerid, customername, mobile_number, address, deliveryboyid, deliveryboyname } = this.state;
 
         const validation = this.validator.validate(this.state);
         if (!validation.isValid) {
@@ -120,7 +119,7 @@ export default class TakeOrderPopup extends Component {
             return;
         }
 
-        if (selectedCustomerType === CUSTOMERTYPES.NEW) {
+        if (selectedCustomerTypeA === CUSTOMERTYPES.NEW) {
 
             const newCustomerObj = {
                 property: {
@@ -142,23 +141,7 @@ export default class TakeOrderPopup extends Component {
             }
         }
 
-        const takeOrderObj = {
-            _id: 'unsaved_' + uuid(),
-            postype: this.props.activeOrderType,
-            property: {
-                orderstatus: "running",
-                noofperson: '',
-                token: {
-                    prefix: "NEW " + customername
-                },
-                deliveryaddress: address,
-                deliveryboyid: {
-                    _id: deliveryboyid,
-                    property: {
-                        fullname: deliveryboyname
-                    }
-                }
-            },
+        const customer = {
             onModel: onModel,
             customerid: {
                 _id: customerid,
@@ -166,27 +149,34 @@ export default class TakeOrderPopup extends Component {
                     fullname: customername,
                     mobile_number: mobile_number,
                 }
-            },
-            amount: 0,
-            totalamount: 0,
-            discount: 0,
-            taxamount: 0,
-            totalquantity: 0,
-            items: []
+            }
+        }
+
+        let delivery = undefined
+        if (this.state.activeOrderType === ORDERTYPES.DELIVERY) {
+            delivery = {
+                deliveryaddress: address,
+                deliveryboyid: {
+                    _id: deliveryboyid,
+                    property: {
+                        fullname: deliveryboyname
+                    }
+                }
+            }
         }
 
         this.modelPopupClose();
-        this.props.setCurrentCartHandler(takeOrderObj)
+        this.props.changeCustomerHandler(customer, delivery)
     }
 
     modelPopupClose() {
-        var modelclose = document.getElementById("closemodel_neworder")
+        var modelclose = document.getElementById("closemodel_changecustomer")
         modelclose.click();
     }
 
     onClose = async () => {
         await this.setState({
-            selectedCustomerType: CUSTOMERTYPES.EXISTING,
+            selectedCustomerTypeA: CUSTOMERTYPES.EXISTING,
             onModel: '',
             customerid: '',
             customername: '',
@@ -200,7 +190,7 @@ export default class TakeOrderPopup extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { selectedCustomerType, customerid, mobile_number, address, deliveryboyid, customerList } = this.state;
+        const { selectedCustomerTypeA, customerid, mobile_number, address, deliveryboyid, customerList } = this.state;
 
         const customerDropdown = customerList.map(customerObj => (
             {
@@ -218,12 +208,12 @@ export default class TakeOrderPopup extends Component {
 
         return (
             <React.Fragment>
-                <div className="modal fade" id="takeOrderpopup" tabIndex="-1" role="dialog" aria-labelledby="takeOrderTitle" aria-hidden="true">
+                <div className="modal fade" id="changecustomerpopup" tabIndex="-1" role="dialog" aria-labelledby="takeOrderTitle" aria-hidden="true">
                     <div className="modal-dialog modal-dialog-centered" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">Take Order</h5>
-                                <button type="button" id="closemodel_neworder" className="close" data-dismiss="modal" aria-label="Close" onClick={this.onClose}>
+                                <button type="button" id="closemodel_changecustomer" className="close" data-dismiss="modal" aria-label="Close" onClick={this.onClose}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
@@ -232,9 +222,9 @@ export default class TakeOrderPopup extends Component {
                                     <label className="mr-3">
                                         <input
                                             type="radio"
-                                            name="selectedCustomerType"
+                                            name="selectedCustomerTypeA"
                                             value={CUSTOMERTYPES.EXISTING}
-                                            checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
+                                            checked={selectedCustomerTypeA === CUSTOMERTYPES.EXISTING}
                                             onChange={this.onChangeValue}
                                             className="mr-1"
                                         />
@@ -243,9 +233,9 @@ export default class TakeOrderPopup extends Component {
                                     <label className="mr-3">
                                         <input
                                             type="radio"
-                                            name="selectedCustomerType"
+                                            name="selectedCustomerTypeA"
                                             value={CUSTOMERTYPES.NEW}
-                                            checked={selectedCustomerType === CUSTOMERTYPES.NEW}
+                                            checked={selectedCustomerTypeA === CUSTOMERTYPES.NEW}
                                             onChange={this.onChangeValue}
                                             className="mr-1"
                                         />
@@ -256,7 +246,7 @@ export default class TakeOrderPopup extends Component {
                                     <div className="form-group row">
                                         <label htmlFor="customer" className="col-sm-4 col-form-label">Customer Name <span style={{ color: 'red' }}>*</span></label>
                                         <div className="col-sm-8">
-                                            {selectedCustomerType === CUSTOMERTYPES.EXISTING
+                                            {selectedCustomerTypeA === CUSTOMERTYPES.EXISTING
                                                 ?
                                                 <SelectSearch
                                                     options={customerDropdown}
@@ -330,7 +320,7 @@ export default class TakeOrderPopup extends Component {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-primary" name="takeOrder" onClick={this.handleFormSubmit}>Take Order</button>
+                                <button type="button" className="btn btn-primary" name="takeOrder" onClick={this.handleFormSubmit}>Change</button>
                             </div>
                         </div>
                     </div>
