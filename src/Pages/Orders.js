@@ -229,7 +229,7 @@ class Orders extends Component {
         let currentCart = undefined
         let tokenList = []
         let items = this.state.items
-        let mappedItems = items
+        let refreshedItems = items
 
         if (order) {
             currentCart = this.state.runningOrders.find(x => x._id === order._id)
@@ -266,19 +266,12 @@ class Orders extends Component {
                 currentCart.token = this.getTokenModel(currentCart)
             }
 
-            mappedItems = items.map(x1 => {
-                let item = currentCart.token.property.items.find(x2 => x2._id === x1._id)
-                if (item) {
-                    return { ...x1, tokenquantity: item.quantity };
-                } else {
-                    return { ...x1, tokenquantity: 0 };
-                }
-            });
+            refreshedItems = this.getRefreshedItems(items, currentCart)
         }
 
         if (runningOrders.length > 0) {
             this.setState({
-                items: mappedItems,
+                items: refreshedItems,
                 runningOrders: runningOrders,
                 currentCart: currentCart,
                 tokenList: tokenList,
@@ -286,12 +279,25 @@ class Orders extends Component {
             });
         } else {
             this.setState({
-                items: mappedItems,
+                items: refreshedItems,
                 currentCart: currentCart,
                 tokenList: tokenList,
                 activePage: PAGES.ORDERS
             });
         }
+    }
+
+    getRefreshedItems = (itemList, currentCart) => {
+        let refreshedItemList = itemList.map(x1 => {
+            let item = currentCart.token.property.items.find(x2 => x2._id === x1._id)
+            if (item) {
+                return { ...x1, tokenquantity: item.quantity };
+            } else {
+                return { ...x1, tokenquantity: 0 };
+            }
+        });
+
+        return refreshedItemList
     }
 
     validateMe = (currentCart, currentToken) => {
@@ -370,7 +376,9 @@ class Orders extends Component {
             let updatedRunningOrders = this.state.runningOrders.map(x => x._id === beforeSaveID ? currentCart : x);
 
             let tokenList = await this.getTokenList(currentCart._id)
-            this.setState({ runningOrders: updatedRunningOrders, currentCart: currentCart, tokenList: tokenList })
+            let refreshedItems = this.getRefreshedItems(this.state.items, currentCart)
+
+            this.setState({ items: refreshedItems, runningOrders: updatedRunningOrders, currentCart: currentCart, tokenList: tokenList })
         } else {
             console.log('sendToken Save Bill ERROR', response.data.errors)
             alert("sendToken Save Bill ERROR : " + response.data.errors.toString())
