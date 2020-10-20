@@ -130,14 +130,14 @@ function removeLocalOrder(currentCartID) {
 }
 
 function getBillFormate() {
-    const body = {
-        "search": [{
-            "searchfield": "status",
-            "searchvalue": "active",
-            "criteria": "eq",
-            "datattype": "text"
-        }]
-    }
+    // const body = {
+    //     "search": [{
+    //         "searchfield": "status",
+    //         "searchvalue": "active",
+    //         "criteria": "eq",
+    //         "datattype": "text"
+    //     }]
+    // }
     return axios.get('branches/' + branchid);
 }
 
