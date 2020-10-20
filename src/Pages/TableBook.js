@@ -5,7 +5,6 @@ import { personicon } from '../components/Image';
 import WaitingTable from '../components/WaitingTable'
 import * as TableServicesApi from '../Api/TableServices';
 import * as CustomerApi from '../Api/CustomerSevices';
-import * as allocatedTableApi from '../Api/allocatedTableServices';
 import FormValidator from '../components/FormValidator';
 import moment from 'moment'
 import SelectSearch from 'react-select-search';
@@ -66,31 +65,30 @@ export default class TableBook extends Component {
 
         this.state = {
             reservedTableList: [],
-            availabletableList: [],
             customerList: [],
             tableList: props.tableList,
+            searchText: null,
+            selectedTableStatus: TABLESTATUS.ALL,
             runningOrders: props.runningOrders,
             selectedCustomerType: CUSTOMERTYPES.EXISTING,
-            onModel: '',
-            customerid: '',
-            customername: '',
-            mobile_number: '',
-            noofperson: '1',
-            tableid: '',
-            tablename: '',
-            getcustomerid: '',
-            disableCustomer: false,
-            search: null,
-            checkedtableValue: null,
-            selectedTableStatus: TABLESTATUS.ALL,
+            selectedReservedTableid: "",
+            onModel: "",
+            customerid: "",
+            customername: "",
+            mobile_number: "",
+            noofperson: 1,
+            tableid: "",
+            tablename: "",
             time: moment().format('LT'),
             date: moment().format('L'),
-            validation: this.validator.valid(),
+            selectedTable: null,
+            validation: this.validator.valid()
         }
+        this.showPopupModel = this.showPopupModel.bind(this);
     }
 
     getReservedTableList() {
-        ReservedTableApi.getReservationTableList().then((response) => {
+        ReservedTableApi.getList().then((response) => {
             this.setState({ reservedTableList: response.data })
         })
     }
@@ -101,35 +99,23 @@ export default class TableBook extends Component {
         })
     }
 
-    getAvailableTableList() {
-        TableServicesApi.getTableList().then((response) => {
-            this.setState({ availabletableList: response.data })
-        })
-    }
-
     componentDidMount() {
         this.getReservedTableList()
-        this.getAvailableTableList()
         this.getCustomerList()
     }
 
     onSearchCustomer = (event) => {
         let keyword = event.target.value;
-        this.setState({ search: keyword })
-    }
-
-    modelPopupOpen() {
-        var ReservationTableModel = document.getElementById("ReservationTableModel")
-        ReservationTableModel.click();
+        this.setState({ searchText: keyword })
     }
 
     modelPopupClose() {
-        var modelpopupClose1 = document.getElementById("modelpopupclose");
-        modelpopupClose1.click();
+        var modelpopupClose = document.getElementById("modelpopupclose");
+        modelpopupClose.click();
     }
 
     deleteReservedTableById(id) {
-        ReservedTableApi.deleteReservationTableRecord(id).then(() => {
+        ReservedTableApi.deleteById(id).then(() => {
             this.getReservedTableList()
         })
     }
@@ -150,7 +136,7 @@ export default class TableBook extends Component {
                     customerid: foundCustomer._id,
                     customername: foundCustomer.property.fullname,
                     mobile_number: foundCustomer.property.mobile_number,
-                    address: (foundCustomer.property.address === null ? '' : foundCustomer.property.address)
+                    address: (foundCustomer.property.address ? foundCustomer.property.address : "")
                 });
             }
         }
@@ -159,94 +145,121 @@ export default class TableBook extends Component {
     onTableDropdownChange = event => {
         const target = event.target;
         const value = target.value;
-        const tabledata = this.state.availabletableList.find(x => x._id === value)
+        const tabledata = this.state.tableList.find(x => x._id === value)
         this.setState({
             tableid: tabledata._id,
             tablename: tabledata.property.tablename,
         });
     }
 
-    async getCustomerDeatils(obj) {
-        this.modelPopupOpen();
-        const customerById = obj
-
-        await this.setState({
-            selectedCustomerType: CUSTOMERTYPES.EXISTING,
-            getcustomerid: customerById._id,
-            customerid: customerById.property.customerid,
-            customername: customerById.property.customer,
-            mobile_number: customerById.property.mobile_number,
-            noofperson: customerById.property.noofperson,
-            time: customerById.property.time,
-            date: moment(customerById.property.date).format('L'),
-            tablename: customerById.property.table,
-            tableid: customerById.property.tableid,
-            disableCustomer: true
-        });
-    }
-
-    onClose = async () => {
-        await this.setState({
-            selectedCustomerType: CUSTOMERTYPES.EXISTING,
-            onModel: '',
-            customerid: '',
-            customername: '',
-            mobile_number: '',
-            noofperson: '1',
-            tableid: '',
-            tablename: '',
-            getcustomerid: '',
-            disableCustomer: false,
-            checkedtableValue: null,
-            time: moment().format('LT'),
-            date: moment().format('L'),
-            validation: this.validator.valid(),
-        });
-    }
-
-    async clicktoSelectTableOpenModel(currentTableobj) {
-        const checkedRunningTable = this.state.runningOrders.filter(x => x.postype === ORDERTYPES.DINEIN).find(x => x.tableid._id === currentTableobj._id)
-        if (checkedRunningTable) {
-            this.props.setCurrentCartHandler(checkedRunningTable)
-        } else {
-            this.modelPopupOpen();
-            await this.setState({
-                selectedCustomerType: CUSTOMERTYPES.EXISTING,
-                customerid: '',
-                customername: '',
-                mobile_number: '',
-                tableid: currentTableobj._id,
-                tablename: currentTableobj.property.tablename,
-                getcustomerid: '',
-                time: this.state.time,
-                date: this.state.date,
-                checkedtableValue: currentTableobj
-            });
-        }
-    }
-
-    handleFormSubmit = (event) => {
-        const { customername, mobile_number, noofperson, time, date, tablename, tableid, customerid, getcustomerid } = this.state;
-        const btnclickname = event.target.name;
-        let status
-
-        if (btnclickname === "save") {
-            status = ReservedTableApi.activestatus
-        } else {
-            status = ReservedTableApi.allocatedstatus
-        }
-
-        const newCustomerObj = {
-            property: {
-                fullname: customername,
-                mobile_number: mobile_number
+    showPopupModel = async (table, reservedTable) => {
+        debugger
+        if (table) {
+            const checkedRunningTable = this.state.runningOrders.filter(x => x.postype === ORDERTYPES.DINEIN).find(x => x.tableid._id === table._id)
+            if (checkedRunningTable) {
+                this.props.setCurrentCartHandler(checkedRunningTable)
+                return;
+            } else {
+                await this.setState({
+                    selectedCustomerType: CUSTOMERTYPES.EXISTING,
+                    selectedReservedTableid: "",
+                    onModel: "",
+                    customerid: "",
+                    customername: "",
+                    mobile_number: "",
+                    noofperson: 1,
+                    tableid: table._id,
+                    tablename: table.property.tablename,
+                    time: this.state.time,
+                    date: this.state.date,
+                    selectedTable: table,
+                    validation: this.validator.valid()
+                });
             }
         }
 
-        let reservationObj = {
-            _id: getcustomerid,
-            status: ReservedTableApi.activestatus,
+        if (reservedTable) {
+            await this.setState({
+                selectedCustomerType: CUSTOMERTYPES.EXISTING,
+                selectedReservedTableid: reservedTable._id,
+                onModel: reservedTable.property.onModel,
+                customerid: reservedTable.property.customerid,
+                customername: reservedTable.property.customer,
+                mobile_number: reservedTable.property.mobile_number,
+                noofperson: reservedTable.property.noofperson,
+                tableid: reservedTable.property.tableid,
+                tablename: reservedTable.property.table,
+                time: reservedTable.property.time,
+                date: moment(reservedTable.property.date).format('L'),
+                selectedTable: null,
+                validation: this.validator.valid()
+            });
+        }
+
+        if (!table && !reservedTable) {
+            this.setState({
+                selectedCustomerType: CUSTOMERTYPES.EXISTING,
+                selectedReservedTableid: "",
+                onModel: "",
+                customerid: "",
+                customername: "",
+                mobile_number: "",
+                noofperson: 1,
+                tableid: "",
+                tablename: "",
+                time: moment().format('LT'),
+                date: moment().format('L'),
+                selectedTable: null,
+                validation: this.validator.valid()
+            });
+        }
+        var modelPopup = document.getElementById("tableBookPopupHandler")
+        modelPopup.click();
+    }
+
+    handleFormSubmit = async (event) => {
+        const validation = this.validator.validate(this.state);
+        this.setState({ validation });
+        if (!validation.isValid) {
+            return;
+        }
+
+        let { selectedReservedTableid, selectedCustomerType, onModel, customerid, customername, mobile_number, noofperson, tableid, tablename, time, date } = this.state;
+        const btnclickname = event.target.name;
+        let status
+
+
+        if (btnclickname === "save") {
+            status = ReservedTableApi.RESERVEDTABLESTATUS.ACTIVE
+        } else {
+            status = ReservedTableApi.RESERVEDTABLESTATUS.ALLOCATED
+        }
+        if (selectedCustomerType === CUSTOMERTYPES.NEW) {
+            const newCustomerObj = {
+                property: {
+                    fullname: customername,
+                    mobile_number: mobile_number
+                }
+            }
+
+            const response = await CustomerApi.save(newCustomerObj)
+            if (response.status === 200 && !response.data.errors) {
+                customerid = response.data._id
+                await this.setState({ customerid: customerid })
+                this.getCustomerList();
+            } else {
+                console.log('Save Customer ERROR', response.data.errors)
+                alert("Save Customer ERROR : " + response.data.errors.toString())
+                return;
+            }
+        }
+
+        const reservedTable = {
+            _id: selectedReservedTableid,
+            formid: ReservedTableApi.tableformid,
+            status: ReservedTableApi.RESERVEDTABLESTATUS.ACTIVE,
             property: {
+                onModel: onModel,
                 status: status,
                 customer: customername,
                 customerid: customerid,
@@ -256,72 +269,33 @@ export default class TableBook extends Component {
                 date: date,
                 table: tablename,
                 tableid: tableid,
-            },
-            formid: ReservedTableApi.tableformid
-        }
-
-        let allocatedObj = {
-            _id: getcustomerid,
-            formid: ReservedTableApi.tableformid,
-            property: {
-                status: status,
-                customer: customername,
-                customerid: customerid,
-                mobile_number: mobile_number,
-                noofperson: noofperson,
-                date: date,
-                table: tablename,
-                tableid: tableid,
-                time: time
             }
         }
 
-        const validation = this.validator.validate(this.state);
-        this.setState({ validation });
-        if (validation.isValid) {
-            if (btnclickname === "save") {
-                if (customerid === '') {
-                    CustomerApi.save(newCustomerObj).then((response) => {
-                        this.setState({ customerid: response.data._id })
-                        if (response.data._id) {
-                            reservationObj.property.customerid = response.data._id
-                            ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
-                                this.getCustomerList();
-                                this.getReservedTableList();
-                                this.modelPopupClose();
-                                console.log('save');
-                            })
-                        }
-                    })
-                } else if (getcustomerid === '') {
-                    console.log('save exit records');
-                    ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
-                        this.getReservedTableList();
-                        this.modelPopupClose();
-                    })
-                } else {
-                    console.log('update');
-                    ReservedTableApi.updateReservationTableRecord(reservationObj).then(() => {
-                        this.getReservedTableList();
-                        this.modelPopupClose();
-                    })
-                }
+        const response = await ReservedTableApi.save(reservedTable)
+        if (response.status === 200 && !response.data.errors) {
+            this.getReservedTableList();
+        } else {
+            console.log('Save Reserved Table ERROR', response.data.errors)
+            alert("Save Reserved Table  ERROR : " + response.data.errors.toString())
+            return;
+        }
 
-            } else if (btnclickname === "allocate") {
-                this.allocateTable(newCustomerObj, allocatedObj, reservationObj);
-            }
+        this.modelPopupClose();
+
+        if (btnclickname === "allocate") {
+            this.allocateTable();
         }
     }
 
-    allocateTable(newCustomerObj, allocatedObj, reservationObj) {
-        const { selectedCustomerType, onModel, noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
-
-        let orderObj = {
-            _id: 'unsaved_' + uuid(),
+    allocateTable() {
+        const { onModel, noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
+        const order = {
+            _id: "unsaved_" + uuid(),
             tableid: {
                 _id: tableid, property: { tablename: tablename }
             },
-            postype: 'dinein',
+            postype: ORDERTYPES.DINEIN,
             property: { orderstatus: "running", noofperson: noofperson },
             customerid: {
                 _id: customerid,
@@ -337,44 +311,13 @@ export default class TableBook extends Component {
             taxamount: 0,
             totalquantity: 0,
             items: [],
-            deliveryaddress: ''
+            deliveryaddress: ""
         }
 
-        if (selectedCustomerType === CUSTOMERTYPES.EXISTING) {
-            if (this.state.getcustomerid !== '') {
-                this.setState({ submitted: true });
-                allocatedTableApi.updateAllocateReservationTable(allocatedObj).then(() => {
-                    this.modelPopupClose();
-                    this.getReservedTableList();
-                    this.props.setCurrentCartHandler(orderObj)
-                    console.log('update allocated', allocatedObj);
-                })
-            } else {
-                ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
-                    this.modelPopupClose();
-                    this.getReservedTableList();
-                    this.props.setCurrentCartHandler(orderObj)
-                    console.log('save exit records', reservationObj);
-                })
-            }
-        } else {
-            CustomerApi.save(newCustomerObj).then((response) => {
-                this.setState({ customerid: response.data._id })
-                if (response.data._id) {
-                    allocatedObj.property.customerid = response.data._id
-                    allocatedTableApi.allocateReservationTable(allocatedObj).then(() => {
-                        this.modelPopupClose();
-                        this.getCustomerList();
-                        this.props.setCurrentCartHandler(orderObj)
-                        this.getReservedTableList();
-                        console.log('allocatedobj', allocatedObj)
-                    })
-                }
-            })
-        }
+        this.props.setCurrentCartHandler(order)
     }
 
-    setTableType = (tableStatus) => {
+    setSelectedTableType = (tableStatus) => {
         this.setState({ selectedTableStatus: tableStatus });
     }
 
@@ -407,7 +350,7 @@ export default class TableBook extends Component {
                 break;
         }
 
-        return (<div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id} id={table._id} onClick={table.tableStatus === TABLESTATUS.NOSERVICE ? null : () => this.clicktoSelectTableOpenModel(table)} style={{ cursor: 'pointer' }}>
+        return (<div className="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6" key={table._id} id={table._id} onClick={table.tableStatus === TABLESTATUS.NOSERVICE ? null : () => this.showPopupModel(table, undefined)} style={{ cursor: 'pointer' }}>
             <div className={`card white-box mb-10 border-0 table-box-height ${tableStatusClass}`}>
                 <div className="card-body p-2 ">
                     <div className="d-flex justify-content-end"><img src={personicon} alt="" /> <span className="table-person-title ml-2">{table.property.capacity}</span> </div>
@@ -422,21 +365,21 @@ export default class TableBook extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { selectedCustomerType, reservedTableList, availabletableList, tableList, runningOrders, customerList, mobile_number, noofperson, checkedtableValue, disableCustomer } = this.state;
+        const { reservedTableList, customerList, tableList, runningOrders, selectedCustomerType, selectedReservedTableid, mobile_number, noofperson, tableid, selectedTable } = this.state;
 
-        const getReservedTableList = reservedTableList.filter((obj) => {
-            if (this.state.search == null) { return (obj) }
-            else if (obj.property.customer.toLowerCase().includes(this.state.search.toLowerCase()) ||
-                obj.property.mobile_number.toLowerCase().includes(this.state.search.toLowerCase())
+        const renderReservedTableList = reservedTableList.filter((obj) => {
+            if (this.state.searchText == null) { return (obj) }
+            else if (obj.property.customer.toLowerCase().includes(this.state.searchText.toLowerCase()) ||
+                obj.property.mobile_number.toLowerCase().includes(this.state.searchText.toLowerCase())
             ) { return (obj) }
-        }).map(reservationtableobj =>
-            <tr key={reservationtableobj._id} id={reservationtableobj._id} onDoubleClick={() => this.getCustomerDeatils(reservationtableobj)} style={{ cursor: 'pointer' }}>
-                <td>{reservationtableobj.property.table}</td>
-                <td >{reservationtableobj.property.customer}</td>
-                <td>{reservationtableobj.property.noofperson}</td>
-                <td >{reservationtableobj.property.mobile_number}</td>
-                <td>{reservationtableobj.property.time}</td>
-                <td><img src={deleteicon} alt="" style={{ cursor: 'pointer' }} onClick={() => this.deleteReservedTableById(reservationtableobj._id)} /></td>
+        }).map(reservedTable =>
+            <tr key={reservedTable._id} id={reservedTable._id} onDoubleClick={() => this.showPopupModel(undefined, reservedTable)} style={{ cursor: 'pointer' }}>
+                <td>{reservedTable.property.table}</td>
+                <td >{reservedTable.property.customer}</td>
+                <td>{reservedTable.property.noofperson}</td>
+                <td >{reservedTable.property.mobile_number}</td>
+                <td>{reservedTable.property.time}</td>
+                <td><img src={deleteicon} alt="" style={{ cursor: 'pointer' }} onClick={() => this.deleteReservedTableById(reservedTable._id)} /></td>
             </tr>
         )
 
@@ -497,7 +440,7 @@ export default class TableBook extends Component {
                                                         </form>
                                                     </div>
                                                     <div className="table-num-title ml-3">
-                                                        <a id="ReservationTableModel" data-toggle="modal" data-target="#ForReservationTable" data-keyboard="false" data-backdrop="static" href="/#"><img src={addicon} alt="" /></a>
+                                                        <a href="/#"><img src={addicon} alt="" onClick={() => this.showPopupModel()} /></a>
                                                     </div>
                                                 </div>
                                                 <div className="table-responsive">
@@ -513,12 +456,12 @@ export default class TableBook extends Component {
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {getReservedTableList.length === 0 ?
+                                                            {renderReservedTableList.length === 0 ?
                                                                 <tr>
                                                                     <td colSpan="5" className="text-center text-nowrap">Empty</td>
                                                                 </tr>
                                                                 :
-                                                                getReservedTableList
+                                                                renderReservedTableList
                                                             }
                                                         </tbody>
                                                     </table>
@@ -530,16 +473,16 @@ export default class TableBook extends Component {
                                 <div className="col-xl-8 col-lg-8 col-md-7">
                                     <ul className="nav nav-pills mb-2 categories-pills table-no-pills" id="pills-tab" role="tablist">
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.ALL)}>All</a>
+                                            <a className="nav-link active" id="pills-table-1-tab" data-toggle="pill" href="#pills-table-1" role="tab" aria-controls="pills-table-1" aria-selected="true" onClick={() => this.setSelectedTableType(TABLESTATUS.ALL)}>All</a>
                                         </li>
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.OCCUPIED)}>Occupied <span className="table-status-tab occupied-bg"></span> </a>
+                                            <a className="nav-link" id="pills-table-2-tab" data-toggle="pill" href="#pills-table-2" role="tab" aria-controls="pills-table-2" aria-selected="true" onClick={() => this.setSelectedTableType(TABLESTATUS.OCCUPIED)}>Occupied <span className="table-status-tab occupied-bg"></span> </a>
                                         </li>
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link " id="pills-table-3-tab" data-toggle="pill" href="#pills-table-3" role="tab" aria-controls="pills-table-3" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.BLANK)}>Blank <span className="table-status-tab blank-bg"></span></a>
+                                            <a className="nav-link " id="pills-table-3-tab" data-toggle="pill" href="#pills-table-3" role="tab" aria-controls="pills-table-3" aria-selected="true" onClick={() => this.setSelectedTableType(TABLESTATUS.BLANK)}>Blank <span className="table-status-tab blank-bg"></span></a>
                                         </li>
                                         <li className="nav-item" role="presentation">
-                                            <a className="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="true" onClick={() => this.setTableType(TABLESTATUS.NOSERVICE)}>No Service <span className="table-status-tab no-service-bg"></span></a>
+                                            <a className="nav-link " id="pills-table-4-tab" data-toggle="pill" href="#pills-table-4" role="tab" aria-controls="pills-table-4" aria-selected="true" onClick={() => this.setSelectedTableType(TABLESTATUS.NOSERVICE)}>No Service <span className="table-status-tab no-service-bg"></span></a>
                                         </li>
                                     </ul>
 
@@ -555,45 +498,44 @@ export default class TableBook extends Component {
                         </div>
                     </main>
                 </div>
-                <div className="modal fade" id="ForReservationTable" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <span id="tableBookPopupHandler" data-toggle="modal" data-target="#tableBookPopup" data-keyboard="false" data-backdrop="static" />
+                <div className="modal fade" id="tableBookPopup" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                     <div className="modal-dialog modal-dialog-centered" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title" id="exampleModalLongTitle">Book Reserved  Order</h5>
-                                <button type="button" id="modelpopupclose" className="close" data-dismiss="modal" aria-label="Close" onClick={() => this.onClose()}>
+                                <button type="button" id="modelpopupclose" className="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div className="modal-body">
                                 <div className="container">
-                                    <div className="container">
-                                        <label className="mr-3">
-                                            <input
-                                                type="radio"
-                                                id="existcustomer"
-                                                name="selectedCustomerType"
-                                                value={CUSTOMERTYPES.EXISTING}
-                                                checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
-                                                onChange={this.onChangeValue}
-                                                className="mr-1"
-                                                disabled={disableCustomer === true ? true : false}
-                                            />
+                                    <label className="mr-3">
+                                        <input
+                                            type="radio"
+                                            id="existcustomer"
+                                            name="selectedCustomerType"
+                                            value={CUSTOMERTYPES.EXISTING}
+                                            checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
+                                            onChange={this.onChangeValue}
+                                            className="mr-1"
+                                            disabled={selectedReservedTableid !== "" ? true : false}
+                                        />
                                     Exist Customer
                                 </label>
-                                        <label className="mr-3">
-                                            <input
-                                                type="radio"
-                                                id="newcustomer"
-                                                name="selectedCustomerType"
-                                                value={CUSTOMERTYPES.NEW}
-                                                checked={selectedCustomerType === CUSTOMERTYPES.NEW}
-                                                onChange={this.onChangeValue}
-                                                className="mr-1"
-                                                disabled={disableCustomer === true ? true : false}
-                                            />
+                                    <label className="mr-3">
+                                        <input
+                                            type="radio"
+                                            id="newcustomer"
+                                            name="selectedCustomerType"
+                                            value={CUSTOMERTYPES.NEW}
+                                            checked={selectedCustomerType === CUSTOMERTYPES.NEW}
+                                            onChange={this.onChangeValue}
+                                            className="mr-1"
+                                            disabled={selectedReservedTableid !== "" ? true : false}
+                                        />
                                     New Customer
                                 </label>
-                                    </div>
                                 </div>
                                 <div className="container mt-3">
                                     <div className="form-group row">
@@ -604,11 +546,11 @@ export default class TableBook extends Component {
                                                 <SelectSearch
                                                     options={customerdropdown}
                                                     value={this.state.customerid}
-                                                    search
-                                                    disabled={this.state.disableCustomer}
                                                     name="customer"
                                                     placeholder="Select Customer"
-                                                    onChange={this.onCustomerDropdownChange} />
+                                                    onChange={this.onCustomerDropdownChange}
+                                                    disabled={selectedReservedTableid !== "" ? true : false}
+                                                />
                                                 :
                                                 <input
                                                     type="text"
@@ -645,12 +587,12 @@ export default class TableBook extends Component {
                                                 placeholder="Enter Mobile Number"
                                                 value={mobile_number}
                                                 onChange={this.onChangeValue}
-                                                readOnly={disableCustomer === true ? true : false}
+                                                readOnly={selectedReservedTableid !== "" ? true : false}
                                             />
                                             <span className="help-block">{validation.mobile_number.message}</span>
                                         </div>
                                     </div>
-                                    {checkedtableValue === null ?
+                                    {selectedTable === null &&
                                         <div className="form-group row">
                                             <label htmlFor="time" className="col-sm-4 col-form-label">Time <span style={{ color: 'red' }}>*</span></label>
                                             <div className="col-sm-8">
@@ -664,8 +606,8 @@ export default class TableBook extends Component {
                                                 <span className="help-block">{validation.time.message}</span>
                                             </div>
                                         </div>
-                                        : ''}
-                                    {checkedtableValue === null ?
+                                    }
+                                    {selectedTable === null &&
                                         <div className="form-group row">
                                             <label htmlFor="date" className="col-sm-4 col-form-label">Date <span style={{ color: 'red' }}>*</span></label>
                                             <div className="col-sm-8">
@@ -679,15 +621,15 @@ export default class TableBook extends Component {
                                                 <span className="help-block">{validation.date.message}</span>
                                             </div>
                                         </div>
-                                        : ''}
+                                    }
                                     <div className="form-group row">
-                                        <label htmlFor="table" className="col-sm-4 col-form-label">Table{selectedCustomerType === CUSTOMERTYPES.EXISTING ? <span style={{ color: 'red' }}>*</span> : ''}</label>
+                                        <label htmlFor="table" className="col-sm-4 col-form-label">Table{selectedCustomerType === CUSTOMERTYPES.EXISTING && <span style={{ color: 'red' }}>*</span>}</label>
                                         <div className="col-sm-8">
-                                            <select className="form-control" name="tablename" id="tableid" value={this.state.tableid}
+                                            <select className="form-control" name="tablename" id="tableid" value={tableid || ''}
                                                 onChange={this.onTableDropdownChange} style={{ width: "100%" }}>
-                                                {availabletableList.map(availableTable => (
-                                                    <option key={availableTable._id} value={availableTable._id}>
-                                                        {`${availableTable.property.tablename}` + ' ' + `(${availableTable.property.capacity})`}
+                                                {tableList.map(table => (
+                                                    <option key={table._id} value={table._id}>
+                                                        {`${table.property.tablename}` + ' ' + `(${table.property.capacity})`}
                                                     </option>
                                                 ))} </select>
                                             <span className="help-block">{validation.tablename.message}</span>
@@ -696,8 +638,10 @@ export default class TableBook extends Component {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className={checkedtableValue === null ? "btn btn-primary mr-auto" : "btn btn-primary"} name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
-                                {checkedtableValue === null ? <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button> : ''}
+                                <button type="button" className={selectedTable === null ? "btn btn-primary mr-auto" : "btn btn-primary"} name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
+                                {selectedTable === null &&
+                                    <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button>
+                                }
                             </div>
                         </div>
                     </div>

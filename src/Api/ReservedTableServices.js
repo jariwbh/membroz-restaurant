@@ -1,10 +1,13 @@
 import axios from '../Helpers/axiosInst'
 
-const tableformid = "5f6085f699e17f0da81b0023"
-const allocatedstatus = "allocated"
-const activestatus = "active"
+export const tableformid = "5f6085f699e17f0da81b0023"
 
-function getReservationTableList() {
+export const RESERVEDTABLESTATUS = {
+    ACTIVE: "active",
+    ALLOCATED: "allocated"
+}
+
+function getList() {
     const body = {
         "search": [{
             "searchfield": "formid",
@@ -19,27 +22,17 @@ function getReservationTableList() {
     return axios.post('formdatas/filter', body);
 }
 
-function deleteReservationTableRecord(id) {
-    return (
-        axios.delete('formdatas/' + id)
-    )
+function deleteById(id) {
+    return axios.delete('formdatas/' + id)
 }
 
-function addReservationTableRecord(body) {
-    return (
-        axios.post('formdatas/', body)
-    )
+function save(body) {
+    if (body._id === "") {
+        return axios.post('formdatas/', body)
+    } else {
+        return axios.put('formdatas/' + body._id, body)
+    }
 }
 
-function updateReservationTableRecord(body) {
-    const id = body._id
-    return (
-        axios.put('formdatas/' + id, body)
-    )
-}
 
-export {
-    getReservationTableList, deleteReservationTableRecord,
-    addReservationTableRecord, updateReservationTableRecord,
-    tableformid, allocatedstatus, activestatus
-}
+export { getList, save, deleteById }

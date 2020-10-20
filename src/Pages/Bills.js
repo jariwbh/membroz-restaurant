@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import ReactHtmlParser from 'react-html-parser';
+//import ReactHtmlParser from 'react-html-parser';
 import Pagination from "react-js-pagination";
 import moment from 'moment'
 import $ from 'jquery'
@@ -96,84 +96,84 @@ class Bills extends Component {
         });
     }
 
-    regexrep(str, obj, history) {
-        var shortcode_regex = /\[{(\w+)+\.?(\w+)\.?(\w+)\}]/mg;
-        var th = this;
+    // regexrep(str, obj, history) {
+    //     var shortcode_regex = /\[{(\w+)+\.?(\w+)\.?(\w+)\}]/mg;
+    //     var th = this;
 
-        str.replace(shortcode_regex, function (match, code) {
-            var replace_str = match.replace('[{', '');
-            replace_str = replace_str.replace('}]', '');
+    //     str.replace(shortcode_regex, function (match, code) {
+    //         var replace_str = match.replace('[{', '');
+    //         replace_str = replace_str.replace('}]', '');
 
-            var db_fieldValue;
-            var fieldnameSplit = replace_str.split('.');
+    //         var db_fieldValue;
+    //         var fieldnameSplit = replace_str.split('.');
 
-            if (fieldnameSplit[1] == undefined || fieldnameSplit[1] == null) {
-                var fieldname1 = fieldnameSplit[0];
-                if (obj && obj[fieldname1]) {
-                    if (Object.prototype.toString.call(obj[fieldname1]) == '[object Array]') {
-                        if (obj[fieldname1][0] != undefined && obj[fieldname1][0].attachment != undefined)
-                            db_fieldValue = obj[fieldname1][0].attachment;
-                    } else if (fieldname1 == 'membershipstart' || fieldname1 == 'membershipend' || fieldname1 == 'createdAt' || fieldname1 == 'paymentdate' || fieldname1 == 'billingdate') {
-                        db_fieldValue = th.datePipe.transform(obj[fieldname1], th.gDateFormat);
-                    } else if (fieldname1 == 'paidamount') {
-                        db_fieldValue = th.numberToWordsPipe.transform(obj[fieldname1]);
-                        db_fieldValue = th.titleCasePipe.transform(db_fieldValue);
-                    } else {
-                        db_fieldValue = obj[fieldname1];
-                    }
-                }
-                else db_fieldValue = '';
+    //         if (fieldnameSplit[1] == undefined || fieldnameSplit[1] == null) {
+    //             var fieldname1 = fieldnameSplit[0];
+    //             if (obj && obj[fieldname1]) {
+    //                 if (Object.prototype.toString.call(obj[fieldname1]) == '[object Array]') {
+    //                     if (obj[fieldname1][0] != undefined && obj[fieldname1][0].attachment != undefined)
+    //                         db_fieldValue = obj[fieldname1][0].attachment;
+    //                 } else if (fieldname1 == 'membershipstart' || fieldname1 == 'membershipend' || fieldname1 == 'createdAt' || fieldname1 == 'paymentdate' || fieldname1 == 'billingdate') {
+    //                     db_fieldValue = th.datePipe.transform(obj[fieldname1], th.gDateFormat);
+    //                 } else if (fieldname1 == 'paidamount') {
+    //                     db_fieldValue = th.numberToWordsPipe.transform(obj[fieldname1]);
+    //                     db_fieldValue = th.titleCasePipe.transform(db_fieldValue);
+    //                 } else {
+    //                     db_fieldValue = obj[fieldname1];
+    //                 }
+    //             }
+    //             else db_fieldValue = '';
 
-            } else if (fieldnameSplit[2] == undefined || fieldnameSplit[2] == null) {
+    //         } else if (fieldnameSplit[2] == undefined || fieldnameSplit[2] == null) {
 
-                var fieldname1 = fieldnameSplit[0];
-                var fieldname2 = fieldnameSplit[1];
+    //             var fieldname1 = fieldnameSplit[0];
+    //             var fieldname2 = fieldnameSplit[1];
 
-                if (obj && obj[fieldname1] && obj[fieldname1][fieldname2]) {
-                    if (Object.prototype.toString.call(obj[fieldname1][fieldname2]) == '[object Array]') {
-                        if (obj[fieldname1][fieldname2][0] != undefined && obj[fieldname1][fieldname2][0].attachment != undefined)
-                            db_fieldValue = obj[fieldname1][fieldname2][0].attachment;
-                    } else if (fieldname2 == 'membershipstart' || fieldname2 == 'membershipend' || fieldname2 == 'createdAt' || fieldname2 == 'paymentdate' || fieldname2 == 'billingdate') {
-                        db_fieldValue = th.datePipe.transform(obj[fieldname1][fieldname2], th.gDateFormat);
-                    } else if (fieldname2 == 'paidamount') {
-                        db_fieldValue = th.numberToWordsPipe.transform(obj[fieldname1][fieldname2]);
-                        db_fieldValue = th.titleCasePipe.transform(db_fieldValue);
-                    } else {
-                        db_fieldValue = obj[fieldname1][fieldname2];
-                    }
+    //             if (obj && obj[fieldname1] && obj[fieldname1][fieldname2]) {
+    //                 if (Object.prototype.toString.call(obj[fieldname1][fieldname2]) == '[object Array]') {
+    //                     if (obj[fieldname1][fieldname2][0] != undefined && obj[fieldname1][fieldname2][0].attachment != undefined)
+    //                         db_fieldValue = obj[fieldname1][fieldname2][0].attachment;
+    //                 } else if (fieldname2 == 'membershipstart' || fieldname2 == 'membershipend' || fieldname2 == 'createdAt' || fieldname2 == 'paymentdate' || fieldname2 == 'billingdate') {
+    //                     db_fieldValue = th.datePipe.transform(obj[fieldname1][fieldname2], th.gDateFormat);
+    //                 } else if (fieldname2 == 'paidamount') {
+    //                     db_fieldValue = th.numberToWordsPipe.transform(obj[fieldname1][fieldname2]);
+    //                     db_fieldValue = th.titleCasePipe.transform(db_fieldValue);
+    //                 } else {
+    //                     db_fieldValue = obj[fieldname1][fieldname2];
+    //                 }
 
-                }
-                else if (history && history[fieldname1] && history[fieldname1][fieldname2]) {
-                    db_fieldValue = history[fieldname1][fieldname2];
-                }
-                for (var key in history) {
-                    var subfield = key.substr(4);
-                    var obj1 = history[key];
-                    if (fieldname1 == subfield && obj1[fieldname2]) {
-                        db_fieldValue = obj1[fieldname2];
-                    }
-                }
-            } else {
-                var fieldname1 = fieldnameSplit[0];
-                var fieldname2 = fieldnameSplit[1];
-                var fieldname3 = fieldnameSplit[2];
-                if (obj && obj[fieldname1] && obj[fieldname1][fieldname2] && obj[fieldname1][fieldname2][fieldname3]) {
-                    db_fieldValue = obj[fieldname1][fieldname2][fieldname3];
-                } else {
-                    db_fieldValue = '';
-                }
-            }
+    //             }
+    //             else if (history && history[fieldname1] && history[fieldname1][fieldname2]) {
+    //                 db_fieldValue = history[fieldname1][fieldname2];
+    //             }
+    //             for (var key in history) {
+    //                 var subfield = key.substr(4);
+    //                 var obj1 = history[key];
+    //                 if (fieldname1 == subfield && obj1[fieldname2]) {
+    //                     db_fieldValue = obj1[fieldname2];
+    //                 }
+    //             }
+    //         } else {
+    //             var fieldname1 = fieldnameSplit[0];
+    //             var fieldname2 = fieldnameSplit[1];
+    //             var fieldname3 = fieldnameSplit[2];
+    //             if (obj && obj[fieldname1] && obj[fieldname1][fieldname2] && obj[fieldname1][fieldname2][fieldname3]) {
+    //                 db_fieldValue = obj[fieldname1][fieldname2][fieldname3];
+    //             } else {
+    //                 db_fieldValue = '';
+    //             }
+    //         }
 
-            if (db_fieldValue) {
-                str = str.replace("$[{" + replace_str + "}]", db_fieldValue);
-            }
-            else {
-                str = str.replace("$[{" + replace_str + "}]", "");
-            }
-        });
+    //         if (db_fieldValue) {
+    //             str = str.replace("$[{" + replace_str + "}]", db_fieldValue);
+    //         }
+    //         else {
+    //             str = str.replace("$[{" + replace_str + "}]", "");
+    //         }
+    //     });
 
-        return str;
-    }
+    //     return str;
+    // }
 
     getBill(id) {
         const billobj = this.state.getBilList.find(x => x._id === id)
@@ -203,7 +203,6 @@ class Bills extends Component {
             tablename: (billobj.tableid ? billobj.tableid.property.tablename : ''),
             billDate: moment(billobj.date).format('DD-MM-YYYY')
         });
-        //console.log('tablename', billobj);
     }
 
     printInvoiceReceipt() {

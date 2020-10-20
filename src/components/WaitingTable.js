@@ -4,7 +4,6 @@ import * as WaitingTableApi from '../Api/WaitingTableServices';
 import * as CustomerApi from '../Api/CustomerSevices';
 import FormValidator from '../components/FormValidator';
 import moment from 'moment'
-import $ from 'jquery'
 import SelectSearch from 'react-select-search';
 import '../Assets/css/DropDownstyles.css'
 import { CUSTOMERTYPES } from '../Pages/OrderEnums'
@@ -228,7 +227,7 @@ export default class WaitingTable extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { waitingTableList, customerList, selectedCustomerTypes, customerid, customername, noofperson, mobile_number, disableCustomer } = this.state;
+        const { waitingTableList, customerList, selectedCustomerTypes, customerid, noofperson, mobile_number, disableCustomer } = this.state;
         const getWaitingTableList = waitingTableList.filter((obj) => {
             if (this.state.search == null) { return (obj) }
             else if (obj.property.customer.toLowerCase().includes(this.state.search.toLowerCase()) ||

@@ -26,7 +26,7 @@ function RunningTable(props) {
                                 {currentCart && runningOrders && runningOrders.length > 0 &&
                                     runningOrders.map(bill =>
                                         <li onClick={() => props.setCurrentCartHandler(bill)} className="nav-item" key={bill._id} id={bill._id}>
-                                            <a className={`nav-link ${currentCart._id === bill._id ? "active" : ""}`} href="#">
+                                            <a className={`nav-link ${currentCart._id === bill._id ? "active" : ""}`} href="/#">
                                                 {(props.activeOrderType === ORDERTYPES.DINEIN) ?
                                                     <>
                                                         <div className="pos-table-bar-cap">Table</div>

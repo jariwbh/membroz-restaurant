@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom';
 import FormValidator from '../components/FormValidator';
 import axios from '../Helpers/axiosInst'
 import { authenticateUser, getRememberUser, setRememberUser } from '../Helpers/Auth'
@@ -191,7 +190,7 @@ class Login extends Component {
                     <footer className="login-footer mt-auto py-3">
                         <div className="container">
                             <div className="row">
-                                <div className="col text-center"> © Copyright Membroz. Power by <a className="white-link" href="http://www.krtya.com/" target="_blank">Krtya Technologies Pvt. Ltd.</a> </div>
+                                <div className="col text-center"> © Copyright Membroz. Power by <a className="white-link" href="http://www.krtya.com/" target="_blank" rel="noreferrer">Krtya Technologies Pvt. Ltd.</a> </div>
                             </div>
                         </div>
                     </footer>
