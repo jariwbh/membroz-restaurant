@@ -66,9 +66,8 @@ export default class TableBook extends Component {
 
         this.state = {
             reservedTableList: [],
-            availabletableList: [],
             customerList: [],
-            tableList: props.tableList,
+            tableList: [],
             runningOrders: props.runningOrders,
             selectedCustomerType: CUSTOMERTYPES.EXISTING,
             onModel: '',
@@ -76,12 +75,12 @@ export default class TableBook extends Component {
             customername: '',
             mobile_number: '',
             noofperson: '1',
-            tableid: '',
+            tableid: null,
             tablename: '',
-            getcustomerid: '',
-            disableCustomer: false,
+            getreservedTableid: '',
+            currentTable: null,
+            disableText: false,
             search: null,
-            checkedtableValue: null,
             selectedTableStatus: TABLESTATUS.ALL,
             time: moment().format('LT'),
             date: moment().format('L'),
@@ -103,7 +102,7 @@ export default class TableBook extends Component {
 
     getAvailableTableList() {
         TableServicesApi.getTableList().then((response) => {
-            this.setState({ availabletableList: response.data })
+            this.setState({ tableList: response.data })
         })
     }
 
@@ -159,7 +158,7 @@ export default class TableBook extends Component {
     onTableDropdownChange = event => {
         const target = event.target;
         const value = target.value;
-        const tabledata = this.state.availabletableList.find(x => x._id === value)
+        const tabledata = this.state.tableList.find(x => x._id === value)
         this.setState({
             tableid: tabledata._id,
             tablename: tabledata.property.tablename,
@@ -167,12 +166,14 @@ export default class TableBook extends Component {
     }
 
     async getCustomerDeatils(obj) {
+        console.log('obj', obj);
         this.modelPopupOpen();
         const customerById = obj
 
         await this.setState({
             selectedCustomerType: CUSTOMERTYPES.EXISTING,
-            getcustomerid: customerById._id,
+            onModel: customerById.property.onModel,
+            getreservedTableid: customerById._id,
             customerid: customerById.property.customerid,
             customername: customerById.property.customer,
             mobile_number: customerById.property.mobile_number,
@@ -181,7 +182,7 @@ export default class TableBook extends Component {
             date: moment(customerById.property.date).format('L'),
             tablename: customerById.property.table,
             tableid: customerById.property.tableid,
-            disableCustomer: true
+            disableText: true
         });
     }
 
@@ -193,11 +194,11 @@ export default class TableBook extends Component {
             customername: '',
             mobile_number: '',
             noofperson: '1',
-            tableid: '',
             tablename: '',
-            getcustomerid: '',
-            disableCustomer: false,
-            checkedtableValue: null,
+            getreservedTableid: '',
+            disableText: false,
+            tableid: null,
+            currentTable: null,
             time: moment().format('LT'),
             date: moment().format('L'),
             validation: this.validator.valid(),
@@ -217,16 +218,16 @@ export default class TableBook extends Component {
                 mobile_number: '',
                 tableid: currentTableobj._id,
                 tablename: currentTableobj.property.tablename,
-                getcustomerid: '',
+                getreservedTableid: '',
+                currentTable: currentTableobj,
                 time: this.state.time,
                 date: this.state.date,
-                checkedtableValue: currentTableobj
             });
         }
     }
 
     handleFormSubmit = (event) => {
-        const { customername, mobile_number, noofperson, time, date, tablename, tableid, customerid, getcustomerid } = this.state;
+        const { onModel, customername, mobile_number, noofperson, time, date, tablename, tableid, customerid, getreservedTableid } = this.state;
         const btnclickname = event.target.name;
         let status
 
@@ -244,9 +245,11 @@ export default class TableBook extends Component {
         }
 
         let reservationObj = {
-            _id: getcustomerid,
+            _id: getreservedTableid,
             status: ReservedTableApi.activestatus,
+            onModel: onModel,
             property: {
+                onModel: onModel,
                 status: status,
                 customer: customername,
                 customerid: customerid,
@@ -261,9 +264,10 @@ export default class TableBook extends Component {
         }
 
         let allocatedObj = {
-            _id: getcustomerid,
+            _id: getreservedTableid,
             formid: ReservedTableApi.tableformid,
             property: {
+                onModel: onModel,
                 status: status,
                 customer: customername,
                 customerid: customerid,
@@ -283,25 +287,27 @@ export default class TableBook extends Component {
                 if (customerid === '') {
                     CustomerApi.save(newCustomerObj).then((response) => {
                         this.setState({ customerid: response.data._id })
-                        if (response.data._id) {
+                        if (response.status === 200 && response.data._id) {
                             reservationObj.property.customerid = response.data._id
+                            reservationObj.onModel = "Prospect";
+                            reservationObj.property.onModel = "Prospect";
                             ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
                                 this.getCustomerList();
                                 this.getReservedTableList();
                                 this.modelPopupClose();
-                                console.log('save');
+                                console.log('save', reservationObj);
                             })
                         }
                     })
-                } else if (getcustomerid === '') {
-                    console.log('save exit records');
+                } else if (getreservedTableid === '') {
                     ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
+                        console.log('save exit records', reservationObj);
                         this.getReservedTableList();
                         this.modelPopupClose();
                     })
                 } else {
-                    console.log('update');
                     ReservedTableApi.updateReservationTableRecord(reservationObj).then(() => {
+                        console.log('update', reservationObj);
                         this.getReservedTableList();
                         this.modelPopupClose();
                     })
@@ -313,9 +319,8 @@ export default class TableBook extends Component {
         }
     }
 
-    allocateTable(newCustomerObj, allocatedObj, reservationObj) {
-        const { selectedCustomerType, onModel, noofperson, customerid, mobile_number, customername, tableid, tablename } = this.state;
-
+    async allocateTable(newCustomerObj, allocatedObj, reservationObj) {
+        const { selectedCustomerType, onModel, noofperson, customerid, mobile_number, customername, tableid, tablename, getreservedTableid } = this.state;
         let orderObj = {
             _id: 'unsaved_' + uuid(),
             tableid: {
@@ -341,33 +346,36 @@ export default class TableBook extends Component {
         }
 
         if (selectedCustomerType === CUSTOMERTYPES.EXISTING) {
-            if (this.state.getcustomerid !== '') {
-                this.setState({ submitted: true });
-                allocatedTableApi.updateAllocateReservationTable(allocatedObj).then(() => {
+            if (getreservedTableid !== '') {
+                await allocatedTableApi.updateAllocateReservationTable(allocatedObj).then(() => {
                     this.modelPopupClose();
                     this.getReservedTableList();
                     this.props.setCurrentCartHandler(orderObj)
                     console.log('update allocated', allocatedObj);
+                    console.log('update allocated orderObj', orderObj);
                 })
             } else {
-                ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
+                await ReservedTableApi.addReservationTableRecord(reservationObj).then(() => {
                     this.modelPopupClose();
                     this.getReservedTableList();
                     this.props.setCurrentCartHandler(orderObj)
                     console.log('save exit records', reservationObj);
+                    console.log('save exit records orderObj', orderObj);
                 })
             }
         } else {
             CustomerApi.save(newCustomerObj).then((response) => {
-                this.setState({ customerid: response.data._id })
-                if (response.data._id) {
-                    allocatedObj.property.customerid = response.data._id
+                this.setState({ customerid: response.data._id, onModel: response.data.onModel })
+                if (response.status === 200 && response.data._id) {
+                    allocatedObj.property.customerid = response.data._id;
+                    allocatedObj.onModel = response.data.onModel;
                     allocatedTableApi.allocateReservationTable(allocatedObj).then(() => {
                         this.modelPopupClose();
                         this.getCustomerList();
                         this.props.setCurrentCartHandler(orderObj)
                         this.getReservedTableList();
                         console.log('allocatedobj', allocatedObj)
+                        console.log('allocated orderObj', orderObj)
                     })
                 }
             })
@@ -422,7 +430,7 @@ export default class TableBook extends Component {
 
     render() {
         const validation = this.submitted ? this.validator.validate(this.state) : this.state.validation
-        const { selectedCustomerType, reservedTableList, availabletableList, tableList, runningOrders, customerList, mobile_number, noofperson, checkedtableValue, disableCustomer } = this.state;
+        const { selectedCustomerType, reservedTableList, tableList, runningOrders, customerList, mobile_number, noofperson, tableid, disableText, currentTable } = this.state;
 
         const getReservedTableList = reservedTableList.filter((obj) => {
             if (this.state.search == null) { return (obj) }
@@ -566,34 +574,32 @@ export default class TableBook extends Component {
                             </div>
                             <div className="modal-body">
                                 <div className="container">
-                                    <div className="container">
-                                        <label className="mr-3">
-                                            <input
-                                                type="radio"
-                                                id="existcustomer"
-                                                name="selectedCustomerType"
-                                                value={CUSTOMERTYPES.EXISTING}
-                                                checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
-                                                onChange={this.onChangeValue}
-                                                className="mr-1"
-                                                disabled={disableCustomer === true ? true : false}
-                                            />
+                                    <label className="mr-3">
+                                        <input
+                                            type="radio"
+                                            id="existcustomer"
+                                            name="selectedCustomerType"
+                                            value={CUSTOMERTYPES.EXISTING}
+                                            checked={selectedCustomerType === CUSTOMERTYPES.EXISTING}
+                                            onChange={this.onChangeValue}
+                                            className="mr-1"
+                                            disabled={disableText === true ? true : false}
+                                        />
                                     Exist Customer
                                 </label>
-                                        <label className="mr-3">
-                                            <input
-                                                type="radio"
-                                                id="newcustomer"
-                                                name="selectedCustomerType"
-                                                value={CUSTOMERTYPES.NEW}
-                                                checked={selectedCustomerType === CUSTOMERTYPES.NEW}
-                                                onChange={this.onChangeValue}
-                                                className="mr-1"
-                                                disabled={disableCustomer === true ? true : false}
-                                            />
+                                    <label className="mr-3">
+                                        <input
+                                            type="radio"
+                                            id="newcustomer"
+                                            name="selectedCustomerType"
+                                            value={CUSTOMERTYPES.NEW}
+                                            checked={selectedCustomerType === CUSTOMERTYPES.NEW}
+                                            onChange={this.onChangeValue}
+                                            className="mr-1"
+                                            disabled={disableText === true ? true : false}
+                                        />
                                     New Customer
                                 </label>
-                                    </div>
                                 </div>
                                 <div className="container mt-3">
                                     <div className="form-group row">
@@ -605,7 +611,7 @@ export default class TableBook extends Component {
                                                     options={customerdropdown}
                                                     value={this.state.customerid}
                                                     search
-                                                    disabled={this.state.disableCustomer}
+                                                    disabled={this.state.disableText}
                                                     name="customer"
                                                     placeholder="Select Customer"
                                                     onChange={this.onCustomerDropdownChange} />
@@ -645,12 +651,12 @@ export default class TableBook extends Component {
                                                 placeholder="Enter Mobile Number"
                                                 value={mobile_number}
                                                 onChange={this.onChangeValue}
-                                                readOnly={disableCustomer === true ? true : false}
+                                                readOnly={disableText === true ? true : false}
                                             />
                                             <span className="help-block">{validation.mobile_number.message}</span>
                                         </div>
                                     </div>
-                                    {checkedtableValue === null ?
+                                    {currentTable === null ?
                                         <div className="form-group row">
                                             <label htmlFor="time" className="col-sm-4 col-form-label">Time <span style={{ color: 'red' }}>*</span></label>
                                             <div className="col-sm-8">
@@ -665,7 +671,7 @@ export default class TableBook extends Component {
                                             </div>
                                         </div>
                                         : ''}
-                                    {checkedtableValue === null ?
+                                    {currentTable === null ?
                                         <div className="form-group row">
                                             <label htmlFor="date" className="col-sm-4 col-form-label">Date <span style={{ color: 'red' }}>*</span></label>
                                             <div className="col-sm-8">
@@ -683,11 +689,11 @@ export default class TableBook extends Component {
                                     <div className="form-group row">
                                         <label htmlFor="table" className="col-sm-4 col-form-label">Table{selectedCustomerType === CUSTOMERTYPES.EXISTING ? <span style={{ color: 'red' }}>*</span> : ''}</label>
                                         <div className="col-sm-8">
-                                            <select className="form-control" name="tablename" id="tableid" value={this.state.tableid}
+                                            <select className="form-control" name="tablename" id="tableid" value={tableid || ''}
                                                 onChange={this.onTableDropdownChange} style={{ width: "100%" }}>
-                                                {availabletableList.map(availableTable => (
-                                                    <option key={availableTable._id} value={availableTable._id}>
-                                                        {`${availableTable.property.tablename}` + ' ' + `(${availableTable.property.capacity})`}
+                                                {tableList.map(table => (
+                                                    <option key={table._id} value={table._id}>
+                                                        {`${table.property.tablename}` + ' ' + `(${table.property.capacity})`}
                                                     </option>
                                                 ))} </select>
                                             <span className="help-block">{validation.tablename.message}</span>
@@ -696,8 +702,8 @@ export default class TableBook extends Component {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className={checkedtableValue === null ? "btn btn-primary mr-auto" : "btn btn-primary"} name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
-                                {checkedtableValue === null ? <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button> : ''}
+                                <button type="button" className={currentTable === null ? "btn btn-primary mr-auto" : "btn btn-primary"} name="allocate" onClick={this.handleFormSubmit} >Allocate</button>
+                                {currentTable === null ? <button type="button" className="btn btn-primary" name="save" onClick={this.handleFormSubmit} >Save</button> : ''}
                             </div>
                         </div>
                     </div>
