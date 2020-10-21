@@ -179,7 +179,7 @@ class Bills extends Component {
         const billobj = this.state.getBilList.find(x => x._id === id)
 
         Api.getBillFormate().then((response) => {
-            console.log(response.data);
+            // console.log(response.data);
             this.setState({
                 address: response.data.address,
                 restaurantname: response.data.branchname, city: (response.data.city + '-' + response.data.postcode)
@@ -306,7 +306,6 @@ class Bills extends Component {
             </tr>
         )
 
-        console.log('billList', billListObj);
         return (
             <React.Fragment>
                 <div id="layoutSidenav_content">

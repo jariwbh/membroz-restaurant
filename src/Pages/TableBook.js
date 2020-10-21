@@ -153,6 +153,8 @@ export default class TableBook extends Component {
     }
 
     showPopupModel = async (table, reservedTable) => {
+        console.log('reservedTable', reservedTable);
+        console.log('table', table);
 
         if (table) {
             const checkedRunningTable = this.state.runningOrders.filter(x => x.postype === ORDERTYPES.DINEIN).find(x => x.tableid._id === table._id)
@@ -259,7 +261,7 @@ export default class TableBook extends Component {
             formid: ReservedTableApi.tableformid,
             status: ReservedTableApi.RESERVEDTABLESTATUS.ACTIVE,
             property: {
-                onModel: onModel,
+                onModel: (onModel === "" ? "Prospect" : onModel),
                 status: status,
                 customer: customername,
                 customerid: customerid,
@@ -273,6 +275,7 @@ export default class TableBook extends Component {
         }
 
         const response = await ReservedTableApi.save(reservedTable)
+        console.log("reservedTable save", reservedTable);
         if (response.status === 200 && !response.data.errors) {
             this.getReservedTableList();
         } else {
@@ -313,7 +316,7 @@ export default class TableBook extends Component {
             items: [],
             deliveryaddress: ""
         }
-
+        console.log('allocated order', order);
         this.props.setCurrentCartHandler(order)
     }
 
