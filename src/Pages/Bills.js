@@ -15,7 +15,7 @@ class Bills extends Component {
             billListObj: [],
             getBilList: [],
             offset: 0,
-            perPage: 15,
+            perPage: 10,
             activePage: 1,
             totalPages: 0,
             sortType: "asc",

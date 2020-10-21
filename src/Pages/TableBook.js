@@ -153,7 +153,7 @@ export default class TableBook extends Component {
     }
 
     showPopupModel = async (table, reservedTable) => {
-        debugger
+
         if (table) {
             const checkedRunningTable = this.state.runningOrders.filter(x => x.postype === ORDERTYPES.DINEIN).find(x => x.tableid._id === table._id)
             if (checkedRunningTable) {
