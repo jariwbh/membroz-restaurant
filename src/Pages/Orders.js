@@ -324,11 +324,11 @@ class Orders extends Component {
             return false;
         }
         if (!currentToken.property.items) {
-            alert("ERROR! Empty Current KOT, Note this error with steps")
+            alert("WARNING! Current Token Items is NULL, Note this error with steps")
             return false;
         }
         if (currentToken.property.items.length === 0) {
-            alert("ERROR! Empty Current KOT, Note this error with steps")
+            alert("WARNING!  Current Token Items is Empty, Note this error with steps")
             return false;
         }
 

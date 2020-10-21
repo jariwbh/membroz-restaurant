@@ -1,4 +1,5 @@
 import axios from '../Helpers/axiosInst'
+import moment from 'moment'
 
 const branchid = "5ece552879b40e583fa63925"
 // function getBillByRunningTableID(tableid) {
@@ -54,6 +55,7 @@ function getBillList() {
             { "fieldname": "property", "value": 1 },
             { "fieldname": "billprefix", "value": 1 },
             { "fieldname": "billnumber", "value": 1 },
+            { "fieldname": "billingdate", "value": 1 },
             { "fieldname": "postype", "value": 1 }
         ]
     }
@@ -74,6 +76,7 @@ function save(currentCart) {
     let body = { ...currentCart, customerid: customerid }
 
     if (body._id.startsWith('unsaved_')) {
+        body.billingdate = moment().format('L');
         delete body._id
     }
 
