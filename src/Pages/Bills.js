@@ -32,7 +32,9 @@ class Bills extends Component {
             tablename: '',
             billDate: '',
             restaurantname: '',
-            city: ''
+            city: '',
+            orderType: '',
+            paymentStatus: ''
         }
         this.printInvoiceReceipt = this.printInvoiceReceipt.bind(this);
     }
@@ -45,6 +47,7 @@ class Bills extends Component {
         Api.getBillList().then((response) => {
             this.setState({ totalPages: response.data.length, getBilList: response.data });
             const slice = response.data.slice((this.state.activePage - 1) * this.state.perPage, this.state.activePage * this.state.perPage)
+            console.log('slice', slice);
             const billList = slice.map(bill => ({
                 _id: bill._id,
                 billnumber: bill.billnumber,
@@ -53,7 +56,9 @@ class Bills extends Component {
                 totalamount: bill.totalamount,
                 date: bill.createdAt,
                 deliveryaddress: bill.property.deliveryaddress ? bill.property.deliveryaddress : "",
-                deliveryboy: bill.property.deliveryboyid ? bill.property.deliveryboyid.property.fullname : ""
+                deliveryboy: bill.property.deliveryboyid ? bill.property.deliveryboyid.property.fullname : "",
+                orderType: bill.postype ? bill.postype : "",
+                paymentStatus: bill.property.orderstatus === "checkedout" ? "Paid" : "Unpaid"
             }));
             this.setState({ billListObj: billList });
         })
@@ -293,16 +298,18 @@ class Bills extends Component {
             if (this.state.search == null) { return (obj) }
             else if (obj.customername.toLowerCase().includes(this.state.search.toLowerCase())
             ) { return (obj) }
-        }).map(tableobj =>
-            <tr key={tableobj._id} id={tableobj._id} onClick={() => this.selectedTablerows(tableobj._id)} className="" >
-                <td>{moment(tableobj.date).format('DD-MM-YYYY')}</td>
-                <td className="text-right">{tableobj.billnumber}</td>
-                <td className="text-right">{tableobj.tablename}</td>
-                <td>{tableobj.customername}</td>
-                <td>{tableobj.deliveryaddress}</td>
-                <td>{tableobj.deliveryboy}</td>
-                <td className="text-right">{`$ ${tableobj.totalamount}`}</td>
-                <td className="text-right"><span><img src={Image.billicon} data-toggle="modal" data-target="#billmodelpopup" onClick={() => this.getBill(tableobj._id)} /></span></td>
+        }).map(table =>
+            <tr key={table._id} id={table._id} onClick={() => this.selectedTablerows(table._id)} className="" >
+                <td>{moment(table.date).format('DD-MM-YYYY')}</td>
+                <td className="text-right">{table.billnumber}</td>
+                <td className="text-right">{table.tablename}</td>
+                <td>{table.customername}</td>
+                <td>{table.deliveryaddress}</td>
+                <td>{table.deliveryboy}</td>
+                <td>{table.orderType}</td>
+                <td>{table.paymentStatus}</td>
+                <td className="text-right">{`$ ${table.totalamount}`}</td>
+                <td className="text-right"><span><img src={Image.billicon} data-toggle="modal" data-target="#billmodelpopup" onClick={() => this.getBill(table._id)} /></span></td>
             </tr>
         )
 
@@ -329,11 +336,13 @@ class Bills extends Component {
                                                         <thead className="thead-dark">
                                                             <tr>
                                                                 <th width="13%" className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
-                                                                <th width="15%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
-                                                                <th width="17%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
+                                                                <th width="08%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
+                                                                <th width="15%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
                                                                 <th width="27%" className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
                                                                 <th width="15%" >Address</th>
                                                                 <th width="15%">Delivery Boy</th>
+                                                                <th width="15%" >Order Type</th>
+                                                                <th width="15%">Payment Status</th>
                                                                 <th width="15%" className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
                                                                 <th width="13%"></th>
                                                             </tr>
