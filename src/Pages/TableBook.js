@@ -246,8 +246,9 @@ export default class TableBook extends Component {
 
             const response = await CustomerApi.save(newCustomerObj)
             if (response.status === 200 && !response.data.errors) {
-                customerid = response.data._id
-                await this.setState({ customerid: customerid })
+                customerid = response.data._id;
+                onModel = "Prospect";
+                await this.setState({ customerid: customerid, onModel: onModel })
                 this.getCustomerList();
             } else {
                 console.log('Save Customer ERROR', response.data.errors)
@@ -261,7 +262,7 @@ export default class TableBook extends Component {
             formid: ReservedTableApi.tableformid,
             status: ReservedTableApi.RESERVEDTABLESTATUS.ACTIVE,
             property: {
-                onModel: (onModel === "" ? "Prospect" : onModel),
+                onModel: onModel,
                 status: status,
                 customer: customername,
                 customerid: customerid,
