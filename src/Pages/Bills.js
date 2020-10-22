@@ -3,8 +3,8 @@ import moment from 'moment'
 import '../Assets/css/Bills.css'
 import * as Api from '../Api/BillServices'
 import * as Image from '../components/Image'
-import { ColumnDirective, ColumnsDirective, GridComponent, CommandColumn } from '@syncfusion/ej2-react-grids';
-import { Inject, Sort, Page, Resize, Reorder } from '@syncfusion/ej2-react-grids';
+import { ColumnDirective, ColumnsDirective, GridComponent } from '@syncfusion/ej2-react-grids';
+import { Inject, Sort, Page, Resize, Reorder, Filter } from '@syncfusion/ej2-react-grids';
 
 class Bills extends Component {
     constructor(props) {
@@ -12,87 +12,69 @@ class Bills extends Component {
 
         this.state = {
             billList: [],
-            getBilPrintList: [],
             billheader: null,
-            billnumber: '',
-            cartitem: null,
-            totaldiscount: 0,
-            totalamount: null,
             restaurantAddress: '',
-            deliveryaddress: '',
-            deliveryboy: '',
-            tablename: '',
-            billDate: '',
             restaurantname: '',
-            city: '',
-            orderType: '',
-            paymentStatus: ''
+            restaurantCity: '',
+            selectedBill: null,
+            searchText: null,
         }
+        this.filterSettings = { type: 'Excel' };
         this.customAttributes = { class: 'customcss' }
         this.viewBill = this.viewBill.bind(this);
-        this.template = this.gridTemplate.bind(this);
+        this.viewBillButtonTemplate = this.gridTemplate.bind(this);
         this.printInvoiceReceipt = this.printInvoiceReceipt.bind(this);
     }
 
-    gridTemplate(e) {
+    gridTemplate(event) {
         return (
-            <span><img src={Image.billicon} onClick={() => this.viewBill(e)} style={{ cursor: 'pointer' }} /></span>
+            <span><img src={Image.billicon} onClick={() => this.viewBill(event)} style={{ cursor: 'pointer' }} /></span>
         );
+    }
+
+    searchBill = (event) => {
+        let keyword = event.target.value;
+        this.setState({ searchText: keyword })
     }
 
     billList() {
         Api.getBillList().then((response) => {
-            this.setState({ getBilPrintList: response.data });
             const billList = response.data.map(bill => ({
                 _id: bill._id,
+                orderType: (bill.postype === "delivery" && "Delivery") || (bill.postype === "dinein" && "Dinein") || (bill.postype === "takeaway" && "Take Away"),
+                billingdate: bill.billingdate,
                 billnumber: bill.billnumber,
                 tablename: bill.tableid ? bill.tableid.property.tablename : "",
                 customername: bill.customerid ? bill.customerid.property.fullname : "",
-                totalamount: bill.totalamount,
-                date: moment(bill.billingdate).format('DD/MM/YYYY'),
                 deliveryaddress: bill.property.deliveryaddress ? bill.property.deliveryaddress : "",
                 deliveryboy: bill.property.deliveryboyid ? bill.property.deliveryboyid.property.fullname : "",
-                orderType: (bill.postype === "delivery" && "Delivery") || (bill.postype === "dinein" && "Dinein") || (bill.postype === "takeaway" && "Take Away"),
-                paymentStatus: bill.property.orderstatus === "checkedout" ? "Paid" : "Unpaid"
-
+                totalamount: bill.totalamount,
+                paymentStatus: bill.property.orderstatus === "checkedout" ? "Paid" : "Unpaid",
+                items: bill.items
             }));
             this.setState({ billList: billList });
         })
     }
 
-    componentDidMount() {
-        this.billList();
-    }
-
-    viewBill(e) {
-        const bill = this.state.getBilPrintList.find(x => x._id === e._id)
-        Api.getBillFormate().then((response) => {
+    billFormat() {
+        Api.getBillFormat().then((response) => {
             this.setState({
                 restaurantAddress: response.data.address,
-                restaurantname: response.data.branchname, city: (response.data.city + '-' + response.data.postcode)
+                restaurantname: response.data.branchname,
+                restaurantCity: (response.data.city + '-' + response.data.postcode)
             })
         })
+    }
 
-        const billcartitemlist = bill.items.map(cartitem =>
-            <tr key={cartitem._id} id={cartitem._id}>
-                <td>{cartitem.item.itemid.itemname}</td>
-                <td>{cartitem.quantity}</td>
-                <td>{`$ ${cartitem.cost}`}</td>
-                <td>{`$ ${cartitem.totalcost}`}</td>
-            </tr>
-        )
+    componentDidMount() {
+        this.billList()
+        this.billFormat()
+    }
 
-        this.setState({
-            cartitem: billcartitemlist,
-            totalamount: bill.totalamount,
-            billheader: bill.customerid.membernumbername,
-            billnumber: bill.billnumber,
-            tablename: (bill.tableid ? bill.tableid.property.tablename : ''),
-            billDate: moment(bill.billingdate).format('DD/MM/YYYY')
-        });
-
-        const btn = document.getElementById("viewbillhandler")
-        btn.click();
+    viewBill(bill) {
+        this.setState({ selectedBill: bill });
+        const openModel = document.getElementById("viewbillhandler")
+        openModel.click();
     }
 
     printInvoiceReceipt() {
@@ -178,35 +160,48 @@ class Bills extends Component {
     }
 
     render() {
-        const { billList } = this.state;
+        const { billList, billheader, restaurantAddress, restaurantname, restaurantCity, selectedBill } = this.state;
         return (
             <React.Fragment>
                 <div id="layoutSidenav_content">
                     <main>
                         <div className="container-fluid">
-                            <div className="white-box p-3">
-                                <form className="row">
+                            <div className="white-box p-3 mt-3 mb-3 ">
+                                <div className="row">
                                     <div className="col-md-9">
                                         <h3>Today's Bills</h3>
                                     </div>
-                                </form>
+                                    <div className="col-md-3">
+                                        <input className="form-control mb-2" type="search" onChange={(e) => this.searchBill(e)} placeholder="Search Bills" aria-label="Search" />
+                                    </div>
+                                </div>
                             </div>
-                            <span id="viewbillhandler" data-toggle="modal" data-target="#viebillpopup"></span>
-                            <GridComponent dataSource={billList} allowSorting={true} allowPaging={true} pageSettings={{ pageCount: 4, pageSizes: true }} allowResizing={true} allowReordering={true}>
-                                <ColumnsDirective>
-                                    <ColumnDirective headerText="Type" field='orderType' width='100' customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText="Date" field='date' format='dd/MM/yyyy' type='datatime' width='100' customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText="Bill No" field='billnumber' width='100' customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText="Table" field='tablename' width='80' customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText="Customer Name" field='customername' customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText="Address" field='deliveryaddress' width='300' customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText="Delivery Boy" field='deliveryboy' width='120' customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText="Status" field='paymentStatus' width='90' customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText="Amount" field='totalamount' width='100' format="C2" textAlign="Right" customAttributes={this.customAttributes} />
-                                    <ColumnDirective headerText='' width='60' template={this.template} customAttributes={this.customAttributes}></ColumnDirective>
-                                </ColumnsDirective>
-                                <Inject services={[Sort, Page, Resize, Reorder, CommandColumn]} />
-                            </GridComponent>
+                            <div className="white-box p-3 mt-3 mb-3 ">
+                                <span id="viewbillhandler" data-toggle="modal" data-target="#viebillpopup"></span>
+                                <GridComponent dataSource={billList}
+                                    allowSorting={true}
+                                    allowPaging={true}
+                                    pageSettings={{ pageCount: 4, pageSizes: true }}
+                                    allowResizing={true}
+                                    allowReordering={true}
+                                    allowFiltering={true}
+                                    filterSettings={this.filterSettings}
+                                >
+                                    <ColumnsDirective>
+                                        <ColumnDirective headerText="Type" field='orderType' width='100' customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText="Date" field='billingdate' format='dd/MM/yyyy' type='date' width='120' customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText="Bill No" field='billnumber' width='100' customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText="Table" field='tablename' width='100' customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText="Customer Name" field='customername' customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText="Address" field='deliveryaddress' width='300' customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText="Delivery Boy" field='deliveryboy' width='120' customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText="Status" field='paymentStatus' width='90' customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText="Amount" field='totalamount' width='100' format="C2" textAlign="Right" customAttributes={this.customAttributes} />
+                                        <ColumnDirective headerText='' width='60' template={this.viewBillButtonTemplate} customAttributes={this.customAttributes}></ColumnDirective>
+                                    </ColumnsDirective>
+                                    <Inject services={[Sort, Page, Resize, Reorder, Filter]} />
+                                </GridComponent>
+                            </div>
                         </div>
                     </main>
                 </div>
@@ -220,12 +215,12 @@ class Bills extends Component {
                                 </button>
                             </div>
                             <div className="modal-body" id="prdiv">
-                                {this.state.cartitem &&
+                                {selectedBill &&
                                     <>
-                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.restaurantname}</div>
-                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.billheader}</div>
-                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.restaurantAddress}</div>
-                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.city}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{restaurantname}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{billheader}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{restaurantAddress}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{restaurantCity}</div>
                                         <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>CASH/BILL</div>
                                         <table id="billtableheader" name="billtableheader" className="table mt-2" cellSpacing="1">
                                             <thead>
@@ -238,10 +233,10 @@ class Bills extends Component {
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>{this.state.billnumber}</td>
-                                                    <td>{this.state.tablename}</td>
-                                                    <td >{this.state.billDate}</td>
-                                                    <td >{moment().format('LT')}</td>
+                                                    <td>{selectedBill.billnumber}</td>
+                                                    <td>{selectedBill.tablename}</td>
+                                                    <td >{moment(selectedBill.billingdate).format('L')}</td>
+                                                    <td >{moment(selectedBill.billingdate).format('LT')}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -255,12 +250,19 @@ class Bills extends Component {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {this.state.cartitem}
+                                                {selectedBill.items.length > 0 && selectedBill.items.map(item =>
+                                                    <tr key={item._id} id={item._id}>
+                                                        <td>{item.item.itemid.itemname}</td>
+                                                        <td>{item.quantity}</td>
+                                                        <td>{`$ ${item.cost}`}</td>
+                                                        <td>{`$ ${item.totalcost}`}</td>
+                                                    </tr>)
+                                                }
                                                 <tr>
                                                     <td></td>
                                                     <td></td>
                                                     <td style={{ fontWeight: 'bold' }}>SubTotal</td>
-                                                    <td style={{ fontWeight: 'bold' }}>$ {this.state.totalamount}</td>
+                                                    <td style={{ fontWeight: 'bold' }}>$ {selectedBill.totalamount}</td>
                                                 </tr>
                                                 <tr>
                                                     <td></td>
@@ -272,13 +274,13 @@ class Bills extends Component {
                                                     <td></td>
                                                     <td></td>
                                                     <td style={{ fontWeight: 'bold' }}>Discount</td>
-                                                    <td style={{ fontWeight: 'bold' }}>$ {this.state.totaldiscount}</td>
+                                                    <td style={{ fontWeight: 'bold' }}>$ {selectedBill.totaldiscount}</td>
                                                 </tr>
                                                 <tr>
                                                     <td></td>
                                                     <td></td>
                                                     <td style={{ fontWeight: 'bold' }}>Net Amount</td>
-                                                    <td style={{ fontWeight: 'bold' }}>$ {this.state.totalamount}</td>
+                                                    <td style={{ fontWeight: 'bold' }}>$ {selectedBill.totalamount}</td>
                                                 </tr>
                                             </tbody>
                                         </table>

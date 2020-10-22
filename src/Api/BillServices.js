@@ -76,7 +76,7 @@ function save(currentCart) {
     let body = { ...currentCart, customerid: customerid }
 
     if (body._id.startsWith('unsaved_')) {
-        body.billingdate = moment().format('L');
+        body.billingdate = moment();
         delete body._id
     }
 
@@ -132,7 +132,7 @@ function removeLocalOrder(currentCartID) {
     }
 }
 
-function getBillFormate() {
+function getBillFormat() {
     // const body = {
     //     "search": [{
     //         "searchfield": "status",
@@ -144,4 +144,4 @@ function getBillFormate() {
     return axios.get('branches/' + branchid);
 }
 
-export { getRunningOrders, getBillList, getByID, save, getLocalOrders, getLocalOrderByID, saveLocalOrder, removeLocalOrder, getBillFormate }
+export { getRunningOrders, getBillList, getByID, save, getLocalOrders, getLocalOrderByID, saveLocalOrder, removeLocalOrder, getBillFormat }
