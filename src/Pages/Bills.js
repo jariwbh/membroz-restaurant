@@ -1,32 +1,24 @@
 import React, { Component } from 'react'
-//import ReactHtmlParser from 'react-html-parser';
-import Pagination from "react-js-pagination";
 import moment from 'moment'
-import $ from 'jquery'
 import '../Assets/css/Bills.css'
 import * as Api from '../Api/BillServices'
 import * as Image from '../components/Image'
+import { ColumnDirective, ColumnsDirective, GridComponent, CommandColumn } from '@syncfusion/ej2-react-grids';
+import { Inject, Sort, Page, Resize, Reorder } from '@syncfusion/ej2-react-grids';
 
 class Bills extends Component {
     constructor(props) {
         super(props);
-        window.scrollTo(0, 0);
+
         this.state = {
-            billListObj: [],
-            getBilList: [],
-            offset: 0,
-            perPage: 10,
-            activePage: 1,
-            totalPages: 0,
-            sortType: "asc",
-            sortColumn: '',
-            search: null,
+            billList: [],
+            getBilPrintList: [],
             billheader: null,
             billnumber: '',
             cartitem: null,
             totaldiscount: 0,
             totalamount: null,
-            address: '',
+            restaurantAddress: '',
             deliveryaddress: '',
             deliveryboy: '',
             tablename: '',
@@ -36,162 +28,52 @@ class Bills extends Component {
             orderType: '',
             paymentStatus: ''
         }
+        this.customAttributes = { class: 'customcss' }
+        this.viewBill = this.viewBill.bind(this);
+        this.template = this.gridTemplate.bind(this);
         this.printInvoiceReceipt = this.printInvoiceReceipt.bind(this);
     }
 
-    componentDidMount() {
-        this.receivedData();
+    gridTemplate(e) {
+        return (
+            <span><img src={Image.billicon} onClick={() => this.viewBill(e)} style={{ cursor: 'pointer' }} /></span>
+        );
     }
 
-    receivedData() {
+    billList() {
         Api.getBillList().then((response) => {
-            this.setState({ totalPages: response.data.length, getBilList: response.data });
-            const slice = response.data.slice((this.state.activePage - 1) * this.state.perPage, this.state.activePage * this.state.perPage)
-            console.log('slice', slice);
-            const billList = slice.map(bill => ({
+            this.setState({ getBilPrintList: response.data });
+            const billList = response.data.map(bill => ({
                 _id: bill._id,
                 billnumber: bill.billnumber,
                 tablename: bill.tableid ? bill.tableid.property.tablename : "",
-                customername: bill.customerid.property.fullname,
+                customername: bill.customerid ? bill.customerid.property.fullname : "",
                 totalamount: bill.totalamount,
-                date: bill.createdAt,
+                date: moment(bill.billingdate).format('DD/MM/YYYY'),
                 deliveryaddress: bill.property.deliveryaddress ? bill.property.deliveryaddress : "",
                 deliveryboy: bill.property.deliveryboyid ? bill.property.deliveryboyid.property.fullname : "",
-                orderType: bill.postype ? bill.postype : "",
+                orderType: (bill.postype === "delivery" && "Delivery") || (bill.postype === "dinein" && "Dinein") || (bill.postype === "takeaway" && "Take Away"),
                 paymentStatus: bill.property.orderstatus === "checkedout" ? "Paid" : "Unpaid"
+
             }));
-            this.setState({ billListObj: billList });
+            this.setState({ billList: billList });
         })
     }
 
-    handlePageChange(pageNumber) {
-        this.setState({ activePage: pageNumber, offset: pageNumber });
-        this.receivedData();
+    componentDidMount() {
+        this.billList();
     }
 
-    searchSpace = (event) => {
-        let keyword = event.target.value;
-        this.setState({ search: keyword })
-    }
-
-    sortByhandle(key) {
-        const { sortType } = this.state;
-        const billList = this.state.billListObj;
-        if (sortType === "asc") {
-            this.setState({
-                billListObj: billList.sort(function (a, b) {
-                    if (a[key] < b[key]) { return -1 }
-                    return 0;
-                }), sortType: "desc", sortColumn: key
-            });
-        } else if (sortType === "desc") {
-            this.setState({
-                billListObj: billList.sort(function (a, b) {
-                    if (a[key] > b[key]) { return -1 }
-                    return 0;
-                }), sortType: "asc", sortColumn: key
-            });
-        }
-    }
-
-    selectedTablerows(id) {
-        $('tr').not(':first').click(function () {
-            $(this).addClass("highlight");
-            $(this).siblings().removeClass("highlight");
-        });
-    }
-
-    // regexrep(str, obj, history) {
-    //     var shortcode_regex = /\[{(\w+)+\.?(\w+)\.?(\w+)\}]/mg;
-    //     var th = this;
-
-    //     str.replace(shortcode_regex, function (match, code) {
-    //         var replace_str = match.replace('[{', '');
-    //         replace_str = replace_str.replace('}]', '');
-
-    //         var db_fieldValue;
-    //         var fieldnameSplit = replace_str.split('.');
-
-    //         if (fieldnameSplit[1] == undefined || fieldnameSplit[1] == null) {
-    //             var fieldname1 = fieldnameSplit[0];
-    //             if (obj && obj[fieldname1]) {
-    //                 if (Object.prototype.toString.call(obj[fieldname1]) == '[object Array]') {
-    //                     if (obj[fieldname1][0] != undefined && obj[fieldname1][0].attachment != undefined)
-    //                         db_fieldValue = obj[fieldname1][0].attachment;
-    //                 } else if (fieldname1 == 'membershipstart' || fieldname1 == 'membershipend' || fieldname1 == 'createdAt' || fieldname1 == 'paymentdate' || fieldname1 == 'billingdate') {
-    //                     db_fieldValue = th.datePipe.transform(obj[fieldname1], th.gDateFormat);
-    //                 } else if (fieldname1 == 'paidamount') {
-    //                     db_fieldValue = th.numberToWordsPipe.transform(obj[fieldname1]);
-    //                     db_fieldValue = th.titleCasePipe.transform(db_fieldValue);
-    //                 } else {
-    //                     db_fieldValue = obj[fieldname1];
-    //                 }
-    //             }
-    //             else db_fieldValue = '';
-
-    //         } else if (fieldnameSplit[2] == undefined || fieldnameSplit[2] == null) {
-
-    //             var fieldname1 = fieldnameSplit[0];
-    //             var fieldname2 = fieldnameSplit[1];
-
-    //             if (obj && obj[fieldname1] && obj[fieldname1][fieldname2]) {
-    //                 if (Object.prototype.toString.call(obj[fieldname1][fieldname2]) == '[object Array]') {
-    //                     if (obj[fieldname1][fieldname2][0] != undefined && obj[fieldname1][fieldname2][0].attachment != undefined)
-    //                         db_fieldValue = obj[fieldname1][fieldname2][0].attachment;
-    //                 } else if (fieldname2 == 'membershipstart' || fieldname2 == 'membershipend' || fieldname2 == 'createdAt' || fieldname2 == 'paymentdate' || fieldname2 == 'billingdate') {
-    //                     db_fieldValue = th.datePipe.transform(obj[fieldname1][fieldname2], th.gDateFormat);
-    //                 } else if (fieldname2 == 'paidamount') {
-    //                     db_fieldValue = th.numberToWordsPipe.transform(obj[fieldname1][fieldname2]);
-    //                     db_fieldValue = th.titleCasePipe.transform(db_fieldValue);
-    //                 } else {
-    //                     db_fieldValue = obj[fieldname1][fieldname2];
-    //                 }
-
-    //             }
-    //             else if (history && history[fieldname1] && history[fieldname1][fieldname2]) {
-    //                 db_fieldValue = history[fieldname1][fieldname2];
-    //             }
-    //             for (var key in history) {
-    //                 var subfield = key.substr(4);
-    //                 var obj1 = history[key];
-    //                 if (fieldname1 == subfield && obj1[fieldname2]) {
-    //                     db_fieldValue = obj1[fieldname2];
-    //                 }
-    //             }
-    //         } else {
-    //             var fieldname1 = fieldnameSplit[0];
-    //             var fieldname2 = fieldnameSplit[1];
-    //             var fieldname3 = fieldnameSplit[2];
-    //             if (obj && obj[fieldname1] && obj[fieldname1][fieldname2] && obj[fieldname1][fieldname2][fieldname3]) {
-    //                 db_fieldValue = obj[fieldname1][fieldname2][fieldname3];
-    //             } else {
-    //                 db_fieldValue = '';
-    //             }
-    //         }
-
-    //         if (db_fieldValue) {
-    //             str = str.replace("$[{" + replace_str + "}]", db_fieldValue);
-    //         }
-    //         else {
-    //             str = str.replace("$[{" + replace_str + "}]", "");
-    //         }
-    //     });
-
-    //     return str;
-    // }
-
-    getBill(id) {
-        const billobj = this.state.getBilList.find(x => x._id === id)
-
+    viewBill(e) {
+        const bill = this.state.getBilPrintList.find(x => x._id === e._id)
         Api.getBillFormate().then((response) => {
-            // console.log(response.data);
             this.setState({
-                address: response.data.address,
+                restaurantAddress: response.data.address,
                 restaurantname: response.data.branchname, city: (response.data.city + '-' + response.data.postcode)
             })
         })
 
-        const billcartitemlist = billobj.items.map(cartitem =>
+        const billcartitemlist = bill.items.map(cartitem =>
             <tr key={cartitem._id} id={cartitem._id}>
                 <td>{cartitem.item.itemid.itemname}</td>
                 <td>{cartitem.quantity}</td>
@@ -202,12 +84,15 @@ class Bills extends Component {
 
         this.setState({
             cartitem: billcartitemlist,
-            totalamount: billobj.totalamount,
-            billheader: billobj.customerid.membernumbername,
-            billnumber: billobj.billnumber,
-            tablename: (billobj.tableid ? billobj.tableid.property.tablename : ''),
-            billDate: moment(billobj.date).format('DD-MM-YYYY')
+            totalamount: bill.totalamount,
+            billheader: bill.customerid.membernumbername,
+            billnumber: bill.billnumber,
+            tablename: (bill.tableid ? bill.tableid.property.tablename : ''),
+            billDate: moment(bill.billingdate).format('DD/MM/YYYY')
         });
+
+        const btn = document.getElementById("viewbillhandler")
+        btn.click();
     }
 
     printInvoiceReceipt() {
@@ -293,97 +178,39 @@ class Bills extends Component {
     }
 
     render() {
-        const { perPage, activePage, totalPages, billListObj } = this.state;
-        const billList = billListObj.filter((obj) => {
-            if (this.state.search == null) { return (obj) }
-            else if (obj.customername.toLowerCase().includes(this.state.search.toLowerCase())
-            ) { return (obj) }
-        }).map(table =>
-            <tr key={table._id} id={table._id} onClick={() => this.selectedTablerows(table._id)} className="" >
-                <td>{moment(table.date).format('DD-MM-YYYY')}</td>
-                <td className="text-right">{table.billnumber}</td>
-                <td className="text-right">{table.tablename}</td>
-                <td>{table.customername}</td>
-                <td>{table.deliveryaddress}</td>
-                <td>{table.deliveryboy}</td>
-                <td>{table.orderType}</td>
-                <td>{table.paymentStatus}</td>
-                <td className="text-right">{`$ ${table.totalamount}`}</td>
-                <td className="text-right"><span><img src={Image.billicon} data-toggle="modal" data-target="#billmodelpopup" onClick={() => this.getBill(table._id)} /></span></td>
-            </tr>
-        )
-
+        const { billList } = this.state;
         return (
             <React.Fragment>
                 <div id="layoutSidenav_content">
                     <main>
                         <div className="container-fluid">
-                            <div className="row">
-                                <div className="col-xl-10 offset-xl-1">
-                                    <div className="white-box p-3 mt-5">
-                                        <form className="row">
-                                            <div className="col-md-9">
-                                                <h3>Today's Bills</h3>
-                                            </div>
-                                            <div className="col-md-3">
-                                                <input className="form-control mb-2" type="search" onChange={(e) => this.searchSpace(e)} placeholder="Search Bills" aria-label="Search" />
-                                            </div>
-                                        </form>
-                                        <div className="row">
-                                            <div className="col-md-12">
-                                                <div className="table-responsive mb-3">
-                                                    <table id="billtable" name="billtable" className="table" cellSpacing="1" style={{ cursor: 'pointer' }}>
-                                                        <thead className="thead-dark">
-                                                            <tr>
-                                                                <th width="13%" className={this.state.sortColumn === 'date' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('date')}>Date</th>
-                                                                <th width="08%" className={this.state.sortColumn === 'billnumber' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('billnumber')}>Bill No</th>
-                                                                <th width="15%" className={this.state.sortColumn === 'tablename' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('tablename')}>Table</th>
-                                                                <th width="27%" className={this.state.sortColumn === 'customername' ? this.state.sortType === 'asc' ? "headerSortUp" : "headerSortDown" : ''} onClick={() => this.sortByhandle('customername')}>Customer Name</th>
-                                                                <th width="15%" >Address</th>
-                                                                <th width="15%">Delivery Boy</th>
-                                                                <th width="15%" >Order Type</th>
-                                                                <th width="15%">Payment Status</th>
-                                                                <th width="15%" className={this.state.sortColumn === 'totalamount' ? this.state.sortType === 'asc' ? "headerSortUp text-right" : "headerSortDown text-right" : 'text-right'} onClick={() => this.sortByhandle('totalamount')}>Amount</th>
-                                                                <th width="13%"></th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {billList.length === 0 ?
-                                                                <tr>
-                                                                    <td colSpan="5" className="text-center text-nowrap">No records to display</td>
-                                                                </tr>
-                                                                :
-                                                                billList
-                                                            }
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="form-inline">
-                                            <nav>
-                                                <ul className="pagination justify-content-right">
-                                                    <Pagination
-                                                        prevPageText='Previous'
-                                                        nextPageText='Next'
-                                                        activePage={activePage}
-                                                        itemsCountPerPage={perPage}
-                                                        totalItemsCount={totalPages}
-                                                        pageRangeDisplayed={5}
-                                                        onChange={this.handlePageChange.bind(this)}
-                                                        itemClass="page-item"
-                                                        linkClass="page-link"
-                                                    />
-                                                </ul>
-                                            </nav>
-                                        </div>
+                            <div className="white-box p-3">
+                                <form className="row">
+                                    <div className="col-md-9">
+                                        <h3>Today's Bills</h3>
                                     </div>
-                                </div>
+                                </form>
                             </div>
+                            <span id="viewbillhandler" data-toggle="modal" data-target="#viebillpopup"></span>
+                            <GridComponent dataSource={billList} allowSorting={true} allowPaging={true} pageSettings={{ pageCount: 4, pageSizes: true }} allowResizing={true} allowReordering={true}>
+                                <ColumnsDirective>
+                                    <ColumnDirective headerText="Type" field='orderType' width='100' customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText="Date" field='date' format='dd/MM/yyyy' type='datatime' width='100' customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText="Bill No" field='billnumber' width='100' customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText="Table" field='tablename' width='80' customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText="Customer Name" field='customername' customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText="Address" field='deliveryaddress' width='300' customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText="Delivery Boy" field='deliveryboy' width='120' customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText="Status" field='paymentStatus' width='90' customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText="Amount" field='totalamount' width='100' format="C2" textAlign="Right" customAttributes={this.customAttributes} />
+                                    <ColumnDirective headerText='' width='60' template={this.template} customAttributes={this.customAttributes}></ColumnDirective>
+                                </ColumnsDirective>
+                                <Inject services={[Sort, Page, Resize, Reorder, CommandColumn]} />
+                            </GridComponent>
                         </div>
                     </main>
                 </div>
-                <div className="modal fade" id="billmodelpopup" tabIndex="-1" role="dialog" aria-labelledby="billmodelpopup" aria-hidden="true">
+                <div className="modal fade" id="viebillpopup" tabIndex="-1" role="dialog" aria-labelledby="viebillpopup" aria-hidden="true">
                     <div className="modal-dialog modal-dialog-centered" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -397,7 +224,7 @@ class Bills extends Component {
                                     <>
                                         <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.restaurantname}</div>
                                         <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.billheader}</div>
-                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.address}</div>
+                                        <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.restaurantAddress}</div>
                                         <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>{this.state.city}</div>
                                         <div className="d-flex justify-content-center" style={{ fontWeight: "bold" }}>CASH/BILL</div>
                                         <table id="billtableheader" name="billtableheader" className="table mt-2" cellSpacing="1">
