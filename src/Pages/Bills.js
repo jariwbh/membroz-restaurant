@@ -73,9 +73,8 @@ class Bills extends Component {
 
     viewBill(bill) {
         this.setState({ selectedBill: bill });
-        this.refs.viewbillhandler.click();
-        // const openModel = document.getElementById("viewbillhandler")
-        // openModel.click();
+        const openModel = document.getElementById("viewbillhandler")
+        openModel.click();
     }
 
     printInvoiceReceipt() {
@@ -89,7 +88,7 @@ class Bills extends Component {
             <title></title>
      <style type="text/css">
         @page {
-            size: A5; 
+            size: auto; 
             margin: 30px 30px 30px;
         }
           
@@ -178,7 +177,7 @@ class Bills extends Component {
                                 </div>
                             </div>
                             <div className="white-box p-3 mt-3 mb-3 ">
-                                <span id="viewbillhandler" ref="viewbillhandler" data-toggle="modal" data-target="#viebillpopup"></span>
+                                <span id="viewbillhandler" data-toggle="modal" data-target="#viebillpopup"></span>
                                 <GridComponent dataSource={billList}
                                     allowSorting={true}
                                     allowPaging={true}
