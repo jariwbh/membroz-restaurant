@@ -29,7 +29,6 @@ export default function Default() {
                 )} />
 
                 <ProtectedRoute exact path="/" title="Restaurant" component={Orders} />
-                <ProtectedRoute exact path="/Orders/:tableid" title="Restaurant" component={Orders} />
                 <Route exact path="/menu" title="Restaurant - Menu" component={Menu} />
                 <ProtectedRoute path="/logout" component={Logout} />
                 <ProtectedRoute path="/tableBook" title="Restaurant - Table" component={TableBook} />

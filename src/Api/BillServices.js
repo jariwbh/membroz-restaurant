@@ -1,5 +1,6 @@
 import axios from '../Helpers/axiosInst'
 import moment from 'moment'
+import { SECRET_KEY_UNSAVED_LOCAL_ORDERS } from '../Helpers/Auth'
 
 const branchid = "5ece552879b40e583fa63925"
 // function getBillByRunningTableID(tableid) {
@@ -24,7 +25,6 @@ const branchid = "5ece552879b40e583fa63925"
 function getRunningOrders() {
     const body = {
         "search": [
-            { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
             { "searchfield": "postype", "searchvalue": ["dinein", "takeaway", "delivery"], "criteria": "in" },
             { "searchfield": "property.orderstatus", "searchvalue": "running", "criteria": "eq" }
         ],
@@ -45,7 +45,6 @@ function getRunningOrders() {
 function getBillList() {
     const body = {
         "search": [
-            { "searchfield": "branchid", "searchvalue": "5ece552879b40e583fa63925", "criteria": "eq", "datatype": "ObjectId" },
             { "searchfield": "postype", "searchvalue": ["dinein", "takeaway", "delivery"], "criteria": "in" }
         ],
         "select": [
@@ -88,7 +87,7 @@ function save(currentCart) {
 }
 
 function getLocalOrders() {
-    const localOrders = JSON.parse(localStorage.getItem('localorders'));
+    const localOrders = JSON.parse(localStorage.getItem(SECRET_KEY_UNSAVED_LOCAL_ORDERS));
     return localOrders
     // const currentCart = JSON.parse(localStorage.getItem('token_' + currentCartId));
     // return currentCart;
@@ -119,7 +118,7 @@ function saveLocalOrder(currentCart) {
     }
 
     filteredOrders.push(currentCart);
-    localStorage.setItem('localorders', JSON.stringify(filteredOrders));
+    localStorage.setItem(SECRET_KEY_UNSAVED_LOCAL_ORDERS, JSON.stringify(filteredOrders));
 }
 
 function removeLocalOrder(currentCartID) {
@@ -128,7 +127,7 @@ function removeLocalOrder(currentCartID) {
 
     if (localOrders) {
         filteredOrders = localOrders.filter(x => x._id !== currentCartID)
-        localStorage.setItem('localorders', JSON.stringify(filteredOrders));
+        localStorage.setItem(SECRET_KEY_UNSAVED_LOCAL_ORDERS, JSON.stringify(filteredOrders));
     }
 }
 

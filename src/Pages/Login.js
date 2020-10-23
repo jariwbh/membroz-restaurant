@@ -64,7 +64,7 @@ class Login extends Component {
                     this.setState({ loading: false, errorMessage: response.data.message })
                     return
                 }
-                authenticateUser(JSON.stringify(response.data))
+                await authenticateUser(JSON.stringify(response.data))
                 this.setState({ submitted: true });
                 this.setState({ loading: false })
                 this.props.history.push('/')

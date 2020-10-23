@@ -19,6 +19,9 @@ class Bills extends Component {
             selectedBill: null,
             searchText: null,
         }
+
+        this.gridInstance = null
+
         this.filterSettings = { type: 'Excel' };
         this.customAttributes = { class: 'customcss' }
         this.viewBill = this.viewBill.bind(this);
@@ -35,6 +38,10 @@ class Bills extends Component {
     searchBill = (event) => {
         let keyword = event.target.value;
         this.setState({ searchText: keyword })
+
+        if (this.gridInstance) {
+            this.gridInstance.search(keyword);
+        }
     }
 
     billList() {
@@ -179,6 +186,7 @@ class Bills extends Component {
                             <div className="white-box p-3 mt-3 mb-3 ">
                                 <span id="viewbillhandler" data-toggle="modal" data-target="#viebillpopup"></span>
                                 <GridComponent dataSource={billList}
+                                    ref={g => this.gridInstance = g}
                                     allowSorting={true}
                                     allowPaging={true}
                                     pageSettings={{ pageCount: 4, pageSizes: true }}

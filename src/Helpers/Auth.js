@@ -1,10 +1,15 @@
 //-------User authtoken--------//
 export const SECRET_KEY = 'authuser'
 export const SECRET_KEY_REMEMBER_USER = 'rememberuser'
+export const SECRET_KEY_UNSAVED_LOCAL_ORDERS = 'unsavedorders'
 
 export const isAuthenticated = () => (localStorage.getItem(SECRET_KEY) !== null)
 export const authenticateUser = user => localStorage.setItem(SECRET_KEY, user)
-export const destroySession = () => localStorage.removeItem(SECRET_KEY)
+export const destroySession = () => {
+   localStorage.removeItem(SECRET_KEY)
+   localStorage.removeItem(SECRET_KEY_UNSAVED_LOCAL_ORDERS)
+}
+
 export const getUser = () => {
    return JSON.parse(localStorage.getItem(SECRET_KEY));
 }
