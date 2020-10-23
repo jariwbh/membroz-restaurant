@@ -73,8 +73,9 @@ class Bills extends Component {
 
     viewBill(bill) {
         this.setState({ selectedBill: bill });
-        const openModel = document.getElementById("viewbillhandler")
-        openModel.click();
+        this.refs.viewbillhandler.click();
+        // const openModel = document.getElementById("viewbillhandler")
+        // openModel.click();
     }
 
     printInvoiceReceipt() {
@@ -88,8 +89,8 @@ class Bills extends Component {
             <title></title>
      <style type="text/css">
         @page {
-            size: auto; 
-            margin: 3mm 3mm 3mm;
+            size: A5; 
+            margin: 30px 30px 30px;
         }
           
         @media print {
@@ -149,11 +150,11 @@ class Bills extends Component {
               font-weight: normal!important;
               color: #000000 !important;
           }
-          
+
           }
     </style>
           </head>
-          <body onload="window.print();window.close()">${printContents}</body>
+          <body onload="window.print()" onfocus="setTimeout(window.close, 0);">${printContents}</body>
         </html>`
         );
         popupWin.document.close();
@@ -177,7 +178,7 @@ class Bills extends Component {
                                 </div>
                             </div>
                             <div className="white-box p-3 mt-3 mb-3 ">
-                                <span id="viewbillhandler" data-toggle="modal" data-target="#viebillpopup"></span>
+                                <span id="viewbillhandler" ref="viewbillhandler" data-toggle="modal" data-target="#viebillpopup"></span>
                                 <GridComponent dataSource={billList}
                                     allowSorting={true}
                                     allowPaging={true}
@@ -240,7 +241,7 @@ class Bills extends Component {
                                                 </tr>
                                             </tbody>
                                         </table>
-                                        <table id="billtable" name="billtable" className="table" cellSpacing="1">
+                                        <table id="billtable" name="billtable" className="table" border="1" frame="hsides" rules="rows" cellSpacing="1">
                                             <thead>
                                                 <tr>
                                                     <th style={{ fontWeight: 'bold' }}>Item</th>
