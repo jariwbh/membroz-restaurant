@@ -42,16 +42,16 @@ export default function Nav() {
                                 <div className="d-flex justify-content-md-center">
                                     <p data-letters={loggedInUser.user.property.fullname.charAt(0)} />
                                 </div>
-                                <div className="d-flex justify-content-md-center">
+                                <div className="d-flex justify-content-center">
                                     <h5>{loggedInUser.user.property.fullname}</h5>
                                 </div>
-                                <div className="d-flex justify-content-md-center">
+                                <div className="d-flex justify-content-center">
                                     <p>{loggedInUser.user.username}</p>
                                 </div>
-                                <div className="d-flex justify-content-md-center mb-3">
+                                <div className="d-flex justify-content-center mb-3">
                                     <Button variant="outline-primary" onClick={() => history.push('/myprofile')}>Manage your Account</Button>
                                 </div>
-                                <div className="d-flex justify-content-md-center">
+                                <div className="d-flex justify-content-center">
                                     <Button variant="secondary" onClick={() => history.push('/logout')}>Logout</Button>
                                 </div>
                             </div>

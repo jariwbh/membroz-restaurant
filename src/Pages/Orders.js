@@ -23,6 +23,7 @@ import TakeOrderPopup from '../components/TakeOrderPopup'
 import ChangeCustomerPopup from '../components/ChangeCustomerPopup'
 
 import { PAGES, ORDERTYPES, TOKENSTATUS } from './OrderEnums'
+import ActionLoaderStatePopup, { LOADERSTATES } from '../components/ActionLoaderStatePopup'
 
 class Orders extends Component {
     constructor(props) {
@@ -42,7 +43,10 @@ class Orders extends Component {
             deliveryBoyList: [],
             runningOrders: [],
             currentCart: undefined,
-            tokenList: []
+            tokenList: [],
+            show: false,
+            loadComplete: false,
+            loaderState: LOADERSTATES.LOADING
         }
 
         this.getItems = this.getItems.bind(this);
@@ -336,7 +340,8 @@ class Orders extends Component {
     }
 
     sendToken = async () => {
-        debugger
+        this.setState({ show: true, loadComplete: false, loaderState: LOADERSTATES.LOADING })
+
         let currentCart = this.state.currentCart
         let currentToken = this.state.currentCart.token
         const beforeSaveID = currentCart._id
@@ -366,7 +371,9 @@ class Orders extends Component {
                 }
             } else {
                 console.log('sendToken Save Token ERROR', responseToken.data.errors)
+                this.ActionLoaderPopupCloseWithState(LOADERSTATES.FAILURE)
                 alert("sendToken Save Token ERROR : " + responseToken.data.errors.toString())
+                return
             }
 
             BillServices.removeLocalOrder(beforeSaveID);
@@ -382,11 +389,26 @@ class Orders extends Component {
             this.setState({ items: refreshedItems, runningOrders: updatedRunningOrders, currentCart: currentCart, tokenList: tokenList })
         } else {
             console.log('sendToken Save Bill ERROR', response.data.errors)
+            this.ActionLoaderPopupCloseWithState(LOADERSTATES.FAILURE)
             alert("sendToken Save Bill ERROR : " + response.data.errors.toString())
+            return
         }
+
+        this.ActionLoaderPopupCloseWithState(LOADERSTATES.SUCCESS)
+    }
+
+    ActionLoaderPopupCloseWithState = (loaderState) => {
+        this.setState({ loadComplete: true, loaderState: loaderState })
+        setTimeout(() => { this.setState({ show: false, loadComplete: false, loaderState: LOADERSTATES.LOADING }) }, 700);
+    }
+
+    onActionLoaderStatePopupClose = () => {
+        this.setState({ show: false, loadComplete: false, loaderState: LOADERSTATES.LOADING });
     }
 
     doPayment = async (currentCart) => {
+        this.setState({ show: true, loadComplete: false, loaderState: LOADERSTATES.LOADING })
+
         this.state.currentCart = currentCart
 
         const beforeSaveID = currentCart._id
@@ -398,8 +420,11 @@ class Orders extends Component {
             const runningOrders = await this.getRunningOrders();
 
             this.setState({ runningOrders: runningOrders, activePage: PAGES.ORDERS })
+            this.ActionLoaderPopupCloseWithState(LOADERSTATES.SUCCESS)
 
             this.setCurrentCartHandler();
+        } else {
+            this.ActionLoaderPopupCloseWithState(LOADERSTATES.FAILURE)
         }
     }
 
@@ -493,6 +518,7 @@ class Orders extends Component {
 
     render() {
         const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningOrders, tokenList, deliveryBoyList } = this.state
+        const { show, loadComplete, loaderState } = this.state
 
         if (activePage === PAGES.TABLEBOOK) {
             return <TableBook tableList={tables} runningOrders={runningOrders} setCurrentCartHandler={this.setCurrentCartHandler} />
@@ -502,6 +528,7 @@ class Orders extends Component {
             <React.Fragment >
                 <div id="layoutSidenav_content">
                     {/* <main> */}
+                    <ActionLoaderStatePopup show={show} loadComplete={loadComplete} loaderState={loaderState} onClose={this.onActionLoaderStatePopupClose}></ActionLoaderStatePopup>
                     <TakeOrderPopup activeOrderType={activeOrderType} deliveryBoyList={deliveryBoyList} setCurrentCartHandler={this.setCurrentCartHandler} />
                     <ChangeCustomerPopup currentCart={currentCart} activeOrderType={activeOrderType} deliveryBoyList={deliveryBoyList} changeCustomerHandler={this.changeCustomerHandler} />
                     <div className="container-fluid">
