@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Button, Modal } from "react-bootstrap";
 import '../Assets/css/ActionLoaderStatePopup.scss';
 
 export const LOADERSTATES = {
