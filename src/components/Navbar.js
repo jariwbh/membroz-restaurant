@@ -1,8 +1,14 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import * as image from './Image'
 import $ from 'jquery'
 import { Link } from 'react-router-dom';
+import { getUser } from '../Helpers/Auth'
+import { useHistory } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
+
 export default function Nav() {
+    const history = useHistory();
+    const [loggedInUser, setloggedInUser] = useState(getUser());
 
     const sidebarToggle = () => {
         $("main").toggleClass("pos-sidenav-toggled");
@@ -27,10 +33,27 @@ export default function Nav() {
                                 <a className="dropdown-item" href="/#">Nest Restaurant</a>
                             </div>
                         </li>
-                        <li className="nav-item dropdown"> <a className="nav-link dropdown-toggle py-md-0" href="/#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src={image.userimage} className="user-img rounded-circle" alt="" /></a>
-                            <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                <Link className="dropdown-item" to="/myprofile">My Profile</Link>
-                                <Link className="dropdown-item" to="/logout">Logout</Link>
+                        <li className="nav-item dropdown">
+                            <a className="nav-link dropdown-toggle py-md-0" href="/#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <img src={image.userimage} className="user-img rounded-circle" alt="" />
+                                {/* <p data-letters={loggedInUser.user.property.fullname.charAt(0)} /> */}
+                            </a>
+                            <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown" style={{ minWidth: "18rem" }}>
+                                <div className="d-flex justify-content-md-center">
+                                    <p data-letters={loggedInUser.user.property.fullname.charAt(0)} />
+                                </div>
+                                <div className="d-flex justify-content-md-center">
+                                    <h5>{loggedInUser.user.property.fullname}</h5>
+                                </div>
+                                <div className="d-flex justify-content-md-center">
+                                    <p>{loggedInUser.user.username}</p>
+                                </div>
+                                <div className="d-flex justify-content-md-center mb-3">
+                                    <Button variant="outline-primary" onClick={() => history.push('/myprofile')}>Manage your Account</Button>
+                                </div>
+                                <div className="d-flex justify-content-md-center">
+                                    <Button variant="secondary" onClick={() => history.push('/logout')}>Logout</Button>
+                                </div>
                             </div>
                         </li>
                     </ul>

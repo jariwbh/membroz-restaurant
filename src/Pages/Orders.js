@@ -336,6 +336,7 @@ class Orders extends Component {
     }
 
     sendToken = async () => {
+        debugger
         let currentCart = this.state.currentCart
         let currentToken = this.state.currentCart.token
         const beforeSaveID = currentCart._id
