@@ -164,6 +164,12 @@ class Bills extends Component {
         </html>`
         );
         popupWin.document.close();
+        //this.modelPopupClose();
+    }
+
+    modelPopupClose() {
+        var modelclose = document.getElementById("modelclose")
+        modelclose.click();
     }
 
     render() {
