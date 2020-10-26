@@ -1,8 +1,7 @@
 import axios from '../Helpers/axiosInst'
 import moment from 'moment'
-import { SECRET_KEY_UNSAVED_LOCAL_ORDERS } from '../Helpers/Auth'
+import { SECRET_KEY_UNSAVED_LOCAL_ORDERS, getBranchId } from '../Helpers/Auth'
 
-const branchid = "5ece552879b40e583fa63925"
 // function getBillByRunningTableID(tableid) {
 
 //     const body = { 
@@ -140,7 +139,8 @@ function getBillFormat() {
     //         "datattype": "text"
     //     }]
     // }
-    return axios.get('branches/' + branchid);
+
+    return axios.get('branches/' + getBranchId());
 }
 
 export { getRunningOrders, getBillList, getByID, save, getLocalOrders, getLocalOrderByID, saveLocalOrder, removeLocalOrder, getBillFormat }
