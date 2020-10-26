@@ -198,8 +198,6 @@ class Bills extends Component {
                                     pageSettings={{ pageCount: 4, pageSizes: true }}
                                     allowResizing={true}
                                     allowReordering={true}
-                                    allowFiltering={true}
-                                    filterSettings={this.filterSettings}
                                 >
                                     <ColumnsDirective>
                                         <ColumnDirective headerText="Type" field='orderType' width='100' customAttributes={this.customAttributes} />
