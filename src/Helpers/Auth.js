@@ -13,13 +13,20 @@ export const destroySession = () => {
 export const getUser = () => {
    return JSON.parse(localStorage.getItem(SECRET_KEY));
 }
+
 export const getToken = () => {
    const user = getUser() //JSON.parse(localStorage.getItem(SECRET_KEY));
    return user.token
 }
+
 export const getUserId = () => {
    const user = getUser() //JSON.parse(localStorage.getItem(SECRET_KEY));
    return user.user._id
+}
+
+export const getBranchId = () => {
+   const user = getUser() //JSON.parse(localStorage.getItem(SECRET_KEY));
+   return user.user.branchid._id
 }
 
 export const getRememberUser = () => {
