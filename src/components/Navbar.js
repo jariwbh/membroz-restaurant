@@ -23,9 +23,9 @@ export default function Nav(props) {
                 <div className="collapse navbar-collapse mt-3 mt-md-0" id="navbarSupportedContent">
                     <ul className="navbar-nav top-nav-right-icon-main ml-auto">
                         <li className="nav-item">
-                            <form className="form-inline">
+                            <div className="form-inline">
                                 <input className="form-control" type="search" placeholder="Search" aria-label="Search" onChange={(e) => props.searchText(e)} />
-                            </form>
+                            </div>
                         </li>
 
                         <li className="nav-item dropdown"> <a className="nav-link dropdown-toggle" href="/#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Terrace Restaurant</a>
