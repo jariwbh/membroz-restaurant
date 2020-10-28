@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import * as image from './Image'
 import $ from 'jquery'
 import { Link } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { getUser } from '../Helpers/Auth'
 import { useHistory } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 
-export default function Nav() {
+export default function Nav(props) {
     const history = useHistory();
     const [loggedInUser, setloggedInUser] = useState(getUser());
 
@@ -24,9 +24,10 @@ export default function Nav() {
                     <ul className="navbar-nav top-nav-right-icon-main ml-auto">
                         <li className="nav-item">
                             <form className="form-inline">
-                                <input className="form-control" type="search" placeholder="Search" aria-label="Search" />
+                                <input className="form-control" type="search" placeholder="Search" aria-label="Search" onChange={(e) => props.searchText(e)} />
                             </form>
                         </li>
+
                         <li className="nav-item dropdown"> <a className="nav-link dropdown-toggle" href="/#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Terrace Restaurant</a>
                             <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                                 <a className="dropdown-item" href="/#">Ground Restaurant</a>
@@ -42,16 +43,16 @@ export default function Nav() {
                                 <div className="d-flex justify-content-md-center">
                                     <p data-letters={loggedInUser.user.property.fullname.charAt(0)} />
                                 </div>
-                                <div className="d-flex justify-content-center">
+                                <div className="d-flex justify-content-md-center">
                                     <h5>{loggedInUser.user.property.fullname}</h5>
                                 </div>
-                                <div className="d-flex justify-content-center">
+                                <div className="d-flex justify-content-md-center">
                                     <p>{loggedInUser.user.username}</p>
                                 </div>
-                                <div className="d-flex justify-content-center mb-3">
+                                <div className="d-flex justify-content-md-center mb-3">
                                     <Button variant="outline-primary" onClick={() => history.push('/myprofile')}>Manage your Account</Button>
                                 </div>
-                                <div className="d-flex justify-content-center">
+                                <div className="d-flex justify-content-md-center">
                                     <Button variant="secondary" onClick={() => history.push('/logout')}>Logout</Button>
                                 </div>
                             </div>

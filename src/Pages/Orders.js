@@ -24,6 +24,7 @@ import ChangeCustomerPopup from '../components/ChangeCustomerPopup'
 
 import { PAGES, ORDERTYPES, TOKENSTATUS } from './OrderEnums'
 import ActionLoaderStatePopup, { LOADERSTATES } from '../components/ActionLoaderStatePopup'
+import MyContext from '../components/MyContext';
 
 class Orders extends Component {
     constructor(props) {
@@ -567,14 +568,21 @@ class Orders extends Component {
                                         <div className="tab-content categories-tab-content" id="pills-tabContent">
                                             <div className="tab-pane fade show active" id="pills-item-1" role="tabpanel" aria-labelledby="pills-item-1-tab">
                                                 <div className="row card-item-gutters">
-
-                                                    {items.map(item =>
-                                                        <ItemTemplate key={item._id}
-                                                            item={item}
-                                                            clickHandler={() => this.addToCart(item)}
-                                                        />
-                                                    )}
-
+                                                    <MyContext.Consumer>
+                                                        {(data) => {
+                                                            return (
+                                                                items.filter((obj) => {
+                                                                    if (data == null) { return (obj) }
+                                                                    else if (obj.itemid.itemname.toLowerCase().includes(data.toLowerCase())) { return (obj) }
+                                                                }).map(item =>
+                                                                    <ItemTemplate key={item._id}
+                                                                        item={item}
+                                                                        clickHandler={() => this.addToCart(item)}
+                                                                    />
+                                                                )
+                                                            )
+                                                        }}
+                                                    </MyContext.Consumer>
                                                 </div>
                                             </div>
                                         </div>
