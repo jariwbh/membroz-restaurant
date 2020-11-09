@@ -41,6 +41,7 @@ class Payment extends Component {
         currentCart.paidamount = currentCart.totalamount
         currentCart.status = "Paid"
         currentCart.property.orderstatus = "checkedout"
+        currentCart.paymentMethod = paymentMethod
 
         if (this.props.activeOrderType === ORDERTYPES.DELIVERY) {
             currentCart.property.deliveryaddress = deliveryaddress

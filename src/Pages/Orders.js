@@ -47,17 +47,25 @@ class Orders extends Component {
             tokenList: [],
             show: false,
             loadComplete: false,
-            loaderState: LOADERSTATES.LOADING
+            loaderState: LOADERSTATES.LOADING,
+            selectedCartItemId: "",
+            selectedCartConfirmItemId: ""
         }
 
         this.getItems = this.getItems.bind(this);
         this.addToCart = this.addToCart.bind(this);
+        this.deleteCartItem = this.deleteCartItem.bind(this);
+
+        this.clearItems = this.clearItems.bind(this);
         this.newOrderHandler = this.newOrderHandler.bind(this);
         this.setCurrentCartHandler = this.setCurrentCartHandler.bind(this);
         this.sendToken = this.sendToken.bind(this);
         this.changeTokenStatusHandler = this.changeTokenStatusHandler.bind(this);
 
         this.doPayment = this.doPayment.bind(this);
+
+        this.selectCartItem = this.selectCartItem.bind(this);
+        this.selectCartConfirmItem = this.selectCartConfirmItem.bind(this);
 
         this.setActivePage = this.setActivePage.bind(this);
         this.changeOrderType = this.changeOrderType.bind(this);
@@ -328,10 +336,17 @@ class Orders extends Component {
             alert("ERROR! Current Token is NULL, Note this error with steps")
             return false;
         }
+
         if (!currentToken.property.items) {
             alert("WARNING! Current Token Items is NULL, Note this error with steps")
             return false;
         }
+
+        if (currentCart.items.length === 0) {
+            alert("WARNING!  Current Cart Items is Empty, Note this error with steps")
+            return false;
+        }
+
         if (currentToken.property.items.length === 0) {
             alert("WARNING!  Current Token Items is Empty, Note this error with steps")
             return false;
@@ -415,7 +430,12 @@ class Orders extends Component {
         const beforeSaveID = currentCart._id
 
         const response = await BillServices.save(currentCart)
+
         if (response.status === 200) {
+            const paymentResponse = await BillServices.paymentSave(currentCart)
+            if (paymentResponse.status === 200) {
+                //console.log('paymentResponse', paymentResponse)
+            }
             BillServices.removeLocalOrder(beforeSaveID);
 
             const runningOrders = await this.getRunningOrders();
@@ -429,13 +449,52 @@ class Orders extends Component {
         }
     }
 
-    addToCart = (item) => {
-        let currentCart = this.addItemToCart(item._id, 1);
-        let token = this.addItemToToken(item._id, 1);
+    deleteCartItem = (item) => {
+        let currentCart = this.state.currentCart
+        let token = this.state.currentCart.token
+
+        currentCart.items = currentCart.items.filter(x => x._id !== item._id);
+        token.property.items = token.property.items.filter(x => x._id !== item._id);
+        currentCart.token = token;
+
+        currentCart.totalquantity = currentCart.items.map(item => item.quantity).reduce((prev, next) => prev + next);
+        currentCart.amount = currentCart.items.map(item => item.amount).reduce((prev, next) => prev + next);
+        currentCart.totalamount = currentCart.items.map(item => item.totalcost).reduce((prev, next) => prev + next);
+
+        const refreshedItems = this.getRefreshedItems(this.state.items, currentCart)
+        BillServices.saveLocalOrder(currentCart);
+        this.setState({ currentCart: currentCart, items: refreshedItems });
+    }
+
+    addToCart = (item, quantity, isDelete) => {
+        let tokenItem = this.state.currentCart.token.property.items.find(x => x._id === item._id);
+
+        if (!isDelete && quantity <= 0) {
+            if (tokenItem) {
+                const beforeQuantity = Number(tokenItem.quantity) + Number(quantity);
+                if (beforeQuantity <= 0) {
+                    return
+                }
+            } else {
+                return
+            }
+        }
+
+        if (isDelete) {
+            quantity = -Number(tokenItem.quantity)
+        }
+
+        let currentCart = this.addItemToCart(item._id, quantity);
+        let token = this.addItemToToken(item._id, quantity);
 
         currentCart.token = token;
         BillServices.saveLocalOrder(currentCart);
         this.setState({ currentCart: currentCart });
+
+        if (isDelete) {
+            this.setState({ selectedCartConfirmItemId: "" });
+            this.removeZeroQuantityItems();
+        }
     }
 
     addItemToCart = (itemid, quantity) => {
@@ -443,6 +502,7 @@ class Orders extends Component {
         const item = this.state.items.find(x => x._id === itemid);
 
         let cartItem = currentCart.items.find(x => ((x.item._id) && (x.item._id === itemid)) || ((x.item) && (x.item === itemid)));
+
         if (cartItem) {
             cartItem.quantity = Number(cartItem.quantity) + Number(quantity);
             cartItem.totalcost = Number(cartItem.cost) * Number(cartItem.quantity);
@@ -477,6 +537,7 @@ class Orders extends Component {
 
         let item = this.state.items.find(x => x._id === itemid);
         let tokenItem = token.property.items.find(x => x._id === itemid);
+
         if (tokenItem) {
             tokenItem.quantity = Number(tokenItem.quantity) + Number(quantity);
             tokenItem.totalcost = Number(tokenItem.cost) * Number(tokenItem.quantity);
@@ -500,6 +561,43 @@ class Orders extends Component {
         return token;
     }
 
+    clearItems = () => {
+        let currentCart = this.state.currentCart
+        let token = this.state.currentCart.token
+        const items = token.property.items
+
+        items.forEach(item => {
+            //this.addToCart(item._id, -(Number(item.quantity)));
+            currentCart = this.addItemToCart(item._id, -(Number(item.quantity)));
+            token = this.addItemToToken(item._id, -(Number(item.quantity)));
+
+            currentCart.token = token;
+            BillServices.saveLocalOrder(currentCart);
+            this.setState({ currentCart: currentCart });
+        });
+
+        this.removeZeroQuantityItems();
+    }
+
+    removeZeroQuantityItems = () => {
+        let currentCart = this.state.currentCart
+        let token = this.state.currentCart.token
+
+        currentCart.items = currentCart.items.filter(x => x.quantity > 0);
+        token.property.items = token.property.items.filter(x => x.quantity > 0);
+        currentCart.token = token;
+        BillServices.saveLocalOrder(currentCart);
+        this.setState({ currentCart: currentCart });
+    }
+
+    selectCartItem = (itemid) => {
+        this.setState({ selectedCartItemId: itemid });
+    }
+
+    selectCartConfirmItem = (itemid) => {
+        this.setState({ selectedCartConfirmItemId: itemid });
+    }
+
     async componentDidMount() {
         const tables = await this.getTables();
         const itemCategories = await this.getCategories();
@@ -518,7 +616,7 @@ class Orders extends Component {
 
 
     render() {
-        const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningOrders, tokenList, deliveryBoyList } = this.state
+        const { activePage, activeOrderType, tables, itemCategories, items, currentCart, runningOrders, tokenList, deliveryBoyList, selectedCartItemId, selectedCartConfirmItemId } = this.state
         const { show, loadComplete, loaderState } = this.state
 
         if (activePage === PAGES.TABLEBOOK) {
@@ -539,7 +637,21 @@ class Orders extends Component {
                         </div>
                         {(currentCart) &&
                             <div className="row table-item-gutters">
-                                <CartTemplate activePage={activePage} currentCart={currentCart} tokenList={tokenList} sendTokenHandler={this.sendToken} changeTokenStatusHandler={this.changeTokenStatusHandler} setActivePage={this.setActivePage} />
+                                <CartTemplate
+                                    activePage={activePage}
+                                    currentCart={currentCart}
+                                    tokenList={tokenList}
+                                    addToCartHandler={this.addToCart}
+                                    deleteCartItemHandler={this.deleteCartItem}
+                                    selectCartConfirmItemHandler={this.selectCartConfirmItem}
+                                    selectCartItemHandler={this.selectCartItem}
+                                    selectedCartItemId={selectedCartItemId}
+                                    selectedCartConfirmItemId={selectedCartConfirmItemId}
+                                    sendTokenHandler={this.sendToken}
+                                    clearItemsHandler={this.clearItems}
+                                    changeTokenStatusHandler={this.changeTokenStatusHandler}
+                                    setActivePage={this.setActivePage}
+                                />
 
                                 {(activePage === PAGES.PAYMENT) &&
                                     <Payment currentCart={currentCart} deliveryBoyList={deliveryBoyList} activeOrderType={activeOrderType} doPayment={this.doPayment} setActivePage={this.setActivePage}></Payment>
@@ -577,7 +689,7 @@ class Orders extends Component {
                                                                 }).map(item =>
                                                                     <ItemTemplate key={item._id}
                                                                         item={item}
-                                                                        clickHandler={() => this.addToCart(item)}
+                                                                        clickHandler={() => this.addToCart(item, 1)}
                                                                     />
                                                                 )
                                                             )
