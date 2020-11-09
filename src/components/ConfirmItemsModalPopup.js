@@ -1,4 +1,5 @@
 import React from 'react'
+import * as images from './Image'
 
 function ConfirmItemsModalPopup(props) {
     let token = props.token;
@@ -27,12 +28,23 @@ function ConfirmItemsModalPopup(props) {
                                     </thead>
                                     <tbody>
                                         {token.property.items.map(item =>
-                                            <tr key={item._id}>
-                                                <td>{item.itemname}</td>
-                                                <td className="text-center">{item.quantity}</td>
-                                                <td className="text-right">₹{item.totalcost}</td>
-                                                <td></td>
-                                            </tr>
+                                            item._id === props.selectedCartConfirmItemId ?
+                                                <tr key={item._id} className="pos-item-hover">
+                                                    <td>{item.itemname}</td>
+                                                    <td className="text-center text-nowrap">
+                                                        <img className="mr-2" src={images.minusicon} alt="" onClick={() => props.addToCartHandler(item, -1)} />
+                                                        <span className="text-center">{item.quantity}</span>
+                                                        <img className="ml-2" src={images.plusicon} alt="" onClick={() => props.addToCartHandler(item, 1)} /></td>
+                                                    <td className="text-right">₹{item.totalcost}</td>
+                                                    <td width="20"><img src={images.deleteWhiteIcon} alt="" onClick={() => props.addToCartHandler(item, -Number(item.quantity), true)} /></td>
+                                                </tr>
+                                                :
+                                                <tr key={item._id} onClick={() => props.selectCartConfirmItemHandler(item._id)}>
+                                                    <td>{item.itemname}</td>
+                                                    <td className="text-center">{item.quantity}</td>
+                                                    <td className="text-right">₹{item.totalcost}</td>
+                                                    <td></td>
+                                                </tr>
                                         )}
 
                                         <tr>
@@ -57,7 +69,10 @@ function ConfirmItemsModalPopup(props) {
                             <button type="button" className="btn btn-primary" le='true' data-dismiss="modal">OK</button>
                         }
                         {(token && token.property.items && token.property.items.length > 0) &&
-                            <button type="button" className="btn btn-primary" le='true' data-dismiss="modal" onClick={props.sendTokenHandler}>Send KOT</button>
+                            <>
+                                <button type="button" className="btn btn-secondary" le='true' data-dismiss="modal" onClick={props.clearItemsHandler}>Clear</button>
+                                <button type="button" className="btn btn-primary" le='true' data-dismiss="modal" onClick={props.sendTokenHandler}>Send KOT</button>
+                            </>
                         }
                     </div>
                 </div>

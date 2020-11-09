@@ -109,7 +109,7 @@ function CartTemplate(props) {
                     {props.activePage !== PAGES.PAYMENT &&
                         <>
                             <div className="col-6"><button type="button" className="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#confirmitemsmodalpopup" data-keyboard="false" data-backdrop="static">Confirm</button>
-                                <ConfirmItemsModalPopup token={props.currentCart.token} sendTokenHandler={props.sendTokenHandler} />
+                                <ConfirmItemsModalPopup token={props.currentCart.token} addToCartHandler={props.addToCartHandler} selectCartConfirmItemHandler={props.selectCartConfirmItemHandler} selectedCartConfirmItemId={props.selectedCartConfirmItemId} sendTokenHandler={props.sendTokenHandler} clearItemsHandler={props.clearItemsHandler} />
                             </div>
                             <div className="col-6">
                                 <button type="button" className="btn btn-success btn-lg btn-block" onClick={() => props.setActivePage(PAGES.PAYMENT)}>Checkout</button>
