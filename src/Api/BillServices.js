@@ -85,6 +85,28 @@ function save(currentCart) {
     }
 }
 
+function paymentSave(currentCart) {
+    let customerid = currentCart.customerid
+    if (currentCart.customerid._id) {
+        customerid = currentCart.customerid._id
+    }
+    const billingDetail = {
+        billid: [currentCart._id],
+        billingdate: currentCart.billingdate,
+        customerid: customerid,
+        onModel: currentCart.onModel,
+        paidamount: currentCart.paidamount,
+        rounding: 0,
+        discount: 0,
+        walletamount: 0,
+        wallettype: "",
+        mode: currentCart.paymentMethod,
+        cardnumber: "",
+        status: "Paid"
+    }
+    return axios.post('billingdetails', billingDetail);
+}
+
 function getLocalOrders() {
     const localOrders = JSON.parse(localStorage.getItem(SECRET_KEY_UNSAVED_LOCAL_ORDERS));
     return localOrders
@@ -143,4 +165,4 @@ function getBillFormat() {
     return axios.get('branches/' + getBranchId());
 }
 
-export { getRunningOrders, getBillList, getByID, save, getLocalOrders, getLocalOrderByID, saveLocalOrder, removeLocalOrder, getBillFormat }
+export { getRunningOrders, getBillList, getByID, save, paymentSave, getLocalOrders, getLocalOrderByID, saveLocalOrder, removeLocalOrder, getBillFormat }

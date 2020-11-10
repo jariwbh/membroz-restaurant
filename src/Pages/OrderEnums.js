@@ -11,8 +11,8 @@ export const ORDERTYPES = {
 }
 
 export const PAYMENTMETHODS = {
-    CASH: 'cash',
-    CARD: 'card'
+    CASH: 'CASH',
+    CARD: 'CARD'
 }
 
 export const TOKENSTATUS = {

@@ -57,7 +57,7 @@ function CartTemplate(props) {
                     <div className="table-num-title"> <a href="/#"><img src={images.addicon} alt="" data-toggle="modal" data-target="#changecustomerpopup" /> </a> </div>
                 </div>
                 <div className="table-responsive">
-                    <table className="table table-hover">
+                    <table className="table">
                         <thead>
                             <tr>
                                 <th>Order</th>
@@ -70,12 +70,23 @@ function CartTemplate(props) {
 
                             {props.currentCart.items.length > 0 &&
                                 props.currentCart.items.map(item =>
-                                    <tr key={item._id ? item._id : item.item}>
-                                        <td>{item.itemname ? item.itemname : item.item.itemid.itemname}</td>
-                                        <td className="text-center">{item.quantity}</td>
-                                        <td className="text-right">₹{item.totalcost}</td>
-                                        <td></td>
-                                    </tr>
+                                    item._id === props.selectedCartItemId ?
+                                        <tr key={item._id} className="pos-item-hover">
+                                            <td>{item.itemname ? item.itemname : item.item.itemid.itemname}</td>
+                                            <td className="text-center text-nowrap">
+                                                <img className="mr-2" src={images.minusicon} alt="" onClick={() => props.addToCartHandler(item, -1)} />
+                                                <span className="text-center">{item.quantity}</span>
+                                                <img className="ml-2" src={images.plusicon} alt="" onClick={() => props.addToCartHandler(item, 1)} /></td>
+                                            <td className="text-right">₹{item.totalcost}</td>
+                                            <td width="20"><img src={images.deleteWhiteIcon} alt="" onClick={() => props.deleteCartItemHandler(item)} /></td>
+                                        </tr>
+                                        :
+                                        <tr key={item._id ? item._id : item.item} onClick={() => props.selectCartItemHandler(item._id)}>
+                                            <td>{item.itemname ? item.itemname : item.item.itemid.itemname}</td>
+                                            <td className="text-center">{item.quantity}</td>
+                                            <td className="text-right">₹{item.totalcost}</td>
+                                            <td></td>
+                                        </tr>
                                 )
                             }
                             {props.currentCart.items.length === 0 &&
